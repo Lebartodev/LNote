@@ -1,12 +1,12 @@
-package com.lebartodev.lnote.notes
+package com.lebartodev.lnote.common.notes
 
-interface Notes {
+interface NotesScreen {
     interface View {
         fun onNotesLoaded(notes: List<String>)
         fun onLoadError(throwable: Throwable)
     }
 
-    interface Presenter {
+    interface ViewModel {
         fun loadNotes()
     }
 }

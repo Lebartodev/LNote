@@ -1,28 +1,29 @@
-package com.lebartodev.lnote.notes
+package com.lebartodev.lnote.common.notes
 
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.application.component.AppComponent
-import com.lebartodev.lnote.application.component.DaggerNotesComponent
-import com.lebartodev.lnote.application.module.NotesModule
 import com.lebartodev.lnote.base.BaseActivity
+import com.lebartodev.lnote.di.ViewModelFactory
+import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.utils.toast
 import javax.inject.Inject
 
-class NotesActivity : BaseActivity(), Notes.View {
+class NotesActivity : BaseActivity(), NotesScreen.View {
     private lateinit var fabAdd: FloatingActionButton
     @Inject
-    lateinit var presenter: NotesPresenter
+    protected lateinit var viewModelFactory: ViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         fabAdd = findViewById(R.id.fab_add)
-        presenter.loadNotes()
-
+        val vm = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
+        vm.notes.observe(this, Observer(::onNotesLoaded))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -50,16 +51,8 @@ class NotesActivity : BaseActivity(), Notes.View {
         toast(throwable.message)
     }
 
-    override fun onStop() {
-        super.onStop()
-        presenter.onStop()
-    }
-
-    override fun setupComponent(appComponent: AppComponent) {
-        DaggerNotesComponent.builder()
-                .notesModule(NotesModule(this))
-                .build()
-                .inject(this)
+    override fun setupComponent(component: AppComponent) {
+        component.inject(this)
     }
 
 
