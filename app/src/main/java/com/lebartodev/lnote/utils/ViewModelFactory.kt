@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.di
+package com.lebartodev.lnote.utils
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

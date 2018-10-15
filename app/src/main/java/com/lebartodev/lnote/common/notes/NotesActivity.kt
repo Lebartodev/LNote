@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseActivity
-import com.lebartodev.lnote.di.ViewModelFactory
+import com.lebartodev.lnote.utils.ViewModelFactory
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.utils.toast
 import javax.inject.Inject
@@ -24,6 +24,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         fabAdd = findViewById(R.id.fab_add)
         val vm = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
         vm.notes.observe(this, Observer(::onNotesLoaded))
+        vm.loadNotes()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

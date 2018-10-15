@@ -6,7 +6,7 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 
-class SchedulersFacade @Inject constructor() {
+class SchedulersFacade constructor() {
 
     fun io(): Scheduler {
         return Schedulers.io()

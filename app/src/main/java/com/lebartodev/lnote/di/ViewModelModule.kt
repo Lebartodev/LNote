@@ -2,6 +2,7 @@ package com.lebartodev.lnote.di
 
 import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.common.notes.NotesViewModel
+import com.lebartodev.lnote.utils.ViewModelKey
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap

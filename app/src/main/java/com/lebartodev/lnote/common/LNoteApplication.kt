@@ -1,4 +1,4 @@
-package com.lebartodev.lnote
+package com.lebartodev.lnote.common
 
 import android.app.Application
 import android.content.Context

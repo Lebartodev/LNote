@@ -2,7 +2,7 @@ package com.lebartodev.lnote.base
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.lebartodev.lnote.LNoteApplication
+import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.di.component.AppComponent
 
 
