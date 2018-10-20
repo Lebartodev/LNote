@@ -1,23 +1,21 @@
 package com.lebartodev.lnote.di.component
 
 import android.app.Application
-import com.lebartodev.lnote.common.notes.NotesActivity
-import com.lebartodev.lnote.di.module.AppModule
+import com.lebartodev.lnote.di.module.AppModuleMock
+import com.lebartodev.lnote.repository.NotesDAOTest
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
-
 @Singleton
-@Component(modules = [AppModule::class])
-interface AppComponent {
+@Component(modules = [AppModuleMock::class])
+interface AppComponentMock : AppComponent {
+    fun inject(notesRepositoryTest: NotesDAOTest)
     @Component.Builder
     interface Builder {
         @BindsInstance
         fun withApplication(application: Application): Builder
 
-        fun build(): AppComponent
+        fun build(): AppComponentMock
     }
-
-    fun inject(mainActivity: NotesActivity)
 }

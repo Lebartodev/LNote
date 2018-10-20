@@ -9,7 +9,7 @@
     <!-- Other components and views -->
 
     <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bar"
+        android:id="@+id/bottom_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add_24"
         app:backgroundTint="@color/colorPrimary"
-        app:layout_anchor="@id/bar"
+        app:layout_anchor="@id/bottom_app_bar"
         />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

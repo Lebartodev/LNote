@@ -11,7 +11,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.lebartodev.lnote.common.MockTestRunner"
         kapt {
             arguments {
                 arg("room.schemaLocation", "$projectDir/schemas".toString())
@@ -23,6 +23,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
+
     }
 }
 
@@ -41,4 +45,8 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation "android.arch.lifecycle:reactivestreams:1.1.1"
     kapt "android.arch.lifecycle:compiler:1.1.1"
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'io.mockk:mockk:1.7.13'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    kaptAndroidTest "com.google.dagger:dagger-compiler:2.13"
 }

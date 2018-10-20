@@ -5,24 +5,27 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseActivity
-import com.lebartodev.lnote.utils.ViewModelFactory
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.utils.toast
-import javax.inject.Inject
 
 class NotesActivity : BaseActivity(), NotesScreen.View {
     private lateinit var fabAdd: FloatingActionButton
-    @Inject
-    protected lateinit var viewModelFactory: ViewModelFactory
+    private lateinit var bottomAppBar: BottomAppBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        bottomAppBar = findViewById(R.id.bottom_app_bar)
         fabAdd = findViewById(R.id.fab_add)
-        val vm = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
+        setSupportActionBar(bottomAppBar)
+        fabAdd.setOnClickListener {
+            toast("Hey")
+        }
+        val vm = ViewModelProviders.of(this)[NotesViewModel::class.java]
         vm.notes.observe(this, Observer(::onNotesLoaded))
         vm.loadNotes()
     }

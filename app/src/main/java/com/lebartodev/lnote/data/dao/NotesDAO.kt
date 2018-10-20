@@ -13,7 +13,7 @@ interface NotesDAO {
     fun getById(id: Long): Note
 
     @Insert
-    fun insert(note: Note)
+    fun insert(note: Note): Long
 
     @Update
     fun update(note: Note)

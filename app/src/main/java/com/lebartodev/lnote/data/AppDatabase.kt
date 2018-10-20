@@ -6,7 +6,7 @@ import com.lebartodev.lnote.data.dao.NotesDAO
 import com.lebartodev.lnote.data.entity.Note
 
 
-@Database(entities = arrayOf(Note::class), version = 1)
+@Database(entities = [Note::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun employeeDao(): NotesDAO
+    abstract fun notesDao(): NotesDAO
 }

@@ -6,8 +6,8 @@ import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.component.DaggerAppComponent
 
 
-class LNoteApplication : Application() {
-    private lateinit var component: AppComponent
+open class LNoteApplication : Application() {
+    open lateinit var component: AppComponent
 
     companion object {
         operator fun get(context: Context): LNoteApplication {
@@ -20,13 +20,13 @@ class LNoteApplication : Application() {
         setupGraph()
     }
 
-    private fun setupGraph() {
+    open fun setupGraph() {
         component = DaggerAppComponent.builder()
                 .withApplication(this)
                 .build()
     }
 
-    fun component(): AppComponent {
+    open fun component(): AppComponent {
         return component
     }
 }
