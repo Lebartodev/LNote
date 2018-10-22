@@ -1,10 +1,10 @@
 package com.lebartodev.lnote.common
 
-import com.lebartodev.lnote.di.component.DaggerAppComponentMock
+import com.lebartodev.lnote.di.component.DaggerAppComponentTest
 
 class LNoteApplicationMock : LNoteApplication() {
     override fun setupGraph() {
-        component = DaggerAppComponentMock.builder()
+        component = DaggerAppComponentTest.builder()
                 .withApplication(this)
                 .build()
     }

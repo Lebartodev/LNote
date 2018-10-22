@@ -6,7 +6,7 @@ import androidx.test.runner.AndroidJUnit4
 import com.lebartodev.lnote.common.LNoteApplicationMock
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.di.component.AppComponentMock
+import com.lebartodev.lnote.di.component.AppComponentTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -24,7 +24,7 @@ class NotesDAOTest {
     fun setUp() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val app = instrumentation.targetContext.applicationContext as LNoteApplicationMock
-        val component = app.component() as AppComponentMock
+        val component = app.component() as AppComponentTest
         component.inject(this)
         database.clearAllTables()
     }
@@ -50,7 +50,7 @@ class NotesDAOTest {
 
     @Test
     fun update() {
-        var notes = database.notesDao().getAll()
+        val notes = database.notesDao().getAll()
         assert(notes.isEmpty())
         val noteId = database.notesDao().insert(Note(null, "Title", System.currentTimeMillis(), "Text"))
         val note = database.notesDao().getById(noteId)

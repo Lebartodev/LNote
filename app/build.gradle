@@ -47,6 +47,8 @@ dependencies {
     kapt "android.arch.lifecycle:compiler:1.1.1"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'io.mockk:mockk:1.7.13'
+    testImplementation 'io.mockk:mockk:1.7.13'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     kaptAndroidTest "com.google.dagger:dagger-compiler:2.13"
+    kaptTest "com.google.dagger:dagger-compiler:2.13"
 }

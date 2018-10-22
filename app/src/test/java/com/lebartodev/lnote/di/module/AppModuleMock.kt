@@ -1,10 +1,10 @@
 package com.lebartodev.lnote.di.module
 
-import android.app.Application
-import androidx.room.Room
 import com.lebartodev.lnote.data.AppDatabase
+import com.lebartodev.lnote.utils.SchedulersFacade
 import dagger.Module
 import dagger.Provides
+import io.mockk.mockk
 import javax.inject.Singleton
 
 @Singleton
@@ -12,7 +12,9 @@ import javax.inject.Singleton
 class AppModuleMock {
     @Provides
     @Singleton
-    fun provideDatabase(application: Application): AppDatabase {
-        return Room.inMemoryDatabaseBuilder(application, AppDatabase::class.java).build()
-    }
+    fun provideDatabase(): AppDatabase = mockk()
+    @Provides
+    @Singleton
+    fun provideSchedulersFacade(): SchedulersFacade = mockk()
+
 }

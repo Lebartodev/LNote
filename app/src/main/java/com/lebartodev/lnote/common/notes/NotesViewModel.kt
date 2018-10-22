@@ -4,13 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.repository.NotesRepository
 import javax.inject.Inject
 
 
 class NotesViewModel @Inject constructor(var notesRepository: NotesRepository) : ViewModel(), NotesScreen.ViewModel {
 
-    var notes: LiveData<List<String>> = MutableLiveData()
+    var notes: LiveData<List<Note>> = MutableLiveData()
 
     override fun loadNotes() {
         notes = LiveDataReactiveStreams.fromPublisher(notesRepository.getNotes().toFlowable())

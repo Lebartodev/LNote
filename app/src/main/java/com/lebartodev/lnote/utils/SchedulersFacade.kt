@@ -3,10 +3,9 @@ package com.lebartodev.lnote.utils
 import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 
 
-class SchedulersFacade constructor() {
+class SchedulersFacade {
 
     fun io(): Scheduler {
         return Schedulers.io()

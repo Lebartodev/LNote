@@ -9,6 +9,7 @@ import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseActivity
+import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.utils.toast
 
@@ -45,9 +46,9 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         return true
     }
 
-    override fun onNotesLoaded(notes: List<String>) {
+    override fun onNotesLoaded(notes: List<Note>) {
         for (note in notes) {
-            toast(note)
+            toast(note.title)
         }
     }
 
