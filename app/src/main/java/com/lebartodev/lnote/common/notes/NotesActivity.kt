@@ -3,32 +3,41 @@ package com.lebartodev.lnote.common.notes
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseActivity
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
+import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.toast
+import javax.inject.Inject
+
 
 class NotesActivity : BaseActivity(), NotesScreen.View {
-    private lateinit var fabAdd: FloatingActionButton
-    private lateinit var bottomAppBar: BottomAppBar
+    private val fabAdd by lazy { findViewById<FloatingActionButton>(R.id.fab_add) }
+    private val bottomAppBar by lazy { findViewById<BottomAppBar>(R.id.bottom_app_bar) }
+    private val bottomAddSheetBehavior by lazy {
+        BottomSheetBehavior.from(findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+    }
+    @Inject
+    lateinit var viewModelFactory: LNoteViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        bottomAppBar = findViewById(R.id.bottom_app_bar)
-        fabAdd = findViewById(R.id.fab_add)
         setSupportActionBar(bottomAppBar)
+        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
         fabAdd.setOnClickListener {
-            toast("Hey")
+            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
-        val vm = ViewModelProviders.of(this)[NotesViewModel::class.java]
-        vm.notes.observe(this, Observer(::onNotesLoaded))
-        vm.loadNotes()
+        val vm = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
+        vm.loadNotes().observe(this, Observer(::onNotesLoaded))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

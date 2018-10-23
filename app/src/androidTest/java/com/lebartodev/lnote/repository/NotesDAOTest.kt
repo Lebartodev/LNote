@@ -7,6 +7,7 @@ import com.lebartodev.lnote.common.LNoteApplicationMock
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponentTest
+import io.reactivex.subscribers.TestSubscriber
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -31,18 +32,20 @@ class NotesDAOTest {
 
     @Test
     fun getAll() {
-        val notes = database.notesDao().getAll()
-        assertTrue(notes.isEmpty())
+        val testSubscriber = TestSubscriber<List<Note>>()
+        database.notesDao().getAll().subscribe(testSubscriber)
+        testSubscriber.assertEmpty()
     }
 
     @Test(expected = SQLiteConstraintException::class)
     fun insert() {
-        var notes = database.notesDao().getAll()
-        assert(notes.isEmpty())
+        val testSubscriber = TestSubscriber<List<Note>>()
+        database.notesDao().getAll().subscribe(testSubscriber)
+
         database.notesDao().insert(Note(1000L, "Title", System.currentTimeMillis(), "Text"))
         database.notesDao().insert(Note(2000L, "Title", System.currentTimeMillis(), "Text"))
-        notes = database.notesDao().getAll()
-        assertEquals(notes.size, 2)
+        val notes = testSubscriber.values()[0]
+        assertEquals(testSubscriber.values().size, 2)
         assertEquals(notes[0].id, 1000L)
         assertEquals(notes[1].id, 2000L)
         database.notesDao().insert(Note(1000L, "Title", System.currentTimeMillis(), "Text"))
@@ -50,8 +53,9 @@ class NotesDAOTest {
 
     @Test
     fun update() {
-        val notes = database.notesDao().getAll()
-        assert(notes.isEmpty())
+        val testSubscriber = TestSubscriber<List<Note>>()
+        database.notesDao().getAll().subscribe(testSubscriber)
+
         val noteId = database.notesDao().insert(Note(null, "Title", System.currentTimeMillis(), "Text"))
         val note = database.notesDao().getById(noteId)
         note.text = "New Text"

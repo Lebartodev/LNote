@@ -2,12 +2,13 @@ package com.lebartodev.lnote.data.dao
 
 import androidx.room.*
 import com.lebartodev.lnote.data.entity.Note
+import io.reactivex.Flowable
 
 
 @Dao
 interface NotesDAO {
     @Query("SELECT * FROM note")
-    fun getAll(): List<Note>
+    fun getAll(): Flowable<List<Note>>
 
     @Query("SELECT * FROM note WHERE id = :id")
     fun getById(id: Long): Note
