@@ -4,28 +4,29 @@
     android:id="@+id/bottom_sheet_add"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/textColorPrimary"
-    android:orientation="vertical"
-    android:paddingTop="16dp"
+    android:background="@drawable/bottom_card_bg"
+    android:paddingTop="20dp"
     app:behavior_hideable="true"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
     <EditText
         android:id="@+id/text_title"
+        style="@style/LNote.Text.Title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:background="@null"
-        android:hint="Title"
-        android:textSize="24sp"
+        android:hint="@string/title_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
+        style="@style/LNote.Divider"
         android:layout_width="0dp"
-        android:layout_height="0.5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toTopOf="@id/text_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,20 +34,21 @@
 
     <EditText
         android:id="@+id/text_description"
+        style="@style/LNote.Text.Description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="24dp"
         android:background="@null"
-        android:hint="Enter note"
+        android:hint="@string/enter_note_hint"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_title" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add"
+        android:id="@+id/fab_more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -60,12 +62,13 @@
         app:layout_constraintTop_toBottomOf="@id/text_description" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="12dp"
-        android:text="Save"
+        android:text="@string/save_button_text"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

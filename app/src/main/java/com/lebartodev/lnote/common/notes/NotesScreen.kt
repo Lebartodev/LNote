@@ -1,6 +1,5 @@
 package com.lebartodev.lnote.common.notes
 
-import androidx.lifecycle.LiveData
 import com.lebartodev.lnote.data.entity.Note
 
 interface NotesScreen {
@@ -10,6 +9,5 @@ interface NotesScreen {
     }
 
     interface ViewModel {
-        fun loadNotes(): LiveData<List<Note>>
     }
 }

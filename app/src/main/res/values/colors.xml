@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="black_60">#99000000</color>
+    <color name="black_12">#1e000000</color>
+    <color name="black_40">#66000000</color>
     <color name="colorPrimary">#1976d2</color>
     <color name="colorPrimaryDark">#0d47a1</color>
     <color name="colorSecondary">#2196f3</color>
     <color name="colorSecondaryDark">#1976d2</color>
     <color name="colorAccent">#61000000</color>
-    <color name="textColorPrimary">@color/white</color>
+    <color name="textColorPrimary">@color/black_60</color>
+
+    <color name="card_background">#ffffff</color>
+    <color name="black_5">#0c000000</color>
+    <color name="black_2">#06000000</color>
+
 </resources>

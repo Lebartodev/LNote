@@ -1,10 +1,26 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="LNote" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:textColorHint">@color/black_40</item>
+    </style>
+
+    <style name="LNote.Text.Title">
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="LNote.Text.Description">
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="LNote.Text" />
+
+    <style name="LNote.Divider">
+        <item name="android:layout_height">0.5dp</item>
+        <item name="android:background">@color/black_12</item>
     </style>
 
 </resources>

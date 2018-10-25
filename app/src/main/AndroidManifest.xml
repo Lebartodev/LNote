@@ -11,7 +11,7 @@
         android:name=".common.LNoteApplication"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
+        android:theme="@style/LNote"
         >
         <activity
             android:name="com.lebartodev.lnote.common.notes.NotesActivity"
