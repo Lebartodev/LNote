@@ -112,7 +112,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         toast(throwable.message)
     }
 
-    override fun setupComponent(component: AppComponent) {
+    public override fun setupComponent(component: AppComponent) {
         component.inject(this)
     }
 

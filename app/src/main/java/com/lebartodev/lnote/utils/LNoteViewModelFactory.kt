@@ -14,5 +14,4 @@ class LNoteViewModelFactory constructor(var notesRepository: NotesRepository) : 
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
-
 }
