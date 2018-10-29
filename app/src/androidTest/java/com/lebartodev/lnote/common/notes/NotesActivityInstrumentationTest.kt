@@ -1,41 +1,48 @@
 package com.lebartodev.lnote.common.notes
 
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.MutableLiveData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
-import androidx.test.runner.AndroidJUnit4
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.common.LNoteApplicationMock
-import com.lebartodev.lnote.utils.di.component.DaggerAppComponentTest
+import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.di.component.AppComponentTest
+import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationsRule
 import com.lebartodev.lnote.utils.rule.Repeat
 import com.lebartodev.lnote.utils.rule.RepeatRule
-import io.mockk.MockKAnnotations
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
+import org.mockito.junit.MockitoJUnitRunner
+import javax.inject.Inject
 
 
-@RunWith(AndroidJUnit4::class)
-class NotesActivityTest {
+@RunWith(MockitoJUnitRunner::class)
+class NotesActivityInstrumentationTest {
     @get:Rule
     var repeatRule = RepeatRule()
     @get:Rule
-    var rule: ActivityTestRule<NotesActivity> = ActivityTestRule<NotesActivity>(NotesActivity::class.java)
+    var rule: ActivityTestRule<NotesActivity> = ActivityTestRule<NotesActivity>(NotesActivity::class.java, false, false)
     @get:Rule
     var animationsRule = DisableAnimationsRule()
+    @Inject
+    lateinit var viewModelFactory: LNoteViewModelFactory
 
     @Before
     fun setUp() {
-        MockKAnnotations.init(this)
-        val component = DaggerAppComponentTest.builder().withApplication(getApp()).build()
-        component.inject(this)
+        (getApp().component() as AppComponentTest).inject(this)
+        Mockito.`when`(viewModelFactory.notesViewModel.loadNotes()).thenReturn(MutableLiveData())
+        Mockito.`when`(viewModelFactory.notesViewModel.saveNote(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(MutableLiveData())
+        rule.launchActivity(null)
     }
 
     private fun getApp(): LNoteApplicationMock {

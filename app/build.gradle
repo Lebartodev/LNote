@@ -1,7 +1,16 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+    }
+}
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-allopen'
 
 android {
     compileSdkVersion 28
@@ -11,7 +20,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "com.lebartodev.lnote.common.MockTestRunner"
+        testInstrumentationRunner "com.lebartodev.lnote.utils.mocks.MockTestRunner"
         kapt {
             arguments {
                 arg("room.schemaLocation", "$projectDir/schemas".toString())
@@ -28,6 +37,10 @@ android {
         }
 
     }
+}
+
+allOpen {
+    annotation("com.lebartodev.lnote.utils.OpenClass")
 }
 
 dependencies {
@@ -53,18 +66,18 @@ dependencies {
 
     //Unit test
     testImplementation 'junit:junit:4.12'
-    testImplementation 'io.mockk:mockk:1.8.9'
+    testImplementation 'org.mockito:mockito-core:2.19.0'
 
     kaptTest "com.google.dagger:dagger-compiler:2.13"
 
     //Android test
-    androidTestImplementation 'io.mockk:mockk:1.8.9'
-    androidTestImplementation 'io.mockk:mockk-android:1.8.9'
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
     androidTestImplementation 'androidx.test:runner:1.1.0'
+    androidTestImplementation 'org.mockito:mockito-android:2.19.0'
     androidTestImplementation 'androidx.test:rules:1.1.0'
     androidTestImplementation 'android.arch.core:core-testing:1.1.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.0.0'
 
     kaptAndroidTest "com.google.dagger:dagger-compiler:2.13"
 }

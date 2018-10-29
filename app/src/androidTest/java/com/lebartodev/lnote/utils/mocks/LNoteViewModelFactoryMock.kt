@@ -1,13 +1,15 @@
-package com.lebartodev.lnote.utils
+package com.lebartodev.lnote.utils.mocks
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.lnote.common.notes.NotesViewModel
 import com.lebartodev.lnote.repository.NotesRepository
+import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import org.mockito.Mockito
 
+class LNoteViewModelFactoryMock constructor(notesRepository: NotesRepository) :
+        LNoteViewModelFactory(notesRepository) {
+    override val notesViewModel: NotesViewModel by lazy { Mockito.mock(NotesViewModel::class.java) }
 
-open class LNoteViewModelFactory constructor(var notesRepository: NotesRepository) : ViewModelProvider.Factory {
-    open val notesViewModel: NotesViewModel by lazy { NotesViewModel(notesRepository) }
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass == NotesViewModel::class.java) {
             return notesViewModel as T

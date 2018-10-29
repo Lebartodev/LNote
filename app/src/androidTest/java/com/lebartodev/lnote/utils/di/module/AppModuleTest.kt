@@ -6,9 +6,10 @@ import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
 import dagger.Module
 import dagger.Provides
-import io.mockk.mockk
+import org.mockito.Mockito
 import javax.inject.Singleton
 
 @Singleton
@@ -21,7 +22,7 @@ class AppModuleTest {
 
     @Provides
     @Singleton
-    fun provideSchedulersFacade(): SchedulersFacade = mockk()
+    fun provideSchedulersFacade() = Mockito.mock(SchedulersFacade::class.java)
 
     @Provides
     @Singleton
@@ -30,7 +31,8 @@ class AppModuleTest {
     }
 
     @Provides
+    @Singleton
     fun provideLNotesViewModelFactory(notesRepository: NotesRepository): LNoteViewModelFactory {
-        return LNoteViewModelFactory(notesRepository)
+        return LNoteViewModelFactoryMock(notesRepository)
     }
 }

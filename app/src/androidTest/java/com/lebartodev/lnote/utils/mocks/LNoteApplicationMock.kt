@@ -1,5 +1,6 @@
-package com.lebartodev.lnote.common
+package com.lebartodev.lnote.utils.mocks
 
+import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.utils.di.component.DaggerAppComponentTest
 
 class LNoteApplicationMock : LNoteApplication() {

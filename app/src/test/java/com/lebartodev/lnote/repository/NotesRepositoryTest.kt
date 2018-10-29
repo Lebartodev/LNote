@@ -2,13 +2,13 @@ package com.lebartodev.lnote.repository
 
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.DaggerAppComponentMock
-import io.mockk.MockKAnnotations
-import io.mockk.every
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subscribers.TestSubscriber
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.doReturn
 import javax.inject.Inject
 
 class NotesRepositoryTest {
@@ -20,10 +20,9 @@ class NotesRepositoryTest {
 
     @Before
     fun setUp() {
-        MockKAnnotations.init(this)
         DaggerAppComponentMock.builder().build().inject(this)
-        every { notesRepository.schedulersFacade.io() } returns Schedulers.trampoline()
-        every { notesRepository.database.notesDao().getAll() } returns Flowable.just(notesTest)
+        `when`(notesRepository.schedulersFacade.io()).thenReturn(Schedulers.trampoline())
+        doReturn(Flowable.just(notesTest)).`when`(notesRepository.database.notesDao()).getAll()
     }
 
     @Test
