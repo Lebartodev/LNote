@@ -6,7 +6,6 @@ import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.SchedulersFacade
 import dagger.Module
 import dagger.Provides
-import org.mockito.Mockito
 import javax.inject.Singleton
 
 @Singleton
@@ -14,12 +13,12 @@ import javax.inject.Singleton
 class AppModuleMock {
     @Provides
     @Singleton
-    fun provideDatabase(): AppDatabase = Mockito.mock(AppDatabase::class.java)
+    fun provideDatabase(): AppDatabase = mock<AppDatabase>()
 
     @Provides
     @Singleton
     fun provideSchedulersFacade(): SchedulersFacade {
-        val result: SchedulersFacade = Mockito.mock(SchedulersFacade::class.java)
+        val result: SchedulersFacade = mock<SchedulersFacade>()
         return result
     }
 

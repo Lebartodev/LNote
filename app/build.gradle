@@ -1,10 +1,6 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
-    }
+ext {
+    archComponentVersion = "2.0.0"
+    mockitoVersion = "2.19.0"
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -56,28 +52,31 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.1.14'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
-    implementation "androidx.room:room-runtime:2.0.0"
-    implementation "androidx.room:room-rxjava2:2.0.0"
-    kapt "androidx.room:room-compiler:2.0.0"
+    implementation "androidx.room:room-runtime:$archComponentVersion"
+    implementation "androidx.room:room-rxjava2:$archComponentVersion"
+    kapt "androidx.room:room-compiler:$archComponentVersion"
 
-    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
-    implementation "androidx.lifecycle:lifecycle-reactivestreams:2.0.0"
-    kapt "androidx.lifecycle:lifecycle-compiler:2.0.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$archComponentVersion"
+    implementation "androidx.lifecycle:lifecycle-reactivestreams:$archComponentVersion"
+    kapt "androidx.lifecycle:lifecycle-compiler:$archComponentVersion"
 
     //Unit test
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.mockito:mockito-core:2.19.0'
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
     kaptTest "com.google.dagger:dagger-compiler:2.13"
+    testImplementation 'com.nhaarman:mockito-kotlin:1.5.0'
+    androidTestImplementation 'com.nhaarman:mockito-kotlin:1.5.0'
 
     //Android test
+    androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
+
     androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
-    androidTestImplementation 'androidx.test:runner:1.1.0'
-    androidTestImplementation 'org.mockito:mockito-android:2.19.0'
+
     androidTestImplementation 'androidx.test:rules:1.1.0'
-    androidTestImplementation 'android.arch.core:core-testing:1.1.1'
     androidTestImplementation 'androidx.test.ext:junit:1.0.0'
 
+    androidTestImplementation 'android.arch.core:core-testing:1.1.1'
     kaptAndroidTest "com.google.dagger:dagger-compiler:2.13"
 }

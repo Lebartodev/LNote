@@ -8,7 +8,7 @@ import org.junit.runners.model.Statement
 import java.io.IOException
 
 
-class DisableAnimationsRule : TestRule {
+class DisableAnimationRule : TestRule {
 
     override fun apply(base: Statement, description: Description): Statement {
         return object : Statement() {

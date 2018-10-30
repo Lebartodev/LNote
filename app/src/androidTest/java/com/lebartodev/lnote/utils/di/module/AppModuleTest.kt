@@ -7,9 +7,9 @@ import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
+import com.nhaarman.mockito_kotlin.mock
 import dagger.Module
 import dagger.Provides
-import org.mockito.Mockito
 import javax.inject.Singleton
 
 @Singleton
@@ -22,7 +22,7 @@ class AppModuleTest {
 
     @Provides
     @Singleton
-    fun provideSchedulersFacade() = Mockito.mock(SchedulersFacade::class.java)
+    fun provideSchedulersFacade() = mock<SchedulersFacade>()
 
     @Provides
     @Singleton

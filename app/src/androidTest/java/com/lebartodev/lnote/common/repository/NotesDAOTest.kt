@@ -2,12 +2,12 @@ package com.lebartodev.lnote.common.repository
 
 import android.database.sqlite.SQLiteConstraintException
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
-import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
+import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
