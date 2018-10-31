@@ -8,7 +8,7 @@ import com.nhaarman.mockito_kotlin.mock
 
 class LNoteViewModelFactoryMock constructor(notesRepository: NotesRepository) :
         LNoteViewModelFactory(notesRepository) {
-    override val notesViewModel: NotesViewModel by lazy { mock<NotesViewModel>() }
+    val notesViewModel: NotesViewModel by lazy { mock<NotesViewModel>() }
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass == NotesViewModel::class.java) {

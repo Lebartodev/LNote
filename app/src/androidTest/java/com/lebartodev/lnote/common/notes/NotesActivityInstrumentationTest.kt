@@ -2,9 +2,11 @@ package com.lebartodev.lnote.common.notes
 
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -16,12 +18,13 @@ import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
+import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
 import com.lebartodev.lnote.utils.rule.Repeat
 import com.lebartodev.lnote.utils.rule.RepeatRule
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.doAnswer
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doAnswer
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -46,12 +49,12 @@ class NotesActivityInstrumentationTest {
     @Before
     fun setUp() {
         (getApp().component() as AppComponentTest).inject(this)
-        whenever(viewModelFactory.notesViewModel.loadNotes()).thenReturn(mockNotesData)
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.loadNotes()).thenReturn(mockNotesData)
         doAnswer {
             mockNotesList.add(Note(null, it.getArgument(0), System.currentTimeMillis(), it.getArgument(1)))
             mockNotesData.value = ViewModelObject.success(mockNotesList)
             MutableLiveData<Long>()
-        }.whenever(viewModelFactory.notesViewModel).saveNote(any(), any())
+        }.whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel).saveNote(any(), any())
 
         rule.launchActivity(null)
     }
@@ -67,7 +70,7 @@ class NotesActivityInstrumentationTest {
     }
 
     @Test
-    @Repeat(3)
+    @Repeat(1)
     fun createNote() {
         val bottomAddSheetBehavior = BottomSheetBehavior.from(
                 rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
@@ -80,9 +83,6 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
         onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
         onView(withId(R.id.save_button)).perform(click())
-    }
-
-    @Test
-    fun onOptionsItemSelected() {
+        onView(withId(R.id.notes_list)).check(matches(hasMinimumChildCount(1)))
     }
 }

@@ -7,10 +7,9 @@ import com.lebartodev.lnote.repository.NotesRepository
 
 
 open class LNoteViewModelFactory constructor(var notesRepository: NotesRepository) : ViewModelProvider.Factory {
-    open val notesViewModel: NotesViewModel by lazy { NotesViewModel(notesRepository) }
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass == NotesViewModel::class.java) {
-            return notesViewModel as T
+            return NotesViewModel(notesRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

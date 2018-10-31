@@ -4,6 +4,7 @@ import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.SchedulersFacade
+import com.nhaarman.mockitokotlin2.mock
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -13,13 +14,12 @@ import javax.inject.Singleton
 class AppModuleMock {
     @Provides
     @Singleton
-    fun provideDatabase(): AppDatabase = mock<AppDatabase>()
+    fun provideDatabase(): AppDatabase = mock()
 
     @Provides
     @Singleton
     fun provideSchedulersFacade(): SchedulersFacade {
-        val result: SchedulersFacade = mock<SchedulersFacade>()
-        return result
+        return mock()
     }
 
     @Provides
