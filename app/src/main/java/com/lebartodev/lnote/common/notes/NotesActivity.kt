@@ -86,7 +86,8 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
                     })
             titleText.setText("")
             descriptionText.setText("")
-
+            titleText.clearFocus()
+            descriptionText.clearFocus()
         }
     }
 
@@ -115,6 +116,4 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
     public override fun setupComponent(component: AppComponent) {
         component.inject(this)
     }
-
-
 }

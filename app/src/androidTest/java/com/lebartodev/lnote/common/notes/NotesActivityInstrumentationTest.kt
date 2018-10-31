@@ -2,11 +2,9 @@ package com.lebartodev.lnote.common.notes
 
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
-import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -16,6 +14,7 @@ import com.lebartodev.lnote.R
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
@@ -25,6 +24,7 @@ import com.lebartodev.lnote.utils.rule.RepeatRule
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.whenever
+import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -72,6 +72,8 @@ class NotesActivityInstrumentationTest {
     @Test
     @Repeat(1)
     fun createNote() {
+        onView(withId(R.id.text_title)).check(matches(not(hasFocus())))
+        onView(withId(R.id.text_description)).check(matches(not(hasFocus())))
         val bottomAddSheetBehavior = BottomSheetBehavior.from(
                 rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
         assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
@@ -80,9 +82,17 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
         onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
         onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
+        onView(withId(R.id.text_title)).check(matches(hasFocus()))
         onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
         onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
+        onView(withId(R.id.text_description)).check(matches(hasFocus()))
         onView(withId(R.id.save_button)).perform(click())
         onView(withId(R.id.notes_list)).check(matches(hasMinimumChildCount(1)))
+        onView(withRecyclerView(R.id.notes_list).atPosition(0))
+                .check(matches(hasDescendant(withText("Title"))))
+        onView(withRecyclerView(R.id.notes_list).atPosition(0))
+                .check(matches(hasDescendant(withText("Description"))))
     }
+
+
 }

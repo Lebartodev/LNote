@@ -7,7 +7,7 @@ import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
-import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockitokotlin2.mock
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

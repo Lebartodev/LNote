@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.common.notes.NotesViewModel
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
-import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockitokotlin2.mock
 
 class LNoteViewModelFactoryMock constructor(notesRepository: NotesRepository) :
         LNoteViewModelFactory(notesRepository) {
