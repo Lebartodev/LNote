@@ -16,6 +16,7 @@ import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
+import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
@@ -92,6 +93,17 @@ class NotesActivityInstrumentationTest {
                 .check(matches(hasDescendant(withText("Title"))))
         onView(withRecyclerView(R.id.notes_list).atPosition(0))
                 .check(matches(hasDescendant(withText("Description"))))
+    }
+
+    @Test
+    fun openBottomBarAdd() {
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.fab_add)).check(matches(isZeroSize()))
     }
 
 

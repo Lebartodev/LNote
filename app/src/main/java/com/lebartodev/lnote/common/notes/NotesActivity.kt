@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.Group
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +30,8 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
     private val titleText by lazy { findViewById<EditText>(R.id.text_title) }
     private val descriptionText by lazy { findViewById<EditText>(R.id.text_description) }
     private val notesList by lazy { findViewById<RecyclerView>(R.id.notes_list) }
+    private val additionalGroup by lazy { findViewById<Group>(R.id.additional_group) }
+    private val fabMore by lazy { findViewById<FloatingActionButton>(R.id.fab_more) }
     private val adapter = NotesAdapter()
     private val bottomAddSheetBehavior by lazy {
         BottomSheetBehavior.from(findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
@@ -59,20 +62,20 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                val scaleValue = if (-slideOffset in 0.0..1.0) -slideOffset else if (-slideOffset < 0) 0f else if (-slideOffset > 1) 1f else 0f
-                fabAdd.animate().scaleX(scaleValue).scaleY(scaleValue).setDuration(0).start()
-                bottomAppBar.animate().translationY((1f - scaleValue) * bottomAppBar.height).setDuration(0).start()
+                fabAdd.animate().scaleX(1f - slideOffset).scaleY(1f - slideOffset).setDuration(0).start()
+                bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
             }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     hideKeyboard()
+                    closeAdditionalGroup()
                 }
             }
 
         })
         fabAdd.setOnClickListener {
-            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
         saveNoteButton.setOnClickListener {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -89,6 +92,13 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             titleText.clearFocus()
             descriptionText.clearFocus()
         }
+        fabMore.setOnClickListener {
+            if (additionalGroup.visibility == View.GONE) {
+                openAdditionalGroup()
+            } else {
+                closeAdditionalGroup()
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -103,6 +113,17 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             }
         }
         return true
+    }
+
+    private fun openAdditionalGroup() {
+        fabMore.setImageResource(R.drawable.ic_arrow_up_24)
+        additionalGroup.visibility = View.VISIBLE
+        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    private fun closeAdditionalGroup() {
+        fabMore.setImageResource(R.drawable.ic_drop_down_24)
+        additionalGroup.visibility = View.GONE
     }
 
     override fun onNotesLoaded(notes: List<Note>) {
