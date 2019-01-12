@@ -1,10 +1,13 @@
 package com.lebartodev.lnote.common.notes
 
+import android.widget.DatePicker
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.contrib.PickerActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -15,6 +18,7 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
+import com.lebartodev.lnote.utils.ViewActionUtil
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
@@ -25,11 +29,14 @@ import com.lebartodev.lnote.utils.rule.RepeatRule
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.whenever
+import org.hamcrest.Matchers
 import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 
@@ -46,17 +53,38 @@ class NotesActivityInstrumentationTest {
 
     private val mockNotesData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
     private val mockNotesList = arrayListOf<Note>()
+    private val mockNoteDate: MutableLiveData<Calendar?> = MutableLiveData()
 
     @Before
     fun setUp() {
         (getApp().component() as AppComponentTest).inject(this)
         whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.loadNotes()).thenReturn(mockNotesData)
         doAnswer {
-            mockNotesList.add(Note(null, it.getArgument(0), System.currentTimeMillis(), it.getArgument(1)))
+            mockNotesList.add(Note(null, it.getArgument(0), null, System.currentTimeMillis(), it.getArgument(1)))
             mockNotesData.value = ViewModelObject.success(mockNotesList)
             MutableLiveData<Long>()
         }.whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel).saveNote(any(), any())
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.selectedDate).thenReturn(mockNoteDate)
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.setDate(any(), any(), any()))
+                .then {
+                    val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.YEAR, it.arguments[0] as Int)
+                    calendar.set(Calendar.MONTH, it.arguments[1] as Int)
+                    calendar.set(Calendar.DAY_OF_MONTH, it.arguments[2] as Int)
+                    mockNoteDate.postValue(calendar)
+                }
 
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.selectedDateString())
+                .thenReturn(
+                        Transformations.map(mockNoteDate) {
+                            if (it == null) {
+                                ""
+                            } else {
+                                val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
+                                formatter.format(it.time)
+                            }
+                        })
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.clearDate()).then { mockNoteDate.postValue(null) }
         rule.launchActivity(null)
     }
 
@@ -104,6 +132,24 @@ class NotesActivityInstrumentationTest {
         assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
         onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
         onView(withId(R.id.fab_add)).check(matches(isZeroSize()))
+    }
+
+    @Test
+    fun openDateDialog() {
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.fab_more)).perform(click())
+        onView(withId(R.id.date_layout)).perform(ViewActionUtil.touchDownAndUp(0F, 0F))
+        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
+                PickerActions.setDate(2019, 5, 5))
+        onView(withId(android.R.id.button1)).perform(click())
+        onView(withId(R.id.date_text)).check(matches(withText("Sun, 05 May 2019")))
+        onView(withId(R.id.date_text)).perform(ViewActionUtil.clickRightDrawable())
+        onView(withId(R.id.date_text)).check(matches(withText("")))
     }
 
 

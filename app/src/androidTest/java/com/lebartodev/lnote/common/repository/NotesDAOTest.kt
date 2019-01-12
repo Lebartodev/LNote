@@ -35,15 +35,15 @@ class NotesDAOTest {
 
     @Test(expected = SQLiteConstraintException::class)
     fun insert() {
-        val l = database.notesDao().insert(Note(1000L, "Title", System.currentTimeMillis(), "Text"))
-        val l2 = database.notesDao().insert(Note(2000L, "Title", System.currentTimeMillis(), "Text"))
+        val l = database.notesDao().insert(Note(1000L, "Title", null, System.currentTimeMillis(), "Text"))
+        val l2 = database.notesDao().insert(Note(2000L, "Title", null, System.currentTimeMillis(), "Text"))
         val testSubscriber = database.notesDao().getAll().test()
         testSubscriber.awaitCount(1)
         val notes = testSubscriber.values()[0]
         assertEquals(testSubscriber.values()[0].size, 2)
         assertEquals(notes[0].id, 1000L)
         assertEquals(notes[1].id, 2000L)
-        database.notesDao().insert(Note(1000L, "Title", System.currentTimeMillis(), "Text"))
+        database.notesDao().insert(Note(1000L, "Title",null,  System.currentTimeMillis(), "Text"))
     }
 
     @Test
@@ -51,7 +51,7 @@ class NotesDAOTest {
         val testSubscriber = database.notesDao().getAll().test()
         testSubscriber.awaitCount(1)
         assertEquals(testSubscriber.values()[0].size, 0)
-        val noteId = database.notesDao().insert(Note(null, "Title", System.currentTimeMillis(), "Text"))
+        val noteId = database.notesDao().insert(Note(null, "Title",null,  System.currentTimeMillis(), "Text"))
         val note = database.notesDao().getById(noteId)
         note.text = "New Text"
         note.title = "New Title"
@@ -67,7 +67,7 @@ class NotesDAOTest {
         val testSubscriber = database.notesDao().getAll().test()
         testSubscriber.awaitCount(1)
         assertEquals(testSubscriber.values().last().size, 0)
-        val noteId = database.notesDao().insert(Note(null, "Title", System.currentTimeMillis(), "Text"))
+        val noteId = database.notesDao().insert(Note(null, "Title", null, System.currentTimeMillis(), "Text"))
         val note = database.notesDao().getById(noteId)
         database.notesDao().delete(note)
         testSubscriber.awaitCount(1)

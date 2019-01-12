@@ -1,8 +1,11 @@
 package com.lebartodev.lnote.common.notes
 
+import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -15,11 +18,14 @@ import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseActivity
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.utils.*
+import java.util.*
 import javax.inject.Inject
 
 
@@ -32,25 +38,36 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
     private val notesList by lazy { findViewById<RecyclerView>(R.id.notes_list) }
     private val additionalGroup by lazy { findViewById<Group>(R.id.additional_group) }
     private val fabMore by lazy { findViewById<FloatingActionButton>(R.id.fab_more) }
+    private val dateLayout by lazy { findViewById<TextInputLayout>(R.id.date_layout) }
+    private val dateText by lazy { findViewById<TextInputEditText>(R.id.date_text) }
     private val adapter = NotesAdapter()
     private val bottomAddSheetBehavior by lazy {
         BottomSheetBehavior.from(findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
     }
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
+    private lateinit var notesViewModel: NotesViewModel
 
+    private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
+        notesViewModel.setDate(y, m, d)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val vm = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
-        vm.loadNotes().observe(this, Observer {
+        notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
+        notesViewModel.loadNotes().observe(this, Observer {
             if (it.error == null && it.data != null) {
                 onNotesLoaded(it.data)
             } else {
                 error("loadNotes", it.error)
 
             }
+        })
+        notesViewModel.selectedDateString().observe(this, Observer {
+            dateText.setText(it)
         })
         setSupportActionBar(bottomAppBar)
         notesList.layoutManager = LinearLayoutManager(this)
@@ -79,7 +96,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         }
         saveNoteButton.setOnClickListener {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            vm.saveNote(title = titleText.text.toString(), text = descriptionText.text.toString())
+            notesViewModel.saveNote(title = titleText.text.toString(), text = descriptionText.text.toString())
                     .observe(this, Observer { obj ->
                         run {
                             if (obj.error == null) {
@@ -99,6 +116,22 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
                 closeAdditionalGroup()
             }
         }
+        dateLayout.setOnClickListener {
+            openCalendarDialog()
+        }
+        dateText.setOnTouchListener { _, event ->
+            val DRAWABLE_RIGHT = 2
+            if (event.action == MotionEvent.ACTION_UP) {
+                if (event.rawX >= (dateText.right - dateText.compoundDrawables[DRAWABLE_RIGHT].bounds.width())) {
+                    notesViewModel.clearDate()
+                } else {
+                    openCalendarDialog()
+                }
+                return@setOnTouchListener true
+            }
+            false
+
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -113,6 +146,19 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             }
         }
         return true
+    }
+
+    private fun openCalendarDialog() {
+        var selectedDate = notesViewModel.selectedDate.value
+        if (selectedDate == null)
+            selectedDate = Calendar.getInstance()
+        selectedDate?.let {
+            DatePickerDialog(this, listener,
+                    it.get(Calendar.YEAR),
+                    it.get(Calendar.MONTH),
+                    it.get(Calendar.DAY_OF_MONTH))
+                    .show()
+        }
     }
 
     private fun openAdditionalGroup() {
