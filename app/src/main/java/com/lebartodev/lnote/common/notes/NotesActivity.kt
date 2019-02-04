@@ -70,7 +70,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             if (titleText.hasFocus() && s?.length ?: 0 > 0)
-                titleText.tag = null
+                disableAutoTitle()
 
         }
 
@@ -79,7 +79,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (s.isNullOrEmpty()) {
-                titleText.tag = TAG_TITLE_NOT_CHANGED
+                enableAutoTitle()
             }
         }
     }
@@ -141,7 +141,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             descriptionText.setText("")
             titleText.clearFocus()
             descriptionText.clearFocus()
-            titleText.tag = TAG_TITLE_NOT_CHANGED
+            enableAutoTitle()
         }
         fabMore.setOnClickListener {
             if (additionalGroup.visibility == View.GONE) {
@@ -173,7 +173,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
         titleText.addTextChangedListener(titleTextWatcher)
-        titleText.tag = TAG_TITLE_NOT_CHANGED
+        enableAutoTitle()
         notesViewModel.descriptionTextLiveData.observe(this, Observer {
             if (titleText.tag == TAG_TITLE_NOT_CHANGED && it != null) {
                 titleText.setText(it)
@@ -230,6 +230,17 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
     public override fun setupComponent(component: AppComponent) {
         component.inject(this)
     }
+
+    private fun enableAutoTitle() {
+        titleText.tag = TAG_TITLE_NOT_CHANGED
+        titleText.setTextColor(resources.getColor(R.color.black_40))
+    }
+
+    private fun disableAutoTitle() {
+        titleText.tag = null
+        titleText.setTextColor(resources.getColor(R.color.textColorPrimary))
+    }
+
 
     override fun onDestroy() {
         descriptionText.removeTextChangedListener(descriptionTextWatcher)
