@@ -8,6 +8,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.PickerActions
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -54,15 +55,18 @@ class NotesActivityInstrumentationTest {
     private val mockNotesData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
     private val mockNotesList = arrayListOf<Note>()
     private val mockNoteDate: MutableLiveData<Calendar?> = MutableLiveData()
+    private val mockCreateNote: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
 
     @Before
     fun setUp() {
         (getApp().component() as AppComponentTest).inject(this)
         whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.loadNotes()).thenReturn(mockNotesData)
         doAnswer {
-            mockNotesList.add(Note(null, it.getArgument(0), null, System.currentTimeMillis(), it.getArgument(1)))
+            mockNotesList.add(
+                    Note(null, it.getArgument(0), mockNoteDate.value?.timeInMillis, System.currentTimeMillis(),
+                            it.getArgument(1)))
             mockNotesData.value = ViewModelObject.success(mockNotesList)
-            MutableLiveData<Long>()
+            mockCreateNote
         }.whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel).saveNote(any(), any())
         whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.selectedDate).thenReturn(mockNoteDate)
         whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.setDate(any(), any(), any()))
@@ -84,7 +88,9 @@ class NotesActivityInstrumentationTest {
                                 formatter.format(it.time)
                             }
                         })
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.clearDate()).then { mockNoteDate.postValue(null) }
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.clearDate()).then {
+            mockNoteDate.postValue(null)
+        }
         rule.launchActivity(null)
     }
 
@@ -124,6 +130,64 @@ class NotesActivityInstrumentationTest {
     }
 
     @Test
+    @Repeat(1)
+    fun createEmptyNote() {
+
+        doAnswer {
+            mockCreateNote
+        }.whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel).saveNote(any(), any())
+
+        onView(withId(R.id.text_title)).check(matches(not(hasFocus())))
+        onView(withId(R.id.text_description)).check(matches(not(hasFocus())))
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.save_button)).perform(click())
+        mockCreateNote.postValue(ViewModelObject.error(NullPointerException(), null))
+        onView(withText(R.string.error_note_create)).inRoot(
+                withDecorView(not(rule.activity.window.decorView))).check(matches(isDisplayed()))
+    }
+
+    @Test
+    @Repeat(1)
+    fun createNoteWithDate() {
+        onView(withId(R.id.text_title)).check(matches(not(hasFocus())))
+        onView(withId(R.id.text_description)).check(matches(not(hasFocus())))
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
+        onView(withId(R.id.text_title)).check(matches(hasFocus()))
+        onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
+        onView(withId(R.id.text_description)).check(matches(hasFocus()))
+        onView(withId(R.id.fab_more)).perform(click())
+        onView(withId(R.id.date_layout)).perform(ViewActionUtil.touchDownAndUp(0F, 0F))
+        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
+                PickerActions.setDate(2019, 5, 5))
+        onView(withId(android.R.id.button1)).perform(click())
+        onView(withId(R.id.date_text)).check(matches(withText("Sun, 05 May 2019")))
+
+        onView(withId(R.id.save_button)).perform(click())
+        onView(withId(R.id.notes_list)).check(matches(hasMinimumChildCount(1)))
+        onView(withRecyclerView(R.id.notes_list).atPosition(0))
+                .check(matches(hasDescendant(withText("Title"))))
+        onView(withRecyclerView(R.id.notes_list).atPosition(0))
+                .check(matches(hasDescendant(withText("Description"))))
+        onView(withRecyclerView(R.id.notes_list).atPosition(0))
+                .check(matches(hasDescendant(withText("Sun, 05 May 2019"))))
+    }
+
+    @Test
     fun openBottomBarAdd() {
         val bottomAddSheetBehavior = BottomSheetBehavior.from(
                 rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
@@ -132,6 +196,8 @@ class NotesActivityInstrumentationTest {
         assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
         onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
         onView(withId(R.id.fab_add)).check(matches(isZeroSize()))
+        onView(withId(R.id.notes_list)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
     }
 
     @Test

@@ -6,4 +6,5 @@
     <string name="save_button_text">Save</string>
     <string name="category_hint">Category</string>
     <string name="date_hint">Date</string>
+    <string name="error_note_create">Error when creating note</string>
 </resources>

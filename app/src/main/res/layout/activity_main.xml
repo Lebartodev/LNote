@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingTop="8dp" />
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
@@ -20,6 +21,7 @@
         app:backgroundTint="@color/colorPrimary"
         app:fabAlignmentMode="center"
         app:fabCradleRoundedCornerRadius="0dp"
+        app:hideOnScroll="true"
         app:navigationIcon="@drawable/ic_menu_24dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

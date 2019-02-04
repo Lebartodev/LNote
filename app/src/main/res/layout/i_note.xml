@@ -10,7 +10,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingBottom="16dp">
 
         <TextView
             android:id="@+id/note_title"
@@ -33,12 +34,25 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/date_chip"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/note_title"
             tools:text="Description" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/date_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:chipCornerRadius="8dp"
+            android:visibility="gone"
+            app:chipIcon="@drawable/ic_date_24"
+            app:chipIconTint="@color/black_60"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/note_description"
+            app:layout_constraintTop_toBottomOf="@id/note_description"
+            tools:text="cp, 10 окт. 2018" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

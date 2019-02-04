@@ -13,10 +13,19 @@ class NotesRepository constructor(var database: AppDatabase,
     fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll().subscribeOn(schedulersFacade.io())
 
 
-    fun createNote(title: String?, text: String, date: Long?): Single<Long> =
-            Single.fromCallable {
-                database
-                        .notesDao()
-                        .insert(Note(null, title, date, System.currentTimeMillis(), text))
-            }.subscribeOn(schedulersFacade.io())
+    fun createNote(title: String?, text: String?, date: Long?): Single<Long> {
+        return Single.defer {
+            if (text.isNullOrBlank()) {
+                Single.error(NullPointerException())
+            } else {
+                Single.fromCallable {
+                    database
+                            .notesDao()
+                            .insert(Note(null, title, date, System.currentTimeMillis(), text!!))
+                }.subscribeOn(schedulersFacade.io())
+            }
+
+        }
+    }
+
 }

@@ -35,7 +35,7 @@ class NotesViewModel constructor(var notesRepository: NotesRepository) : ViewMod
         }
     }
 
-    fun saveNote(title: String?, text: String): LiveData<ViewModelObject<Long>> =
+    fun saveNote(title: String?, text: String?): LiveData<ViewModelObject<Long>> =
             LiveDataReactiveStreams.fromPublisher(
                     notesRepository.createNote(title, text, selectedDate.value?.timeInMillis).toFlowable()
                             .map { ViewModelObject.success(it) }

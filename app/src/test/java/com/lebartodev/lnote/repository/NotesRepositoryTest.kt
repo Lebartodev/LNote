@@ -23,8 +23,8 @@ class NotesRepositoryTest {
     @Inject
     lateinit var notesRepository: NotesRepository
     val notesTest = listOf(
-            Note(0, "title", System.currentTimeMillis(), "text"),
-            Note(0, "title", System.currentTimeMillis(), "text"))
+            Note(0, "title", null, System.currentTimeMillis(), "text"),
+            Note(0, "title", null, System.currentTimeMillis(), "text"))
 
     @Before
     fun setUp() {

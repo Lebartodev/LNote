@@ -23,6 +23,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseActivity
 import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.utils.*
 import java.util.*
@@ -79,17 +80,20 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                fabAdd.animate().scaleX(1f - slideOffset).scaleY(1f - slideOffset).setDuration(0).start()
                 bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
+                if (1f - slideOffset == 1f) {
+                    fabAdd.show()
+                } else {
+                    fabAdd.hide()
+                }
             }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     hideKeyboard()
                     closeAdditionalGroup()
                 }
             }
-
         })
         fabAdd.setOnClickListener {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -99,8 +103,8 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             notesViewModel.saveNote(title = titleText.text.toString(), text = descriptionText.text.toString())
                     .observe(this, Observer { obj ->
                         run {
-                            if (obj.error == null) {
-                                error("saveNote", obj.error)
+                            if (obj.status == Status.ERROR) {
+                                toast(getString(R.string.error_note_create))
                             }
                         }
                     })
@@ -129,6 +133,11 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
                 }
                 return@setOnTouchListener true
             }
+            false
+        }
+        notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_DOWN)
+                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             false
 
         }
