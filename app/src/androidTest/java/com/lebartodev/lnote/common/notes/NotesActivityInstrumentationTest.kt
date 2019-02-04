@@ -36,6 +36,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -56,6 +57,7 @@ class NotesActivityInstrumentationTest {
     private val mockNotesList = arrayListOf<Note>()
     private val mockNoteDate: MutableLiveData<Calendar?> = MutableLiveData()
     private val mockCreateNote: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
+    private val mockDescriptionText: MutableLiveData<String?> = MutableLiveData()
 
     @Before
     fun setUp() {
@@ -91,6 +93,17 @@ class NotesActivityInstrumentationTest {
         whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.clearDate()).then {
             mockNoteDate.postValue(null)
         }
+        whenever(
+                (viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.onDescriptionChanged(anyString())).then {
+            val text: String = it.getArgument(0)
+            if (text.length > 12)
+                mockDescriptionText.postValue(text.substring(0, 12))
+            else {
+                mockDescriptionText.postValue(text)
+            }
+        }
+        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.descriptionTextLiveData).thenReturn(
+                mockDescriptionText)
         rule.launchActivity(null)
     }
 
@@ -198,6 +211,30 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.fab_add)).check(matches(isZeroSize()))
         onView(withId(R.id.notes_list)).perform(click())
         assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
+    }
+
+    @Test
+    fun titleDependency() {
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.fab_add)).check(matches(isZeroSize()))
+
+        onView(withId(R.id.text_description)).perform(click(), typeText("Description"))
+        onView(withId(R.id.text_description)).check(matches(hasFocus()))
+        onView(withId(R.id.text_title)).check(matches(withText("Description")))
+
+
+        onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
+        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
+        onView(withId(R.id.text_title)).check(matches(withText("Title")))
+
+        onView(withId(R.id.text_title)).perform(click(), clearText())
+        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("12345678901234567"))
+        onView(withId(R.id.text_title)).check(matches(withText("123456789012")))
     }
 
     @Test

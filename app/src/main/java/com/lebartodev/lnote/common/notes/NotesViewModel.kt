@@ -11,7 +11,7 @@ import java.util.*
 @DebugOpenClass
 class NotesViewModel constructor(var notesRepository: NotesRepository) : ViewModel(), NotesScreen.ViewModel {
     var selectedDate = MutableLiveData<Calendar?>()
-
+    val descriptionTextLiveData = MutableLiveData<String?>()
     fun setDate(year: Int, month: Int, day: Int) {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
@@ -47,5 +47,17 @@ class NotesViewModel constructor(var notesRepository: NotesRepository) : ViewMod
                 .onErrorReturn {
                     ViewModelObject.error(it, arrayListOf())
                 })
+    }
+
+    fun onDescriptionChanged(text: String?) {
+        if (text != null && text.length > MAX_TITLE_CHARACTERS)
+            descriptionTextLiveData.postValue(text.substring(0, MAX_TITLE_CHARACTERS))
+        else {
+            descriptionTextLiveData.postValue(text)
+        }
+    }
+
+    companion object {
+        private const val MAX_TITLE_CHARACTERS = 24
     }
 }

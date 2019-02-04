@@ -17,9 +17,12 @@ abstract class BaseActivity : AppCompatActivity() {
 
     protected abstract fun setupComponent(component: AppComponent)
 
-    fun hideKeyboard() {
+    fun hideKeyboard(additionalEditText: View? = null) {
         val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         var view = currentFocus
+        if (additionalEditText != null) {
+            view = additionalEditText
+        }
         if (view == null) {
             view = View(this)
         }

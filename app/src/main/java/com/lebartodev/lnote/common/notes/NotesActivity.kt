@@ -3,6 +3,8 @@ package com.lebartodev.lnote.common.notes
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -53,6 +55,35 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
         notesViewModel.setDate(y, m, d)
     }
 
+    private val descriptionTextWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            notesViewModel.onDescriptionChanged(s?.toString())
+        }
+    }
+    private val titleTextWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+            if (titleText.hasFocus() && s?.length ?: 0 > 0)
+                titleText.tag = null
+
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            if (s.isNullOrEmpty()) {
+                titleText.tag = TAG_TITLE_NOT_CHANGED
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +121,7 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    hideKeyboard()
+                    hideKeyboard(titleText)
                     closeAdditionalGroup()
                 }
             }
@@ -102,16 +133,15 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             notesViewModel.saveNote(title = titleText.text.toString(), text = descriptionText.text.toString())
                     .observe(this, Observer { obj ->
-                        run {
-                            if (obj.status == Status.ERROR) {
-                                toast(getString(R.string.error_note_create))
-                            }
+                        if (obj.status == Status.ERROR) {
+                            toast(getString(R.string.error_note_create))
                         }
                     })
             titleText.setText("")
             descriptionText.setText("")
             titleText.clearFocus()
             descriptionText.clearFocus()
+            titleText.tag = TAG_TITLE_NOT_CHANGED
         }
         fabMore.setOnClickListener {
             if (additionalGroup.visibility == View.GONE) {
@@ -141,6 +171,14 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
             false
 
         }
+        descriptionText.addTextChangedListener(descriptionTextWatcher)
+        titleText.addTextChangedListener(titleTextWatcher)
+        titleText.tag = TAG_TITLE_NOT_CHANGED
+        notesViewModel.descriptionTextLiveData.observe(this, Observer {
+            if (titleText.tag == TAG_TITLE_NOT_CHANGED && it != null) {
+                titleText.setText(it)
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -191,5 +229,15 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
 
     public override fun setupComponent(component: AppComponent) {
         component.inject(this)
+    }
+
+    override fun onDestroy() {
+        descriptionText.removeTextChangedListener(descriptionTextWatcher)
+        titleText.removeTextChangedListener(titleTextWatcher)
+        super.onDestroy()
+    }
+
+    companion object {
+        private const val TAG_TITLE_NOT_CHANGED = "TAG_TITLE_NOT_CHANGED"
     }
 }
