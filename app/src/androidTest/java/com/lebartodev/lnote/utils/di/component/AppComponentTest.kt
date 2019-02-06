@@ -1,26 +1,15 @@
 package com.lebartodev.lnote.utils.di.component
 
-import android.app.Application
-import com.lebartodev.lnote.common.notes.NotesActivity
-import com.lebartodev.lnote.common.notes.NotesActivityInstrumentationTest
-import com.lebartodev.lnote.utils.di.module.AppModuleTest
-import com.lebartodev.lnote.common.repository.NotesDAOTest
 import com.lebartodev.lnote.di.component.AppComponent
-import dagger.BindsInstance
+import com.lebartodev.lnote.di.module.AppModule
+import com.lebartodev.lnote.di.module.NotesModule
+import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [AppModuleTest::class])
+@Component(modules = [AppModule::class])
 interface AppComponentTest : AppComponent {
-    fun inject(notesDAOTest: NotesDAOTest)
-    fun inject(notesActivityInstrumentationTest: NotesActivityInstrumentationTest)
-    override fun inject(mainActivity: NotesActivity)
-    @Component.Builder
-    interface Builder {
-        @BindsInstance
-        fun withApplication(application: Application): Builder
-
-        fun build(): AppComponentTest
-    }
+    fun inject(application: LNoteApplicationMock)
+    override fun plus(module: NotesModule): NotesComponentTest
 }

@@ -3,29 +3,23 @@ package com.lebartodev.lnote.di.module
 import android.app.Application
 import androidx.room.Room
 import com.lebartodev.lnote.data.AppDatabase
-import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+@DebugOpenClass
 @Singleton
 @Module
-open class AppModule {
+class AppModule(private val app: Application) {
     @Provides
-    open fun provideDatabase(application: Application): AppDatabase {
+    @Singleton
+    fun provideApp(): Application = app
+
+    @Provides
+    fun provideDatabase(application: Application): AppDatabase {
         return Room.databaseBuilder(application, AppDatabase::class.java, "database.db").build()
-    }
-
-    @Provides
-    fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacade): NotesRepository {
-        return NotesRepository(database, schedulersFacade)
-    }
-
-    @Provides
-    fun provideLNotesViewModelFactory(notesRepository: NotesRepository): LNoteViewModelFactory {
-        return LNoteViewModelFactory(notesRepository)
     }
 
     @Provides

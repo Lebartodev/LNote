@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.component.DaggerAppComponent
+import com.lebartodev.lnote.di.module.AppModule
 
 
 open class LNoteApplication : Application() {
@@ -21,9 +22,8 @@ open class LNoteApplication : Application() {
     }
 
     open fun setupGraph() {
-        component = DaggerAppComponent.builder()
-                .withApplication(this)
-                .build()
+        component = DaggerAppComponent.builder().appModule(AppModule(this)).build()
+        component.inject(this)
     }
 
     open fun component(): AppComponent {

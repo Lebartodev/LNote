@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
+import com.lebartodev.lnote.utils.di.module.NotesModuleTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -29,7 +30,8 @@ class NotesDAOTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val app = instrumentation.targetContext.applicationContext as LNoteApplicationMock
         val component = app.component() as AppComponentTest
-        component.inject(this)
+        component.plus(NotesModuleTest())
+                .inject(this)
         database.clearAllTables()
     }
 
@@ -43,7 +45,7 @@ class NotesDAOTest {
         assertEquals(testSubscriber.values()[0].size, 2)
         assertEquals(notes[0].id, 1000L)
         assertEquals(notes[1].id, 2000L)
-        database.notesDao().insert(Note(1000L, "Title",null,  System.currentTimeMillis(), "Text"))
+        database.notesDao().insert(Note(1000L, "Title", null, System.currentTimeMillis(), "Text"))
     }
 
     @Test
@@ -51,7 +53,7 @@ class NotesDAOTest {
         val testSubscriber = database.notesDao().getAll().test()
         testSubscriber.awaitCount(1)
         assertEquals(testSubscriber.values()[0].size, 0)
-        val noteId = database.notesDao().insert(Note(null, "Title",null,  System.currentTimeMillis(), "Text"))
+        val noteId = database.notesDao().insert(Note(null, "Title", null, System.currentTimeMillis(), "Text"))
         val note = database.notesDao().getById(noteId)
         note.text = "New Text"
         note.title = "New Title"

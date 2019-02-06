@@ -27,6 +27,7 @@ import com.lebartodev.lnote.base.BaseActivity
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.component.AppComponent
+import com.lebartodev.lnote.di.module.NotesModule
 import com.lebartodev.lnote.utils.*
 import java.util.*
 import javax.inject.Inject
@@ -228,7 +229,8 @@ class NotesActivity : BaseActivity(), NotesScreen.View {
     }
 
     public override fun setupComponent(component: AppComponent) {
-        component.inject(this)
+        component.plus(NotesModule())
+                .inject(this)
     }
 
     private fun enableAutoTitle() {

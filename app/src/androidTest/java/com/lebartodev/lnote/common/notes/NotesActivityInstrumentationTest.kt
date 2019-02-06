@@ -3,7 +3,6 @@ package com.lebartodev.lnote.common.notes
 import android.widget.DatePicker
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -21,23 +20,18 @@ import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.ViewActionUtil
 import com.lebartodev.lnote.utils.di.component.AppComponentTest
+import com.lebartodev.lnote.utils.di.module.NotesModuleTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
-import com.lebartodev.lnote.utils.mocks.LNoteViewModelFactoryMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
 import com.lebartodev.lnote.utils.rule.Repeat
 import com.lebartodev.lnote.utils.rule.RepeatRule
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.whenever
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyString
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
@@ -50,60 +44,13 @@ class NotesActivityInstrumentationTest {
     var rule: ActivityTestRule<NotesActivity> = ActivityTestRule<NotesActivity>(NotesActivity::class.java, false, false)
     @get:Rule
     var animationsRule = DisableAnimationRule()
-    @Inject
-    lateinit var viewModelFactory: LNoteViewModelFactory
-
-    private val mockNotesData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
-    private val mockNotesList = arrayListOf<Note>()
-    private val mockNoteDate: MutableLiveData<Calendar?> = MutableLiveData()
-    private val mockCreateNote: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
-    private val mockDescriptionText: MutableLiveData<String?> = MutableLiveData()
 
     @Before
     fun setUp() {
-        (getApp().component() as AppComponentTest).inject(this)
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.loadNotes()).thenReturn(mockNotesData)
-        doAnswer {
-            mockNotesList.add(
-                    Note(null, it.getArgument(0), mockNoteDate.value?.timeInMillis, System.currentTimeMillis(),
-                            it.getArgument(1)))
-            mockNotesData.value = ViewModelObject.success(mockNotesList)
-            mockCreateNote
-        }.whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel).saveNote(any(), any())
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.selectedDate).thenReturn(mockNoteDate)
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.setDate(any(), any(), any()))
-                .then {
-                    val calendar = Calendar.getInstance()
-                    calendar.set(Calendar.YEAR, it.arguments[0] as Int)
-                    calendar.set(Calendar.MONTH, it.arguments[1] as Int)
-                    calendar.set(Calendar.DAY_OF_MONTH, it.arguments[2] as Int)
-                    mockNoteDate.postValue(calendar)
-                }
+        (getApp().component() as AppComponentTest)
+                .plus(NotesModuleTest())
+                .inject(this)
 
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.selectedDateString())
-                .thenReturn(
-                        Transformations.map(mockNoteDate) {
-                            if (it == null) {
-                                ""
-                            } else {
-                                val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
-                                formatter.format(it.time)
-                            }
-                        })
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.clearDate()).then {
-            mockNoteDate.postValue(null)
-        }
-        whenever(
-                (viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.onDescriptionChanged(anyString())).then {
-            val text: String = it.getArgument(0)
-            if (text.length > 12)
-                mockDescriptionText.postValue(text.substring(0, 12))
-            else {
-                mockDescriptionText.postValue(text)
-            }
-        }
-        whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel.descriptionTextLiveData).thenReturn(
-                mockDescriptionText)
         rule.launchActivity(null)
     }
 
@@ -145,11 +92,6 @@ class NotesActivityInstrumentationTest {
     @Test
     @Repeat(1)
     fun createEmptyNote() {
-
-        doAnswer {
-            mockCreateNote
-        }.whenever((viewModelFactory as LNoteViewModelFactoryMock).notesViewModel).saveNote(any(), any())
-
         onView(withId(R.id.text_title)).check(matches(not(hasFocus())))
         onView(withId(R.id.text_description)).check(matches(not(hasFocus())))
         val bottomAddSheetBehavior = BottomSheetBehavior.from(
@@ -161,7 +103,6 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
         onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
         onView(withId(R.id.save_button)).perform(click())
-        mockCreateNote.postValue(ViewModelObject.error(NullPointerException(), null))
         onView(withText(R.string.error_note_create)).inRoot(
                 withDecorView(not(rule.activity.window.decorView))).check(matches(isDisplayed()))
     }
@@ -232,9 +173,10 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
         onView(withId(R.id.text_title)).check(matches(withText("Title")))
 
+        val testString = "Test test test test test test test test test test test"
         onView(withId(R.id.text_title)).perform(click(), clearText())
-        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("12345678901234567"))
-        onView(withId(R.id.text_title)).check(matches(withText("123456789012")))
+        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText(testString))
+        onView(withId(R.id.text_title)).check(matches(withText(testString.substring(0, 24))))
     }
 
     @Test
