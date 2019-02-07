@@ -17,6 +17,7 @@ class AppModule(private val app: Application) {
     @Singleton
     fun provideApp(): Application = app
 
+    @Singleton
     @Provides
     fun provideDatabase(application: Application): AppDatabase {
         return Room.databaseBuilder(application, AppDatabase::class.java, "database.db").build()
