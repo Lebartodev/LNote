@@ -4,9 +4,8 @@ import android.app.Application
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.dao.NotesDAO
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.repository.di.component.DaggerAppComponentMock
-import com.lebartodev.lnote.repository.di.module.AppModuleMock
-import com.lebartodev.lnote.repository.di.module.NotesModuleMock
+import com.lebartodev.lnote.di.component.DaggerAppComponentMock
+import com.lebartodev.lnote.di.module.AppModuleMock
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock

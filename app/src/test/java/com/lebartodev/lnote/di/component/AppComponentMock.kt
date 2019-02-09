@@ -1,7 +1,6 @@
-package com.lebartodev.lnote.repository.di.component
+package com.lebartodev.lnote.di.component
 
 import android.app.Application
-import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.AppModule
 import com.lebartodev.lnote.di.module.NotesModule
 import dagger.Component
