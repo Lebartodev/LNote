@@ -7,7 +7,7 @@ import io.reactivex.Flowable
 
 @Dao
 interface NotesDAO {
-    @Query("SELECT * FROM note")
+    @Query("SELECT * FROM note ORDER BY created DESC")
     fun getAll(): Flowable<List<Note>>
 
     @Query("SELECT * FROM note WHERE id = :id")

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -32,8 +31,21 @@
         app:backgroundTint="@color/colorPrimary"
         app:layout_anchor="@id/bottom_app_bar" />
 
-    <include
-        layout="@layout/bottom_sheet_add"
-        tools:visibility="gone" />
+    <com.lebartodev.lnote.common.creation.NoteCreationView
+        android:id="@+id/bottom_sheet_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_card_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingTop="20dp"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
+
+    <FrameLayout
+        android:id="@+id/full_screen_note_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

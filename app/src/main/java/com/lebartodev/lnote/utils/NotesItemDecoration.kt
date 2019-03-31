@@ -15,5 +15,4 @@ class NotesItemDecoration(val topPadding: Float,
         outRect.left = leftPadding.toInt()
         outRect.right = rightPadding.toInt()
     }
-
 }

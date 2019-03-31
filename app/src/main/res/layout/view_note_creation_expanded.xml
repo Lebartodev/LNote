@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/bottom_sheet_add"
+    android:id="@+id/note_creation_expanded"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bottom_card_bg"
-    android:clickable="true"
-    android:focusable="true"
     android:paddingTop="20dp"
     app:behavior_hideable="true"
-    app:behavior_peekHeight="0dp"
+    app:behavior_peekHeight="200dp"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
     <EditText
@@ -27,6 +24,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
+        android:id="@+id/add_divider"
         style="@style/LNote.Divider"
         android:layout_width="0dp"
         android:layout_marginStart="16dp"
@@ -66,6 +64,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/date_layout" />
 
+    <ImageView
+        android:id="@+id/full_screen_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_full_screen_24"
+        app:layout_constraintBottom_toBottomOf="@id/fab_more"
+        app:layout_constraintStart_toEndOf="@id/fab_more"
+        app:layout_constraintTop_toTopOf="@id/fab_more" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/save_button"
         android:layout_width="wrap_content"
@@ -79,57 +87,25 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/date_layout" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/additional_group"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:constraint_referenced_ids="category_layout,date_layout" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/category_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:focusable="false"
-        android:hint="@string/category_hint"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_description">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/category_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawableEnd="@drawable/ic_arrow_drop_down_filled_24"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:inputType="none"
-            android:longClickable="false" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/date_layout"
         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
         android:focusable="false"
         android:hint="@string/date_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/category_layout">
+        app:layout_constraintTop_toBottomOf="@id/text_description">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/date_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:cursorVisible="false"
             android:drawableEnd="@drawable/ic_close_24"
             android:focusable="false"
             android:focusableInTouchMode="false"
