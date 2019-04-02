@@ -4,10 +4,22 @@
     android:id="@+id/bottom_sheet_add_expanded"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bottom_card_bg"
+    android:background="@color/white"
     android:clickable="true"
     android:focusable="true"
-    android:paddingTop="20dp">
+    android:paddingTop="20dp"
+    android:transitionName="Back">
+
+    <View
+        android:id="@+id/note_creation_background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        android:transitionName="note_creation_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/text_title"
@@ -16,9 +28,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
-        android:background="@null"
+        android:background="@color/white"
         android:hint="@string/title_hint"
         android:inputType="textCapSentences|textAutoComplete"
+        android:transitionName="Title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -29,6 +42,7 @@
         android:layout_width="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:transitionName="Divider"
         app:layout_constraintBottom_toTopOf="@id/text_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -42,11 +56,12 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="24dp"
-        android:background="@null"
+        android:background="@color/white"
         android:gravity="top"
         android:hint="@string/enter_note_hint"
         android:inputType="textCapSentences|textAutoComplete|textMultiLine"
         android:textSize="16sp"
+        android:transitionName="Description"
         app:layout_constraintBottom_toTopOf="@id/save_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,8 +74,10 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="12dp"
         android:text="@string/save_button_text"
+        android:transitionName="Save"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

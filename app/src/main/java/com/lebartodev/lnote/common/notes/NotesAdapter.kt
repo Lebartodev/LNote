@@ -51,7 +51,6 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.ViewHolder> {
             }
             this.setOnClickListener {
                 listener?.onNoteClick(item.id, item.title, item.text)
-
             }
         }
     }

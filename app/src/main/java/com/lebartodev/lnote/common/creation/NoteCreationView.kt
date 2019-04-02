@@ -7,16 +7,18 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.MotionEvent
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.transition.TransitionManager
+import androidx.transition.*
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
@@ -34,29 +36,31 @@ class NoteCreationView : ConstraintLayout {
     private val dateText: TextInputEditText
     private val dateLayout: TextInputLayout
     private val fabMore: FloatingActionButton
+    private val background: View
     private val fullScreenButton: ImageView
     private var notesViewModel: NoteEditViewModel? = null
-    private var activity: FragmentActivity? = null
+    private var fragment: Fragment? = null
+    private val divider: View
     private var saveClickListener: SaveClickListener? = null
+    private var fullScreenListener: FullScreenListener? = null
 
-    fun setupActivity(activity: FragmentActivity, viewModelFactory: LNoteViewModelFactory,
-                      saveClickListener: SaveClickListener) {
+    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory,
+                      saveClickListener: SaveClickListener, fullScreenListener: FullScreenListener) {
         this.saveClickListener = saveClickListener
-        this.activity = activity
-        notesViewModel = ViewModelProviders.of(activity, viewModelFactory)[NoteEditViewModel::class.java]
+        this.fragment = fragment
+        notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
         this.notesViewModel?.apply {
-            this.descriptionTextLiveData.observe(activity, Observer {
+            this.descriptionTextLiveData.observe(fragment, Observer {
                 if (titleText.tag == TAG_TITLE_NOT_CHANGED && it != null) {
                     titleText.setText(it)
                 }
             })
-            selectedDateString().observe(activity, Observer {
+            selectedDateString().observe(fragment, Observer {
                 dateText.setText(it)
             })
-
-            getSaveResult().observe(activity, Observer { obj ->
+            getSaveResult().observe(fragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
-                    Toast.makeText(activity, activity.getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -98,6 +102,7 @@ class NoteCreationView : ConstraintLayout {
 
     init {
         inflate(context, R.layout.view_note_creation, this)
+        background = findViewById(R.id.note_creation_background)
         saveNoteButton = findViewById(R.id.save_button)
         titleText = findViewById(R.id.text_title)
         descriptionText = findViewById(R.id.text_description)
@@ -105,6 +110,7 @@ class NoteCreationView : ConstraintLayout {
         dateLayout = findViewById(R.id.date_layout)
         fabMore = findViewById(R.id.fab_more)
         fullScreenButton = findViewById(R.id.full_screen_button)
+        divider = findViewById(R.id.add_divider)
 
         saveNoteButton.setOnClickListener {
             saveClickListener?.onSaveClicked()
@@ -129,10 +135,6 @@ class NoteCreationView : ConstraintLayout {
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-    }
-
     @SuppressLint("ClickableViewAccessibility")
     private fun setupBottomSheet() {
         val moreHiddenConstraintSet = ConstraintSet()
@@ -140,13 +142,30 @@ class NoteCreationView : ConstraintLayout {
         var isMoreOpen = false
 
         fullScreenButton.setOnClickListener {
-            activity?.let {
-                it.supportFragmentManager.beginTransaction()
-                        .replace(R.id.full_screen_note_layout,
-                                NoteFragment.startMe(titleText.text.toString(), descriptionText.text.toString()))
-                        .addToBackStack(null)
-                        .commit()
-            }
+            fullScreenListener?.onFullScreenClicked()
+            val nextFragment = NoteFragment.startMe(titleText.text.toString(), descriptionText.text.toString())
+
+            val enterTransitionSet = TransitionSet()
+            enterTransitionSet.addTransition(
+                    TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+            enterTransitionSet.addTransition(
+                    TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
+
+            enterTransitionSet.startDelay = 0
+            enterTransitionSet.duration = 300
+            nextFragment.sharedElementEnterTransition = enterTransitionSet
+
+
+            fragment?.fragmentManager
+                    ?.beginTransaction()
+                    ?.replace(R.id.notes_layout_container, nextFragment)
+                    ?.addSharedElement(titleText, titleText.transitionName)
+                    ?.addSharedElement(background, background.transitionName)
+                    ?.addSharedElement(saveNoteButton, saveNoteButton.transitionName)
+                    ?.addSharedElement(descriptionText, descriptionText.transitionName)
+                    ?.addSharedElement(divider, divider.transitionName)
+                    ?.addToBackStack(null)
+                    ?.commit()
         }
 
         val constraintLayout = this
@@ -206,6 +225,10 @@ class NoteCreationView : ConstraintLayout {
 
     interface SaveClickListener {
         fun onSaveClicked()
+    }
+
+    interface FullScreenListener {
+        fun onFullScreenClicked()
     }
 
     companion object {
