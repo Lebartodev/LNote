@@ -4,7 +4,6 @@ package com.lebartodev.lnote.common.creation
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
-import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
@@ -24,6 +23,7 @@ import androidx.transition.TransitionSet
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
+import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.repository.CurrentNote
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
@@ -33,51 +33,18 @@ class NoteCreationView : ConstraintLayout {
     private var notesViewModel: NoteEditViewModel? = null
 
     private val saveNoteButton: MaterialButton
-    private lateinit var titleText: EditText
+    private val titleText: EditText
     private val descriptionText: EditText
     private val fabMore: FloatingActionButton
     private val background: View
     private val fullScreenButton: ImageButton
     private val calendarButton: ImageButton
     private val deleteButton: ImageButton
-    private var fragment: Fragment? = null
     private val divider: View
 
+    private var fragment: Fragment? = null
     private var clickListener: ClickListener? = null
     var isMoreOpen = false
-    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory, clickListener: ClickListener,
-                      isMoreOpen: Boolean) {
-        this.isMoreOpen = isMoreOpen
-        this.clickListener = clickListener
-        this.fragment = fragment
-        this.notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
-        if (isMoreOpen) {
-            deleteButton.visibility = View.VISIBLE
-            calendarButton.visibility = View.VISIBLE
-            fabMore.setImageResource(R.drawable.ic_arrow_right_24)
-        }
-        titleText.setText(CurrentNote.title)
-        descriptionText.setText(CurrentNote.text)
-        this.notesViewModel?.apply {
-            descriptionTextLiveData.observe(fragment, Observer {
-                if (it != null) {
-                    if (it.isNotEmpty() && it != titleText.hint)
-                        titleText.hint = it
-                    else
-                        titleText.hint = context.getString(R.string.title_hint)
-                }
-            })
-            selectedDateString().observe(fragment, Observer {
-                //dateText.setText(it)
-            })
-            getSaveResult().observe(fragment, Observer { obj ->
-                if (obj.status == Status.ERROR) {
-                    Toast.makeText(context, context.getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
-                }
-            })
-        }
-    }
-
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -108,9 +75,9 @@ class NoteCreationView : ConstraintLayout {
         notesViewModel?.setDate(y, m, d)
     }
 
-    override fun onRestoreInstanceState(state: Parcelable?) {
-        super.onRestoreInstanceState(state)
-    }
+    constructor(context: Context?) : super(context)
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     init {
         inflate(context, R.layout.view_note_creation, this)
@@ -126,7 +93,8 @@ class NoteCreationView : ConstraintLayout {
 
         saveNoteButton.setOnClickListener {
             clickListener?.onSaveClicked()
-            notesViewModel?.saveNote(title = titleText.text.toString(), text = descriptionText.text.toString())
+            val savedTitle = if (titleText.text.isNullOrEmpty()) titleText.hint.toString() else titleText.text.toString()
+            notesViewModel?.saveNote(title = savedTitle, text = descriptionText.text.toString())
             titleText.setText("")
             descriptionText.setText("")
             titleText.clearFocus()
@@ -138,9 +106,38 @@ class NoteCreationView : ConstraintLayout {
         setupSheetView()
     }
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory, clickListener: ClickListener,
+                      isMoreOpen: Boolean) {
+        this.isMoreOpen = isMoreOpen
+        this.clickListener = clickListener
+        this.fragment = fragment
+        this.notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
+        if (isMoreOpen) {
+            deleteButton.visibility = View.VISIBLE
+            calendarButton.visibility = View.VISIBLE
+            fabMore.setImageResource(R.drawable.ic_arrow_right_24)
+        }
+        titleText.setText(CurrentNote.title)
+        descriptionText.setText(CurrentNote.text)
+        this.notesViewModel?.apply {
+            descriptionTextLiveData.observe(fragment, Observer {
+                if (it != null) {
+                    if (it.isNotEmpty())
+                        titleText.hint = it
+                    else
+                        titleText.hint = context.getString(R.string.title_hint)
+                }
+            })
+            selectedDateString().observe(fragment, Observer {
+                //dateText.setText(it)
+            })
+            getSaveResult().observe(fragment, Observer { obj ->
+                if (obj.status == Status.ERROR) {
+                    Toast.makeText(context, context.getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupSheetView() {
@@ -148,48 +145,50 @@ class NoteCreationView : ConstraintLayout {
         val moreExpandedConstraintSet = ConstraintSet()
 
         fullScreenButton.setOnClickListener {
-            val nextFragment = NoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
-                    descriptionText.text.toString())
-            clickListener?.onFullScreenClicked()
+            (fragment as BaseFragment).hideKeyboardListener(titleText) {
+                val nextFragment = NoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
+                        descriptionText.text.toString())
+                clickListener?.onFullScreenClicked()
 
-            val exitFade = Fade(Fade.OUT)
-            exitFade.duration = ANIMATION_DURATION / 2
-            fragment?.exitTransition = exitFade
+                val exitFade = Fade(Fade.OUT)
+                exitFade.duration = ANIMATION_DURATION / 2
+                fragment?.exitTransition = exitFade
 
-            val returnFade = Fade(Fade.IN)
-            returnFade.duration = ANIMATION_DURATION
-            fragment?.returnTransition = returnFade
+                val returnFade = Fade(Fade.IN)
+                returnFade.duration = ANIMATION_DURATION
+                fragment?.returnTransition = returnFade
 
 
-            val enterFade = Fade(Fade.IN)
-            enterFade.startDelay = ANIMATION_DURATION / 2
-            enterFade.duration = ANIMATION_DURATION / 2
+                val enterFade = Fade(Fade.IN)
+                enterFade.startDelay = ANIMATION_DURATION / 2
+                enterFade.duration = ANIMATION_DURATION / 2
 
-            nextFragment.enterTransition = enterFade
+                nextFragment.enterTransition = enterFade
 
-            val enterTransitionSet = TransitionSet()
-            enterTransitionSet.addTransition(
-                    TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-            enterTransitionSet.startDelay = 0
-            enterTransitionSet.duration = ANIMATION_DURATION
+                val enterTransitionSet = TransitionSet()
+                enterTransitionSet.addTransition(
+                        TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                enterTransitionSet.startDelay = 0
+                enterTransitionSet.duration = ANIMATION_DURATION
 
-            nextFragment.sharedElementEnterTransition = enterTransitionSet
+                nextFragment.sharedElementEnterTransition = enterTransitionSet
 
-            val transaction = fragment?.fragmentManager
-                    ?.beginTransaction()
-                    ?.replace(R.id.notes_layout_container, nextFragment)
-                    ?.addSharedElement(titleText, titleText.transitionName)
-                    ?.addSharedElement(background, background.transitionName)
-                    ?.addSharedElement(saveNoteButton, saveNoteButton.transitionName)
-                    ?.addSharedElement(descriptionText, descriptionText.transitionName)
-                    ?.addSharedElement(fullScreenButton, fullScreenButton.transitionName)
-                    ?.addSharedElement(divider, divider.transitionName)
-                    ?.addToBackStack(null)
-            if (deleteButton.visibility == View.VISIBLE && calendarButton.visibility == View.VISIBLE) {
-                transaction?.addSharedElement(deleteButton, deleteButton.transitionName)
-                        ?.addSharedElement(calendarButton, calendarButton.transitionName)
+                val transaction = fragment?.fragmentManager
+                        ?.beginTransaction()
+                        ?.replace(R.id.notes_layout_container, nextFragment)
+                        ?.addSharedElement(titleText, titleText.transitionName)
+                        ?.addSharedElement(background, background.transitionName)
+                        ?.addSharedElement(saveNoteButton, saveNoteButton.transitionName)
+                        ?.addSharedElement(descriptionText, descriptionText.transitionName)
+                        ?.addSharedElement(fullScreenButton, fullScreenButton.transitionName)
+                        ?.addSharedElement(divider, divider.transitionName)
+                        ?.addToBackStack(null)
+                if (deleteButton.visibility == View.VISIBLE && calendarButton.visibility == View.VISIBLE) {
+                    transaction?.addSharedElement(deleteButton, deleteButton.transitionName)
+                            ?.addSharedElement(calendarButton, calendarButton.transitionName)
+                }
+                transaction?.commit()
             }
-            transaction?.commit()
         }
 
         val constraintLayout = this

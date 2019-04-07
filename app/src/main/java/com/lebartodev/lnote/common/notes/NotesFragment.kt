@@ -19,6 +19,7 @@ import com.lebartodev.lnote.common.creation.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.NotesModule
+import com.lebartodev.lnote.repository.CurrentNote
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.NotesItemDecoration
 import com.lebartodev.lnote.utils.error
@@ -44,6 +45,19 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
 
     private var isBottomSheetOpen: Boolean = false
     private var isMoreOpen: Boolean = false
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
+        notesViewModel.getNotes().observe(this, Observer {
+            val list = it.data
+            if (it.error == null && list != null) {
+                onNotesLoaded(list)
+            } else {
+                error("loadNotes", it.error)
+            }
+        })
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -59,20 +73,18 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_add))
         noteCreationView.setupFragment(this, viewModelFactory, this, isMoreOpen)
-        notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
-        notesViewModel.getNotes().observe(this, Observer {
-            if (it.error == null && it.data != null) {
-                onNotesLoaded(it.data)
-            } else {
-                error("loadNotes", it.error)
-            }
-        })
         notesList.layoutManager = LinearLayoutManager(context)
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
                 8f.toPx(resources),
                 16f.toPx(resources),
                 16f.toPx(resources)))
+        if (CurrentNote.isSaved) {
+            isBottomSheetOpen = false
+            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            CurrentNote.isSaved = false
+        }
+
         setupBottomSheet()
 
         fabAdd.setOnClickListener {

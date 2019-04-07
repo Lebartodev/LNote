@@ -6,11 +6,12 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.button.MaterialButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
@@ -28,7 +29,8 @@ class NoteFragment : BaseFragment() {
 
     private lateinit var descriptionTextView: TextView
     private lateinit var titleTextView: TextView
-    private lateinit var fullScreenButton: ImageView
+    private lateinit var fullScreenButton: ImageButton
+    private lateinit var saveNoteButton: MaterialButton
 
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
@@ -80,6 +82,7 @@ class NoteFragment : BaseFragment() {
         titleTextView = view.findViewById(R.id.text_title)
         descriptionTextView = view.findViewById(R.id.text_description)
         fullScreenButton = view.findViewById(R.id.full_screen_button)
+        saveNoteButton = view.findViewById(R.id.save_button)
         titleTextView.text = title
         titleTextView.hint = hint
         descriptionTextView.text = text
@@ -88,8 +91,20 @@ class NoteFragment : BaseFragment() {
 
 
         fullScreenButton.setOnClickListener {
-            hideKeyboard(descriptionTextView)
-            fragmentManager?.popBackStack()
+            hideKeyboardListener(titleTextView) {
+                fragmentManager?.popBackStack()
+            }
+        }
+        saveNoteButton.setOnClickListener {
+            hideKeyboardListener(titleTextView) {
+                val savedTitle = if (titleTextView.text.isNullOrEmpty()) titleTextView.hint.toString() else titleTextView.text.toString()
+                notesViewModel?.saveNote(title = savedTitle, text = descriptionTextView.text.toString())
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+                CurrentNote.text = null
+                CurrentNote.title = null
+
+            }
         }
 
         this.notesViewModel?.apply {
@@ -107,6 +122,9 @@ class NoteFragment : BaseFragment() {
             getSaveResult().observe(this@NoteFragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
                     Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+                } else if (obj.status == Status.SUCCESS) {
+                    CurrentNote.isSaved = true
+                    fragmentManager?.popBackStack()
                 }
             })
         }

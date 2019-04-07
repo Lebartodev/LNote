@@ -63,7 +63,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_title" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/full_screen_button"
         style="@style/NoteCreation.FullScreenButton"
         android:layout_marginStart="16dp"
