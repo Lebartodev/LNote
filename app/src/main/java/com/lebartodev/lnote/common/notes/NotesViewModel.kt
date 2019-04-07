@@ -16,7 +16,7 @@ import java.util.*
 
 @DebugOpenClass
 class NotesViewModel constructor(var notesRepository: NotesRepository) :
-        ViewModel(), NotesScreen.ViewModel {
+        ViewModel() {
     private val compositeDisposable = CompositeDisposable()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
     var selectedDate = MutableLiveData<Calendar?>()

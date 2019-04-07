@@ -19,11 +19,14 @@ import com.lebartodev.lnote.common.creation.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.NotesModule
-import com.lebartodev.lnote.utils.*
+import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.NotesItemDecoration
+import com.lebartodev.lnote.utils.error
+import com.lebartodev.lnote.utils.toPx
 import javax.inject.Inject
 
 
-class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCreationView.FullScreenListener {
+class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
     private lateinit var fabAdd: FloatingActionButton
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
@@ -40,7 +43,7 @@ class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCr
     private lateinit var notesViewModel: NotesViewModel
 
     private var isBottomSheetOpen: Boolean = false
-
+    private var isMoreOpen: Boolean = false
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -55,7 +58,7 @@ class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCr
         notesList = view.findViewById(R.id.notes_list)
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_add))
-        noteCreationView.setupFragment(this, viewModelFactory, this, this)
+        noteCreationView.setupFragment(this, viewModelFactory, this, isMoreOpen)
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
         notesViewModel.getNotes().observe(this, Observer {
             if (it.error == null && it.data != null) {
@@ -83,9 +86,7 @@ class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCr
         notesViewModel.fetchNotes()
     }
 
-
     private fun setupBottomSheet() {
-
         bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
@@ -98,14 +99,13 @@ class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCr
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    // hideKeyboard(bottomSheet)
+                    hideKeyboard(bottomSheet)
                     isBottomSheetOpen = false
                 }
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                    // hideKeyboard(bottomSheet)
+                    hideKeyboard(bottomSheet)
                     isBottomSheetOpen = true
                 }
-
             }
         })
         if (isBottomSheetOpen) {
@@ -113,17 +113,12 @@ class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCr
         }
     }
 
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        menuInflater.inflate(R.menu.settings_menu, menu)
-//        return true
-//    }
-
     override fun onSaveClicked() {
         bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
     override fun onFullScreenClicked() {
-        // bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        isMoreOpen = noteCreationView.isMoreOpen
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -136,12 +131,8 @@ class NotesFragment : BaseFragment(), NoteCreationView.SaveClickListener, NoteCr
     }
 
 
-    fun onNotesLoaded(notes: List<Note>) {
+    private fun onNotesLoaded(notes: List<Note>) {
         adapter.data = notes
-    }
-
-    fun onLoadError(throwable: Throwable) {
-        toast(throwable.message)
     }
 
     public override fun setupComponent(component: AppComponent) {

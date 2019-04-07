@@ -19,8 +19,9 @@ import java.util.*
 class NoteEditViewModel constructor(var notesRepository: NotesRepository) : ViewModel() {
     private val compositeDisposable = CompositeDisposable()
     private val saveResultLiveData: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
-    var selectedDate = MutableLiveData<Calendar?>()
+    val selectedDate = MutableLiveData<Calendar?>()
     val descriptionTextLiveData = MutableLiveData<String?>()
+
     fun setDate(year: Int, month: Int, day: Int) {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
@@ -45,6 +46,7 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
     }
 
     fun getSaveResult(): LiveData<ViewModelObject<Long>> = saveResultLiveData
+
     fun saveNote(title: String?, text: String?) {
         compositeDisposable.add(notesRepository.createNote(title, text, selectedDate.value?.timeInMillis)
                 .map { ViewModelObject.success(it) }
@@ -56,8 +58,7 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
 
     fun onDescriptionChanged(text: String?) {
         if (text != null && text.length > MAX_TITLE_CHARACTERS)
-            descriptionTextLiveData.postValue(text.substring(0,
-                    MAX_TITLE_CHARACTERS))
+            descriptionTextLiveData.postValue(text.substring(0, MAX_TITLE_CHARACTERS))
         else {
             descriptionTextLiveData.postValue(text)
         }

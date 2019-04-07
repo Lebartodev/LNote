@@ -11,10 +11,7 @@
 
     <View
         android:id="@+id/note_creation_background"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@drawable/bottom_card_bg"
-        android:transitionName="note_creation_background"
+        style="@style/NoteCreation.Background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,27 +19,16 @@
 
     <EditText
         android:id="@+id/text_title"
-        style="@style/LNote.Text.Title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="24dp"
-        android:background="@color/white"
+        style="@style/NoteCreation.Title"
         android:hint="@string/title_hint"
-        android:inputType="textCapSentences|textAutoComplete"
-        android:transitionName="Title"
+        android:saveEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
         android:id="@+id/add_divider"
-        style="@style/LNote.Divider"
-        android:layout_width="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:transitionName="Divider"
+        style="@style/NoteCreation.Divider"
         app:layout_constraintBottom_toTopOf="@id/text_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,17 +36,9 @@
 
     <EditText
         android:id="@+id/text_description"
-        style="@style/LNote.Text.Description"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="24dp"
-        android:background="@color/white"
+        style="@style/NoteCreation.Description"
         android:hint="@string/enter_note_hint"
-        android:inputType="textCapSentences|textAutoComplete|textMultiLine"
-        android:textSize="16sp"
-        android:transitionName="Description"
+        android:saveEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_title" />
@@ -79,56 +57,42 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_description" />
 
-    <ImageView
-        android:id="@+id/full_screen_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_full_screen_24"
+    <ImageButton
+        android:id="@+id/delete_button"
+        style="@style/NoteCreation.DeleteButton"
+        android:layout_marginEnd="4dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/fab_more"
+        app:layout_constraintEnd_toStartOf="@id/full_screen_button"
+        app:layout_constraintStart_toEndOf="@id/calendar_button"
+        app:layout_constraintTop_toTopOf="@id/fab_more" />
+
+    <ImageButton
+        android:id="@+id/calendar_button"
+        style="@style/NoteCreation.CalendarButton"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="4dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/fab_more"
+        app:layout_constraintEnd_toStartOf="@id/delete_button"
         app:layout_constraintStart_toEndOf="@id/fab_more"
+        app:layout_constraintTop_toTopOf="@id/fab_more" />
+
+    <ImageButton
+        android:id="@+id/full_screen_button"
+        style="@style/NoteCreation.FullScreenButton"
+        android:layout_marginStart="12dp"
+        app:layout_constraintBottom_toBottomOf="@id/fab_more"
+        app:layout_constraintStart_toEndOf="@id/delete_button"
         app:layout_constraintTop_toTopOf="@id/fab_more" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/save_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="16dp"
+        style="@style/NoteCreation.SaveButton"
         android:text="@string/save_button_text"
-        android:transitionName="Save"
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_description" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/date_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:focusable="false"
-        android:hint="@string/date_hint"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_description">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/date_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:cursorVisible="false"
-            android:drawableEnd="@drawable/ic_close_24"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:inputType="none"
-            android:longClickable="false" />
-
-    </com.google.android.material.textfield.TextInputLayout>
 </merge>

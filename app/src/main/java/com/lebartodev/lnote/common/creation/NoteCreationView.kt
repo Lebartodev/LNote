@@ -4,59 +4,71 @@ package com.lebartodev.lnote.common.creation
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Context
+import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
-import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.transition.*
+import androidx.transition.Fade
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionManager
+import androidx.transition.TransitionSet
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.common.note_edit.NoteFragment
 import com.lebartodev.lnote.data.entity.Status
+import com.lebartodev.lnote.repository.CurrentNote
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import java.util.*
 
 class NoteCreationView : ConstraintLayout {
+    private var notesViewModel: NoteEditViewModel? = null
+
     private val saveNoteButton: MaterialButton
     private lateinit var titleText: EditText
     private val descriptionText: EditText
-    private val dateText: TextInputEditText
-    private val dateLayout: TextInputLayout
     private val fabMore: FloatingActionButton
     private val background: View
-    private val fullScreenButton: ImageView
-    private var notesViewModel: NoteEditViewModel? = null
+    private val fullScreenButton: ImageButton
+    private val calendarButton: ImageButton
+    private val deleteButton: ImageButton
     private var fragment: Fragment? = null
     private val divider: View
-    private var saveClickListener: SaveClickListener? = null
-    private var fullScreenListener: FullScreenListener? = null
 
-    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory,
-                      saveClickListener: SaveClickListener, fullScreenListener: FullScreenListener) {
-        this.saveClickListener = saveClickListener
+    private var clickListener: ClickListener? = null
+    var isMoreOpen = false
+    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory, clickListener: ClickListener,
+                      isMoreOpen: Boolean) {
+        this.isMoreOpen = isMoreOpen
+        this.clickListener = clickListener
         this.fragment = fragment
-        notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
+        this.notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
+        if (isMoreOpen) {
+            deleteButton.visibility = View.VISIBLE
+            calendarButton.visibility = View.VISIBLE
+            fabMore.setImageResource(R.drawable.ic_arrow_right_24)
+        }
+        titleText.setText(CurrentNote.title)
+        descriptionText.setText(CurrentNote.text)
         this.notesViewModel?.apply {
-            this.descriptionTextLiveData.observe(fragment, Observer {
-                if (titleText.tag == TAG_TITLE_NOT_CHANGED && it != null) {
-                    titleText.setText(it)
+            descriptionTextLiveData.observe(fragment, Observer {
+                if (it != null) {
+                    if (it.isNotEmpty() && it != titleText.hint)
+                        titleText.hint = it
+                    else
+                        titleText.hint = context.getString(R.string.title_hint)
                 }
             })
             selectedDateString().observe(fragment, Observer {
-                dateText.setText(it)
+                //dateText.setText(it)
             })
             getSaveResult().observe(fragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
@@ -64,9 +76,8 @@ class NoteCreationView : ConstraintLayout {
                 }
             })
         }
-
-
     }
+
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -78,12 +89,11 @@ class NoteCreationView : ConstraintLayout {
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             notesViewModel?.onDescriptionChanged(s?.toString())
+            CurrentNote.text = s?.toString()
         }
     }
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            if (titleText.hasFocus() && s?.length ?: 0 > 0)
-                disableAutoTitle()
 
         }
 
@@ -91,44 +101,41 @@ class NoteCreationView : ConstraintLayout {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            if (s.isNullOrEmpty()) {
-                enableAutoTitle()
-            }
+            CurrentNote.title = s?.toString()
         }
     }
     private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
         notesViewModel?.setDate(y, m, d)
     }
 
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+    }
+
     init {
         inflate(context, R.layout.view_note_creation, this)
+        calendarButton = findViewById(R.id.calendar_button)
+        deleteButton = findViewById(R.id.delete_button)
         background = findViewById(R.id.note_creation_background)
         saveNoteButton = findViewById(R.id.save_button)
         titleText = findViewById(R.id.text_title)
         descriptionText = findViewById(R.id.text_description)
-        dateText = findViewById(R.id.date_text)
-        dateLayout = findViewById(R.id.date_layout)
         fabMore = findViewById(R.id.fab_more)
         fullScreenButton = findViewById(R.id.full_screen_button)
         divider = findViewById(R.id.add_divider)
 
         saveNoteButton.setOnClickListener {
-            saveClickListener?.onSaveClicked()
+            clickListener?.onSaveClicked()
             notesViewModel?.saveNote(title = titleText.text.toString(), text = descriptionText.text.toString())
             titleText.setText("")
             descriptionText.setText("")
             titleText.clearFocus()
             descriptionText.clearFocus()
-            enableAutoTitle()
-        }
-        dateLayout.setOnClickListener {
-            openCalendarDialog()
         }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
         titleText.addTextChangedListener(titleTextWatcher)
-        enableAutoTitle()
 
-        setupBottomSheet()
+        setupSheetView()
     }
 
     constructor(context: Context?) : super(context)
@@ -136,36 +143,53 @@ class NoteCreationView : ConstraintLayout {
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun setupBottomSheet() {
+    private fun setupSheetView() {
         val moreHiddenConstraintSet = ConstraintSet()
         val moreExpandedConstraintSet = ConstraintSet()
-        var isMoreOpen = false
 
         fullScreenButton.setOnClickListener {
-            fullScreenListener?.onFullScreenClicked()
-            val nextFragment = NoteFragment.startMe(titleText.text.toString(), descriptionText.text.toString())
+            val nextFragment = NoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
+                    descriptionText.text.toString())
+            clickListener?.onFullScreenClicked()
+
+            val exitFade = Fade(Fade.OUT)
+            exitFade.duration = ANIMATION_DURATION / 2
+            fragment?.exitTransition = exitFade
+
+            val returnFade = Fade(Fade.IN)
+            returnFade.duration = ANIMATION_DURATION
+            fragment?.returnTransition = returnFade
+
+
+            val enterFade = Fade(Fade.IN)
+            enterFade.startDelay = ANIMATION_DURATION / 2
+            enterFade.duration = ANIMATION_DURATION / 2
+
+            nextFragment.enterTransition = enterFade
 
             val enterTransitionSet = TransitionSet()
             enterTransitionSet.addTransition(
                     TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-            enterTransitionSet.addTransition(
-                    TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
-
             enterTransitionSet.startDelay = 0
-            enterTransitionSet.duration = 300
+            enterTransitionSet.duration = ANIMATION_DURATION
+
             nextFragment.sharedElementEnterTransition = enterTransitionSet
 
-
-            fragment?.fragmentManager
+            val transaction = fragment?.fragmentManager
                     ?.beginTransaction()
                     ?.replace(R.id.notes_layout_container, nextFragment)
                     ?.addSharedElement(titleText, titleText.transitionName)
                     ?.addSharedElement(background, background.transitionName)
                     ?.addSharedElement(saveNoteButton, saveNoteButton.transitionName)
                     ?.addSharedElement(descriptionText, descriptionText.transitionName)
+                    ?.addSharedElement(fullScreenButton, fullScreenButton.transitionName)
                     ?.addSharedElement(divider, divider.transitionName)
                     ?.addToBackStack(null)
-                    ?.commit()
+            if (deleteButton.visibility == View.VISIBLE && calendarButton.visibility == View.VISIBLE) {
+                transaction?.addSharedElement(deleteButton, deleteButton.transitionName)
+                        ?.addSharedElement(calendarButton, calendarButton.transitionName)
+            }
+            transaction?.commit()
         }
 
         val constraintLayout = this
@@ -175,32 +199,9 @@ class NoteCreationView : ConstraintLayout {
             TransitionManager.beginDelayedTransition(constraintLayout)
             val constraint = if (isMoreOpen) moreHiddenConstraintSet else moreExpandedConstraintSet
             isMoreOpen = !isMoreOpen
-            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_up_24 else R.drawable.ic_drop_down_24)
+            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
             constraint.applyTo(constraintLayout)
         }
-
-        dateText.setOnTouchListener { _, event ->
-            val DRAWABLE_RIGHT = 2
-            if (event.action == MotionEvent.ACTION_UP) {
-                if (event.rawX >= (dateText.right - dateText.compoundDrawables[DRAWABLE_RIGHT].bounds.width())) {
-                    notesViewModel?.clearDate()
-                } else {
-                    openCalendarDialog()
-                }
-                return@setOnTouchListener true
-            }
-            false
-        }
-    }
-
-    private fun enableAutoTitle() {
-        titleText.tag = TAG_TITLE_NOT_CHANGED
-        titleText.setTextColor(resources.getColor(R.color.black_40))
-    }
-
-    private fun disableAutoTitle() {
-        titleText.tag = null
-        titleText.setTextColor(resources.getColor(R.color.textColorPrimary))
     }
 
     private fun openCalendarDialog() {
@@ -216,6 +217,7 @@ class NoteCreationView : ConstraintLayout {
         }
     }
 
+
     override fun onDetachedFromWindow() {
         descriptionText.removeTextChangedListener(descriptionTextWatcher)
         titleText.removeTextChangedListener(titleTextWatcher)
@@ -223,15 +225,12 @@ class NoteCreationView : ConstraintLayout {
 
     }
 
-    interface SaveClickListener {
+    interface ClickListener {
         fun onSaveClicked()
-    }
-
-    interface FullScreenListener {
         fun onFullScreenClicked()
     }
 
     companion object {
-        private const val TAG_TITLE_NOT_CHANGED = "TAG_TITLE_NOT_CHANGED"
+        private const val ANIMATION_DURATION = 400L
     }
 }
