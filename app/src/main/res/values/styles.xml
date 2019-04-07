@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="LNote" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -102,6 +102,10 @@
         <item name="android:layout_marginEnd">24dp</item>
         <item name="android:layout_marginBottom">16dp</item>
         <item name="android:transitionName">Save</item>
+    </style>
+
+    <style name="TextAppearance.Design.Snackbar.Message" parent="android:TextAppearance" tools:override="true">
+        <item name="android:textColor">@color/white</item>
     </style>
 
 </resources>

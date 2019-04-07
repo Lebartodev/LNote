@@ -4,7 +4,9 @@ package com.lebartodev.lnote.common.notes
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.lnote.NoteDialog
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
@@ -19,7 +23,7 @@ import com.lebartodev.lnote.common.creation.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.NotesModule
-import com.lebartodev.lnote.repository.CurrentNote
+import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.NotesItemDecoration
 import com.lebartodev.lnote.utils.error
@@ -35,7 +39,10 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
     private val adapter = NotesAdapter(object : NotesAdapter.OpenNoteListener {
         override fun onNoteClick(noteId: Long?, title: String?, description: String) {
             val dialog = NoteDialog.startMe(noteId, title, description)
-            dialog.show(fragmentManager, "NoteDialog")
+            fragmentManager?.let {
+                dialog.show(it, "NoteDialog")
+            }
+
         }
     })
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -45,6 +52,8 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
 
     private var isBottomSheetOpen: Boolean = false
     private var isMoreOpen: Boolean = false
+    private var snackBarShowing = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
@@ -79,14 +88,18 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
                 8f.toPx(resources),
                 16f.toPx(resources),
                 16f.toPx(resources)))
-        if (CurrentNote.isSaved) {
+        if (NoteContainer.isSaved) {
             isBottomSheetOpen = false
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            CurrentNote.isSaved = false
+            NoteContainer.isSaved = false
         }
 
         setupBottomSheet()
 
+        if (NoteContainer.isDeleted) {
+            onDeleteClicked()
+            NoteContainer.isDeleted = false
+        }
         fabAdd.setOnClickListener {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
@@ -101,7 +114,8 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
     private fun setupBottomSheet() {
         bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
+                if (!snackBarShowing)
+                    bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
                 if (1f - slideOffset == 1f) {
                     fabAdd.show()
                 } else {
@@ -133,8 +147,50 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
         isMoreOpen = noteCreationView.isMoreOpen
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item!!.itemId) {
+    override fun onDeleteClicked() {
+        snackBarShowing = true
+        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        bottomAppBar.translationY = bottomAppBar.height * 1f
+        view?.let {
+            val snackBar = Snackbar.make(it, R.string.note_deleted, Snackbar.LENGTH_LONG)
+                    .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                        override fun onShown(transientBottomBar: Snackbar?) {
+                            super.onShown(transientBottomBar)
+                            fabAdd.hide()
+                            bottomAppBar.hideOnScroll = false
+                            bottomAppBar.visibility = View.INVISIBLE
+                        }
+
+                        override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                            super.onDismissed(transientBottomBar, event)
+                            bottomAppBar.visibility = View.VISIBLE
+                            snackBarShowing = false
+                            bottomAppBar.hideOnScroll = true
+                            bottomAppBar.animate().translationY(0f).setDuration(200).start()
+                            NoteContainer.tempNote.text = null
+                            NoteContainer.tempNote.title = null
+                            NoteContainer.tempNote.date = null
+                            fabAdd.show()
+                        }
+                    })
+                    .setAction(R.string.undo) {
+                        NoteContainer.currentNote.title = NoteContainer.tempNote.title
+                        NoteContainer.currentNote.text = NoteContainer.tempNote.text
+                        NoteContainer.currentNote.date = NoteContainer.tempNote.date
+                        noteCreationView.setContent(NoteContainer.currentNote.title, NoteContainer.currentNote.text)
+                        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    }
+                    .setActionTextColor(ContextCompat.getColor(it.context, R.color.colorAction))
+            val layout = snackBar.view as Snackbar.SnackbarLayout
+            val textView = layout.findViewById(com.google.android.material.R.id.snackbar_text) as TextView
+            textView.setTextColor(ContextCompat.getColor(it.context, R.color.white))
+            snackBar.show()
+        }
+    }
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.app_bar_settings -> {
 
             }

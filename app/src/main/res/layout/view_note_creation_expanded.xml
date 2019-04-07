@@ -28,9 +28,9 @@
     <View
         android:id="@+id/add_divider"
         style="@style/NoteCreation.Divider"
+        android:saveEnabled="false"
         app:layout_constraintBottom_toTopOf="@id/text_description"
         app:layout_constraintEnd_toEndOf="parent"
-        android:saveEnabled="false"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_title" />
 
@@ -41,6 +41,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_title" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/date_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="cp, 10 окт. 2018"
+        app:chipCornerRadius="16dp"
+        app:layout_constraintStart_toStartOf="@id/text_description"
+        app:layout_constraintTop_toBottomOf="@id/text_description" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_more"
@@ -54,7 +64,7 @@
         app:fabSize="mini"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_description" />
+        app:layout_constraintTop_toBottomOf="@id/date_chip" />
 
     <ImageButton
         android:id="@+id/delete_button"
@@ -69,8 +79,8 @@
         android:id="@+id/calendar_button"
         style="@style/NoteCreation.CalendarButton"
         android:layout_marginStart="12dp"
-        android:background="?selectableItemBackgroundBorderless"
         android:layout_marginEnd="4dp"
+        android:background="?selectableItemBackgroundBorderless"
         app:layout_constraintBottom_toBottomOf="@id/fab_more"
         app:layout_constraintEnd_toStartOf="@id/delete_button"
         app:layout_constraintStart_toEndOf="@id/fab_more"
@@ -92,6 +102,6 @@
         app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_description" />
+        app:layout_constraintTop_toBottomOf="@id/date_chip" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

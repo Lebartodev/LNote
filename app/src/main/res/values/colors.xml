@@ -16,4 +16,6 @@
     <color name="black_5">#0c000000</color>
     <color name="black_2">#06000000</color>
 
+    <color name="colorAction">#FF9800</color>
+
 </resources>

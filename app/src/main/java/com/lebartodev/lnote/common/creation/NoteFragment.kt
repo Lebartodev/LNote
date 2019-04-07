@@ -17,7 +17,7 @@ import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.NotesModule
-import com.lebartodev.lnote.repository.CurrentNote
+import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import javax.inject.Inject
 
@@ -30,6 +30,7 @@ class NoteFragment : BaseFragment() {
     private lateinit var descriptionTextView: TextView
     private lateinit var titleTextView: TextView
     private lateinit var fullScreenButton: ImageButton
+    private lateinit var deleteButton: ImageButton
     private lateinit var saveNoteButton: MaterialButton
 
     @Inject
@@ -46,7 +47,7 @@ class NoteFragment : BaseFragment() {
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             notesViewModel?.onDescriptionChanged(s?.toString())
-            CurrentNote.text = s?.toString()
+            NoteContainer.currentNote.text = s?.toString()
         }
     }
     private val titleTextWatcher = object : TextWatcher {
@@ -57,7 +58,7 @@ class NoteFragment : BaseFragment() {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            CurrentNote.title = s?.toString()
+            NoteContainer.currentNote.title = s?.toString()
         }
     }
 
@@ -83,6 +84,7 @@ class NoteFragment : BaseFragment() {
         descriptionTextView = view.findViewById(R.id.text_description)
         fullScreenButton = view.findViewById(R.id.full_screen_button)
         saveNoteButton = view.findViewById(R.id.save_button)
+        deleteButton = view.findViewById(R.id.delete_button)
         titleTextView.text = title
         titleTextView.hint = hint
         descriptionTextView.text = text
@@ -95,15 +97,32 @@ class NoteFragment : BaseFragment() {
                 fragmentManager?.popBackStack()
             }
         }
+        deleteButton.setOnClickListener {
+            hideKeyboardListener(titleTextView) {
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+                NoteContainer.tempNote.text = NoteContainer.currentNote.text
+                NoteContainer.tempNote.title = NoteContainer.currentNote.title
+                NoteContainer.tempNote.date = NoteContainer.currentNote.date
+
+                NoteContainer.currentNote.text = null
+                NoteContainer.currentNote.title = null
+                NoteContainer.currentNote.date = null
+
+                NoteContainer.isDeleted = true
+
+                fragmentManager?.popBackStack()
+            }
+        }
         saveNoteButton.setOnClickListener {
             hideKeyboardListener(titleTextView) {
                 val savedTitle = if (titleTextView.text.isNullOrEmpty()) titleTextView.hint.toString() else titleTextView.text.toString()
                 notesViewModel?.saveNote(title = savedTitle, text = descriptionTextView.text.toString())
                 titleTextView.clearFocus()
                 descriptionTextView.clearFocus()
-                CurrentNote.text = null
-                CurrentNote.title = null
-
+                NoteContainer.currentNote.text = null
+                NoteContainer.currentNote.title = null
+                NoteContainer.currentNote.date = null
             }
         }
 
@@ -123,7 +142,7 @@ class NoteFragment : BaseFragment() {
                 if (obj.status == Status.ERROR) {
                     Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 } else if (obj.status == Status.SUCCESS) {
-                    CurrentNote.isSaved = true
+                    NoteContainer.isSaved = true
                     fragmentManager?.popBackStack()
                 }
             })

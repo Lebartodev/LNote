@@ -25,7 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
-import com.lebartodev.lnote.repository.CurrentNote
+import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import java.util.*
 
@@ -56,7 +56,7 @@ class NoteCreationView : ConstraintLayout {
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             notesViewModel?.onDescriptionChanged(s?.toString())
-            CurrentNote.text = s?.toString()
+            NoteContainer.currentNote.text = s?.toString()
         }
     }
     private val titleTextWatcher = object : TextWatcher {
@@ -68,7 +68,7 @@ class NoteCreationView : ConstraintLayout {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            CurrentNote.title = s?.toString()
+            NoteContainer.currentNote.title = s?.toString()
         }
     }
     private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
@@ -100,6 +100,19 @@ class NoteCreationView : ConstraintLayout {
             titleText.clearFocus()
             descriptionText.clearFocus()
         }
+        deleteButton.setOnClickListener {
+            NoteContainer.tempNote.text = NoteContainer.currentNote.text
+            NoteContainer.tempNote.title = NoteContainer.currentNote.title
+            NoteContainer.tempNote.date = NoteContainer.currentNote.date
+            titleText.setText("")
+            descriptionText.setText("")
+            titleText.clearFocus()
+            descriptionText.clearFocus()
+            clickListener?.onDeleteClicked()
+        }
+        calendarButton.setOnClickListener {
+            openCalendarDialog()
+        }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
         titleText.addTextChangedListener(titleTextWatcher)
 
@@ -117,8 +130,8 @@ class NoteCreationView : ConstraintLayout {
             calendarButton.visibility = View.VISIBLE
             fabMore.setImageResource(R.drawable.ic_arrow_right_24)
         }
-        titleText.setText(CurrentNote.title)
-        descriptionText.setText(CurrentNote.text)
+        titleText.setText(NoteContainer.currentNote.title)
+        descriptionText.setText(NoteContainer.currentNote.text)
         this.notesViewModel?.apply {
             descriptionTextLiveData.observe(fragment, Observer {
                 if (it != null) {
@@ -224,9 +237,15 @@ class NoteCreationView : ConstraintLayout {
 
     }
 
+    fun setContent(title: String?, text: String?) {
+        titleText.setText(title)
+        descriptionText.setText(text)
+    }
+
     interface ClickListener {
         fun onSaveClicked()
         fun onFullScreenClicked()
+        fun onDeleteClicked()
     }
 
     companion object {

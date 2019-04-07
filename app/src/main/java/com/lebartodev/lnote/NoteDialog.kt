@@ -20,7 +20,7 @@ class NoteDialog : DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        dialog.window.setBackgroundDrawableResource(R.drawable.note_dialog_background)
+        dialog?.window?.setBackgroundDrawableResource(R.drawable.note_dialog_background)
         return inflater.inflate(R.layout.dialog_note, null)
     }
 
