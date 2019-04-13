@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet_add_expanded"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,8 +12,8 @@
     <View
         android:id="@+id/note_creation_background"
         style="@style/NoteCreation.Background"
-        android:background="@color/white"
         android:layout_marginTop="8dp"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -85,5 +86,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_description" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/date_chip"
+        style="@style/NoteCreation.DateChip"
+        android:layout_marginStart="8dp"
+        app:chipCornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/full_screen_button"
+        app:layout_constraintStart_toEndOf="@id/full_screen_button"
+        app:layout_constraintTop_toTopOf="@id/full_screen_button"
+        tools:text="cp, 10 окт. 2018"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

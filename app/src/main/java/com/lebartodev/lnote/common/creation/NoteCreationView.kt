@@ -21,6 +21,7 @@ import androidx.transition.TransitionInflater
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
@@ -41,6 +42,7 @@ class NoteCreationView : ConstraintLayout {
     private val calendarButton: ImageButton
     private val deleteButton: ImageButton
     private val divider: View
+    private val dateChip: Chip
 
     private var fragment: Fragment? = null
     private var clickListener: ClickListener? = null
@@ -90,6 +92,7 @@ class NoteCreationView : ConstraintLayout {
         fabMore = findViewById(R.id.fab_more)
         fullScreenButton = findViewById(R.id.full_screen_button)
         divider = findViewById(R.id.add_divider)
+        dateChip = findViewById(R.id.date_chip)
 
         saveNoteButton.setOnClickListener {
             clickListener?.onSaveClicked()
@@ -97,6 +100,8 @@ class NoteCreationView : ConstraintLayout {
             notesViewModel?.saveNote(title = savedTitle, text = descriptionText.text.toString())
             titleText.setText("")
             descriptionText.setText("")
+            dateChip.text = ""
+            dateChip.visibility = View.GONE
             titleText.clearFocus()
             descriptionText.clearFocus()
         }
@@ -104,6 +109,8 @@ class NoteCreationView : ConstraintLayout {
             NoteContainer.tempNote.text = NoteContainer.currentNote.text
             NoteContainer.tempNote.title = NoteContainer.currentNote.title
             NoteContainer.tempNote.date = NoteContainer.currentNote.date
+            dateChip.visibility = View.GONE
+            dateChip.text = ""
             titleText.setText("")
             descriptionText.setText("")
             titleText.clearFocus()
@@ -111,6 +118,9 @@ class NoteCreationView : ConstraintLayout {
             clickListener?.onDeleteClicked()
         }
         calendarButton.setOnClickListener {
+            openCalendarDialog()
+        }
+        dateChip.setOnClickListener {
             openCalendarDialog()
         }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
@@ -142,7 +152,12 @@ class NoteCreationView : ConstraintLayout {
                 }
             })
             selectedDateString().observe(fragment, Observer {
-                //dateText.setText(it)
+                if (it.isNotEmpty()) {
+                    dateChip.visibility = View.VISIBLE
+                } else {
+                    dateChip.visibility = View.VISIBLE
+                }
+                dateChip.text = it
             })
             getSaveResult().observe(fragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
@@ -154,13 +169,10 @@ class NoteCreationView : ConstraintLayout {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupSheetView() {
-        val moreHiddenConstraintSet = ConstraintSet()
-        val moreExpandedConstraintSet = ConstraintSet()
-
         fullScreenButton.setOnClickListener {
             (fragment as BaseFragment).hideKeyboardListener(titleText) {
                 val nextFragment = NoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
-                        descriptionText.text.toString())
+                        descriptionText.text.toString(), dateChip.text.toString())
                 clickListener?.onFullScreenClicked()
 
                 val exitFade = Fade(Fade.OUT)
@@ -194,6 +206,7 @@ class NoteCreationView : ConstraintLayout {
                         ?.addSharedElement(saveNoteButton, saveNoteButton.transitionName)
                         ?.addSharedElement(descriptionText, descriptionText.transitionName)
                         ?.addSharedElement(fullScreenButton, fullScreenButton.transitionName)
+                        ?.addSharedElement(dateChip, dateChip.transitionName)
                         ?.addSharedElement(divider, divider.transitionName)
                         ?.addToBackStack(null)
                 if (deleteButton.visibility == View.VISIBLE && calendarButton.visibility == View.VISIBLE) {
@@ -204,15 +217,16 @@ class NoteCreationView : ConstraintLayout {
             }
         }
 
-        val constraintLayout = this
-        moreHiddenConstraintSet.clone(constraintLayout)
-        moreExpandedConstraintSet.clone(context, R.layout.view_note_creation_expanded)
         fabMore.setOnClickListener {
+            val constraintLayout = this
             TransitionManager.beginDelayedTransition(constraintLayout)
-            val constraint = if (isMoreOpen) moreHiddenConstraintSet else moreExpandedConstraintSet
             isMoreOpen = !isMoreOpen
+            val set = ConstraintSet()
+            set.clone(constraintLayout)
+            set.setVisibility(calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
             fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
-            constraint.applyTo(constraintLayout)
+            set.applyTo(constraintLayout)
         }
     }
 

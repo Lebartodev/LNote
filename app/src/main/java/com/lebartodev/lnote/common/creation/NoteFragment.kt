@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
@@ -26,12 +27,14 @@ class NoteFragment : BaseFragment() {
     private var text: String? = null
     private var title: String? = null
     private var hint: String? = null
+    private var dateStr: String? = null
 
     private lateinit var descriptionTextView: TextView
     private lateinit var titleTextView: TextView
     private lateinit var fullScreenButton: ImageButton
     private lateinit var deleteButton: ImageButton
     private lateinit var saveNoteButton: MaterialButton
+    private lateinit var dateChip: Chip
 
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
@@ -69,6 +72,7 @@ class NoteFragment : BaseFragment() {
             title = it.getString(ARG_TITLE)
             text = it.getString(ARG_TEXT)
             hint = it.getString(ARG_HINT)
+            dateStr = it.getString(ARG_DATE)
         }
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java]
     }
@@ -85,9 +89,16 @@ class NoteFragment : BaseFragment() {
         fullScreenButton = view.findViewById(R.id.full_screen_button)
         saveNoteButton = view.findViewById(R.id.save_button)
         deleteButton = view.findViewById(R.id.delete_button)
+        dateChip = view.findViewById(R.id.date_chip)
         titleTextView.text = title
         titleTextView.hint = hint
         descriptionTextView.text = text
+        dateChip.text = dateStr
+        if (!dateStr.isNullOrEmpty()) {
+            dateChip.visibility = View.VISIBLE
+        } else {
+            dateChip.visibility = View.GONE
+        }
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
 
@@ -159,13 +170,15 @@ class NoteFragment : BaseFragment() {
         private const val ARG_TEXT = "ARG_TEXT"
         private const val ARG_TITLE = "ARG_TITLE"
         private const val ARG_HINT = "ARG_HINT"
+        private const val ARG_DATE = "ARG_DATE"
         @JvmStatic
-        fun startMe(title: String?, hint: String?, text: String?) =
+        fun startMe(title: String?, hint: String?, text: String?, dateStr: String?) =
                 NoteFragment().apply {
                     arguments = Bundle().apply {
                         putString(ARG_TITLE, title)
                         putString(ARG_HINT, hint)
                         putString(ARG_TEXT, text)
+                        putString(ARG_DATE, dateStr)
                     }
                 }
     }

@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.data.entity.ViewModelObject
+import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -28,10 +29,12 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
         calendar.set(Calendar.MONTH, month)
         calendar.set(Calendar.DAY_OF_MONTH, day)
         selectedDate.postValue(calendar)
+        NoteContainer.currentNote.date = calendar.timeInMillis
     }
 
     fun clearDate() {
         selectedDate.postValue(null)
+        NoteContainer.currentNote.date = null
     }
 
     fun selectedDateString(): LiveData<String> {

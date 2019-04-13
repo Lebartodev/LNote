@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/note_creation"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -88,14 +89,12 @@
 
     <com.google.android.material.chip.Chip
         android:id="@+id/date_chip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/NoteCreation.DateChip"
         android:layout_marginTop="8dp"
-        android:text="cp, 10 окт. 2018"
-        android:visibility="visible"
         app:chipCornerRadius="16dp"
         app:layout_constraintStart_toStartOf="@id/text_description"
-        app:layout_constraintTop_toBottomOf="@id/text_description" />
+        app:layout_constraintTop_toBottomOf="@id/text_description"
+        tools:text="cp, 10 окт. 2018" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/save_button"
