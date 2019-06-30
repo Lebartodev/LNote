@@ -74,7 +74,7 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
 
     fun fetchDetails(id: Long) {
         compositeDisposable.add(
-                notesRepository.getNoteDetails(id)
+                notesRepository.getNote(id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(Consumer { noteDetailsLiveData.postValue(it) }, Functions.emptyConsumer()))
