@@ -13,8 +13,7 @@ class NotesRepository constructor(var database: AppDatabase,
 
     fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll().subscribeOn(schedulersFacade.io())
 
-    fun getNoteDetails(id: Long): Flowable<Note> = database.notesDao().getById(id).subscribeOn(schedulersFacade.io())
-
+    fun getNote(id: Long): Flowable<Note> = database.notesDao().getById(id).subscribeOn(schedulersFacade.io())
 
     fun createNote(title: String?, text: String?, date: Long?): Single<Long> {
         return Single.defer {
