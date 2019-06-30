@@ -22,7 +22,7 @@ class NotesRepository constructor(var database: AppDatabase,
                 Single.error(NullPointerException())
             } else {
                 Single.fromCallable {
-                    database.notesDao().insert(Note(null, title, date, System.currentTimeMillis(), text!!))
+                    database.notesDao().insert(Note(null, title, date, System.currentTimeMillis(), text))
                 }.subscribeOn(schedulersFacade.io())
             }
 

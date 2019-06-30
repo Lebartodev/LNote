@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.repository.NotesRepository
@@ -65,6 +66,18 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
         else {
             descriptionTextLiveData.postValue(text)
         }
+    }
+
+    val noteDetailsLiveData = MutableLiveData<Note?>()
+
+    fun getDetails(): LiveData<Note?> = noteDetailsLiveData
+
+    fun fetchDetails(id: Long) {
+        compositeDisposable.add(
+                notesRepository.getNoteDetails(id)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(Consumer { noteDetailsLiveData.postValue(it) }, Functions.emptyConsumer()))
     }
 
     companion object {
