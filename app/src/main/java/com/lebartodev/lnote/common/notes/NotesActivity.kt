@@ -1,6 +1,5 @@
 package com.lebartodev.lnote.common.notes
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.lebartodev.lnote.R
@@ -8,7 +7,6 @@ import com.lebartodev.lnote.R
 
 class NotesActivity : AppCompatActivity() {
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

@@ -2,7 +2,7 @@ package com.lebartodev.lnote.utils
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.lebartodev.lnote.common.creation.NoteEditViewModel
+import com.lebartodev.lnote.common.details.NoteEditViewModel
 import com.lebartodev.lnote.common.notes.NotesViewModel
 import com.lebartodev.lnote.repository.NotesRepository
 

@@ -20,8 +20,8 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
-import com.lebartodev.lnote.common.creation.EditNoteFragment
-import com.lebartodev.lnote.common.creation.NoteCreationView
+import com.lebartodev.lnote.common.details.EditNoteFragment
+import com.lebartodev.lnote.common.details.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.NotesModule
@@ -81,7 +81,6 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_notes, container, false)
     }
 

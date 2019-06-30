@@ -1,6 +1,6 @@
 package com.lebartodev.lnote.di.component
 
-import com.lebartodev.lnote.common.creation.EditNoteFragment
+import com.lebartodev.lnote.common.details.EditNoteFragment
 import com.lebartodev.lnote.common.notes.NotesActivity
 import com.lebartodev.lnote.common.notes.NotesFragment
 import com.lebartodev.lnote.di.module.NotesModule

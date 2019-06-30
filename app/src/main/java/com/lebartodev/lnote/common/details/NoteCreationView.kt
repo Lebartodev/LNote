@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.common.creation
+package com.lebartodev.lnote.common.details
 
 
 import android.annotation.SuppressLint

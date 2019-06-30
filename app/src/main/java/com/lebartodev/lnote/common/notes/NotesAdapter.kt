@@ -38,7 +38,6 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
         val title: TextView = itemView.findViewById(R.id.note_title)
-        // val backgroundView: View = itemView.findViewById(R.id.note_creation_background)
         val description: TextView = itemView.findViewById(com.lebartodev.lnote.R.id.note_description)
         val dateChip: Chip = itemView.findViewById(com.lebartodev.lnote.R.id.date_chip)
         fun bind(item: Note) = with(itemView) {
@@ -54,9 +53,5 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
                 listener(item)
             }
         }
-    }
-
-    companion object {
-        private const val ANIMATION_DURATION = 100L
     }
 }

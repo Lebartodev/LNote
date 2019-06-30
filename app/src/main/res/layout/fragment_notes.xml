@@ -31,7 +31,7 @@
         app:backgroundTint="@color/colorPrimary"
         app:layout_anchor="@id/bottom_app_bar" />
 
-    <com.lebartodev.lnote.common.creation.NoteCreationView
+    <com.lebartodev.lnote.common.details.NoteCreationView
         android:id="@+id/bottom_sheet_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

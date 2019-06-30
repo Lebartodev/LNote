@@ -15,8 +15,7 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 @DebugOpenClass
-class NotesViewModel constructor(var notesRepository: NotesRepository) :
-        ViewModel() {
+class NotesViewModel constructor(var notesRepository: NotesRepository) : ViewModel() {
     private val compositeDisposable = CompositeDisposable()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
     var selectedDate = MutableLiveData<Calendar?>()
