@@ -11,17 +11,17 @@ import com.lebartodev.lnote.data.entity.Note
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NotesAdapter : RecyclerView.Adapter<NotesAdapter.ViewHolder> {
-    private var listener: OpenNoteListener? = null
+
+class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
     var data: List<Note> = listOf()
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    constructor(listener: OpenNoteListener) {
+
+    init {
         setHasStableIds(true)
-        this.listener = listener
     }
 
     override fun getItemId(position: Int): Long {
@@ -31,16 +31,17 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.ViewHolder> {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.i_note, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position], listener)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun getItemCount() = data.size
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
         val title: TextView = itemView.findViewById(R.id.note_title)
-        val description: TextView = itemView.findViewById(R.id.note_description)
-        val dateChip: Chip = itemView.findViewById(R.id.date_chip)
-        fun bind(item: Note, listener: OpenNoteListener?) = with(itemView) {
+        // val backgroundView: View = itemView.findViewById(R.id.note_creation_background)
+        val description: TextView = itemView.findViewById(com.lebartodev.lnote.R.id.note_description)
+        val dateChip: Chip = itemView.findViewById(com.lebartodev.lnote.R.id.date_chip)
+        fun bind(item: Note) = with(itemView) {
             title.text = item.title
             description.text = item.text
             if (item.date != null) {
@@ -50,12 +51,12 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.ViewHolder> {
                 dateChip.visibility = View.GONE
             }
             this.setOnClickListener {
-                listener?.onNoteClick(item.id, item.title, item.text)
+                listener(item)
             }
         }
     }
 
-    interface OpenNoteListener {
-        fun onNoteClick(noteId: Long?, title: String?, description: String)
+    companion object {
+        private const val ANIMATION_DURATION = 100L
     }
 }

@@ -11,14 +11,16 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Fade
+import androidx.transition.Slide
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import com.lebartodev.lnote.NoteDialog
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.creation.EditNoteFragment
 import com.lebartodev.lnote.common.creation.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.component.AppComponent
@@ -36,15 +38,7 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
     private lateinit var noteCreationView: NoteCreationView
-    private val adapter = NotesAdapter(object : NotesAdapter.OpenNoteListener {
-        override fun onNoteClick(noteId: Long?, title: String?, description: String) {
-            val dialog = NoteDialog.startMe(noteId, title, description)
-            fragmentManager?.let {
-                dialog.show(it, "NoteDialog")
-            }
-
-        }
-    })
+    private lateinit var adapter: NotesAdapter
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
@@ -65,6 +59,24 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
                 error("loadNotes", it.error)
             }
         })
+        adapter = NotesAdapter {
+            val nextFragment = EditNoteFragment.startMe(it.title, "asd", it.text, null)
+            val exitFade = Fade(Fade.OUT).apply {
+                duration = resources.getInteger(R.integer.animation_duration).toLong()
+            }
+            val enderSlide = Slide(Gravity.END).apply {
+                duration = resources.getInteger(R.integer.animation_duration).toLong()
+            }
+            nextFragment.enterTransition = enderSlide
+            this.exitTransition = exitFade
+
+            val transaction = fragmentManager
+                    ?.beginTransaction()
+                    ?.replace(R.id.notes_layout_container, nextFragment)
+                    ?.addToBackStack(null)
+            transaction?.commit()
+        }
+        notesViewModel.fetchNotes()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -108,7 +120,6 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             false
         }
-        notesViewModel.fetchNotes()
     }
 
     private fun setupBottomSheet() {

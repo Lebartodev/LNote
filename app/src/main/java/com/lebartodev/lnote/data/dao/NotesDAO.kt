@@ -11,7 +11,7 @@ interface NotesDAO {
     fun getAll(): Flowable<List<Note>>
 
     @Query("SELECT * FROM note WHERE id = :id")
-    fun getById(id: Long): Note
+    fun getById(id: Long): Flowable<Note>
 
     @Insert
     fun insert(note: Note): Long

@@ -23,7 +23,7 @@ import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import javax.inject.Inject
 
 
-class NoteFragment : BaseFragment() {
+class EditNoteFragment : BaseFragment() {
     private var text: String? = null
     private var title: String? = null
     private var hint: String? = null
@@ -138,7 +138,7 @@ class NoteFragment : BaseFragment() {
         }
 
         this.notesViewModel?.apply {
-            descriptionTextLiveData.observe(this@NoteFragment, Observer {
+            descriptionTextLiveData.observe(this@EditNoteFragment, Observer {
                 if (it != null && it != titleTextView.hint) {
                     if (it.isNotEmpty())
                         titleTextView.hint = it
@@ -146,10 +146,10 @@ class NoteFragment : BaseFragment() {
                         titleTextView.hint = context?.getString(R.string.title_hint)
                 }
             })
-            selectedDateString().observe(this@NoteFragment, Observer {
+            selectedDateString().observe(this@EditNoteFragment, Observer {
                 //dateText.setText(it)
             })
-            getSaveResult().observe(this@NoteFragment, Observer { obj ->
+            getSaveResult().observe(this@EditNoteFragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
                     Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 } else if (obj.status == Status.SUCCESS) {
@@ -173,7 +173,7 @@ class NoteFragment : BaseFragment() {
         private const val ARG_DATE = "ARG_DATE"
         @JvmStatic
         fun startMe(title: String?, hint: String?, text: String?, dateStr: String?) =
-                NoteFragment().apply {
+                EditNoteFragment().apply {
                     arguments = Bundle().apply {
                         putString(ARG_TITLE, title)
                         putString(ARG_HINT, hint)

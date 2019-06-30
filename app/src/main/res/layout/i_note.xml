@@ -13,6 +13,15 @@
         android:layout_height="match_parent"
         android:paddingBottom="16dp">
 
+        <!--<View-->
+            <!--android:id="@+id/note_creation_background"-->
+            <!--style="@style/NoteCreation.Background"-->
+            <!--android:background="@color/white"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--app:layout_constraintEnd_toEndOf="parent"-->
+            <!--app:layout_constraintStart_toStartOf="parent"-->
+            <!--app:layout_constraintTop_toTopOf="parent" />-->
+
         <TextView
             android:id="@+id/note_title"
             style="@style/LNote.Text.Title"

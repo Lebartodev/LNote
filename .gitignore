@@ -9,3 +9,11 @@
 /build
 /captures
 .externalNativeBuild
+gradlew
+gradle/wrapper/gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.jar
+.idea/vcs.xml
+.idea/runConfigurations.xml
+.idea/misc.xml
+.idea/gradle.xml
+.idea/encodings.xml

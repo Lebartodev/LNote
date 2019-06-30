@@ -171,22 +171,22 @@ class NoteCreationView : ConstraintLayout {
     private fun setupSheetView() {
         fullScreenButton.setOnClickListener {
             (fragment as BaseFragment).hideKeyboardListener(titleText) {
-                val nextFragment = NoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
+                val nextFragment = EditNoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
                         descriptionText.text.toString(), dateChip.text.toString())
                 clickListener?.onFullScreenClicked()
 
                 val exitFade = Fade(Fade.OUT)
-                exitFade.duration = ANIMATION_DURATION / 2
+                exitFade.duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
                 fragment?.exitTransition = exitFade
 
                 val returnFade = Fade(Fade.IN)
-                returnFade.duration = ANIMATION_DURATION
+                returnFade.duration = resources.getInteger(R.integer.animation_duration).toLong()
                 fragment?.returnTransition = returnFade
 
 
                 val enterFade = Fade(Fade.IN)
-                enterFade.startDelay = ANIMATION_DURATION / 2
-                enterFade.duration = ANIMATION_DURATION / 2
+                enterFade.startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                enterFade.duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
 
                 nextFragment.enterTransition = enterFade
 
@@ -194,7 +194,7 @@ class NoteCreationView : ConstraintLayout {
                 enterTransitionSet.addTransition(
                         TransitionInflater.from(context).inflateTransition(android.R.transition.move))
                 enterTransitionSet.startDelay = 0
-                enterTransitionSet.duration = ANIMATION_DURATION
+                enterTransitionSet.duration = resources.getInteger(R.integer.animation_duration).toLong()
 
                 nextFragment.sharedElementEnterTransition = enterTransitionSet
 
@@ -248,7 +248,6 @@ class NoteCreationView : ConstraintLayout {
         descriptionText.removeTextChangedListener(descriptionTextWatcher)
         titleText.removeTextChangedListener(titleTextWatcher)
         super.onDetachedFromWindow()
-
     }
 
     fun setContent(title: String?, text: String?) {
@@ -260,9 +259,5 @@ class NoteCreationView : ConstraintLayout {
         fun onSaveClicked()
         fun onFullScreenClicked()
         fun onDeleteClicked()
-    }
-
-    companion object {
-        private const val ANIMATION_DURATION = 400L
     }
 }
