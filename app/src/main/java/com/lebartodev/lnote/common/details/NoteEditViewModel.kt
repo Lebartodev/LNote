@@ -2,7 +2,6 @@ package com.lebartodev.lnote.common.details
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
@@ -10,26 +9,27 @@ import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 import io.reactivex.schedulers.Schedulers
-import java.text.SimpleDateFormat
 import java.util.*
 
 @DebugOpenClass
 class NoteEditViewModel constructor(var notesRepository: NotesRepository) : ViewModel() {
-    private val compositeDisposable = CompositeDisposable()
+    private var saveNoteDisposable = Disposables.empty()
+    private var detailsDisposable = Disposables.empty()
     private val saveResultLiveData: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
-    val selectedDate = MutableLiveData<Calendar?>()
+    private val selectedDate = MutableLiveData<Long?>()
     val descriptionTextLiveData = MutableLiveData<String?>()
+    val noteDetailsLiveData = MutableLiveData<Note?>()
 
     fun setDate(year: Int, month: Int, day: Int) {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month)
         calendar.set(Calendar.DAY_OF_MONTH, day)
-        selectedDate.postValue(calendar)
+        selectedDate.postValue(calendar.timeInMillis)
         NoteContainer.currentNote.date = calendar.timeInMillis
     }
 
@@ -38,26 +38,20 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
         NoteContainer.currentNote.date = null
     }
 
-    fun selectedDateString(): LiveData<String> {
-        return Transformations.map(selectedDate) {
-            if (it == null) {
-                ""
-            } else {
-                val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
-                formatter.format(it.time)
-            }
-        }
-    }
+    fun selectedDate(): LiveData<Long?> = selectedDate
 
-    fun getSaveResult(): LiveData<ViewModelObject<Long>> = saveResultLiveData
+    fun saveResult(): LiveData<ViewModelObject<Long>> = saveResultLiveData
+
+    fun descriptionTextLiveData(): LiveData<String?> = descriptionTextLiveData
 
     fun saveNote(title: String?, text: String?) {
-        compositeDisposable.add(notesRepository.createNote(title, text, selectedDate.value?.timeInMillis)
+        saveNoteDisposable.dispose()
+        saveNoteDisposable = notesRepository.createNote(title, text, selectedDate.value)
                 .map { ViewModelObject.success(it) }
                 .onErrorReturn { ViewModelObject.error(it, null) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(Consumer { saveResultLiveData.postValue(it) }, Functions.emptyConsumer()))
+                .subscribe(Consumer { saveResultLiveData.postValue(it) }, Functions.emptyConsumer())
     }
 
     fun onDescriptionChanged(text: String?) {
@@ -68,16 +62,20 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
         }
     }
 
-    val noteDetailsLiveData = MutableLiveData<Note?>()
-
     fun getDetails(): LiveData<Note?> = noteDetailsLiveData
 
     fun fetchDetails(id: Long) {
-        compositeDisposable.add(
-                notesRepository.getNote(id)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(Consumer { noteDetailsLiveData.postValue(it) }, Functions.emptyConsumer()))
+        saveNoteDisposable.dispose()
+        detailsDisposable = notesRepository.getNote(id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(Consumer { noteDetailsLiveData.postValue(it) }, Functions.emptyConsumer())
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        saveNoteDisposable.dispose()
+        detailsDisposable.dispose()
     }
 
     companion object {

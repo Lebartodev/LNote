@@ -60,7 +60,7 @@ class NotesFragment : BaseFragment(), NoteCreationView.ClickListener {
             }
         })
         adapter = NotesAdapter {
-            val nextFragment = EditNoteFragment.startMe(it.title, "asd", it.text, null)
+            val nextFragment = EditNoteFragment.startMe(it.title, null, it.text, it.date)
             val exitFade = Fade(Fade.OUT).apply {
                 duration = resources.getInteger(R.integer.animation_duration).toLong()
             }

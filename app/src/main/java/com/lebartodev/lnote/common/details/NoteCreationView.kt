@@ -28,6 +28,7 @@ import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import java.text.SimpleDateFormat
 import java.util.*
 
 class NoteCreationView : ConstraintLayout {
@@ -117,11 +118,11 @@ class NoteCreationView : ConstraintLayout {
             descriptionText.clearFocus()
             clickListener?.onDeleteClicked()
         }
-        calendarButton.setOnClickListener {
-            openCalendarDialog()
+        dateChip.setOnCloseIconClickListener {
+            notesViewModel?.clearDate()
         }
-        dateChip.setOnClickListener {
-            openCalendarDialog()
+        calendarButton.setOnClickListener {
+            openCalendarDialog(null)
         }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
         titleText.addTextChangedListener(titleTextWatcher)
@@ -142,8 +143,22 @@ class NoteCreationView : ConstraintLayout {
         }
         titleText.setText(NoteContainer.currentNote.title)
         descriptionText.setText(NoteContainer.currentNote.text)
+        NoteContainer.currentNote.date.let { time ->
+            if (time != null) {
+                dateChip.visibility = View.VISIBLE
+                dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
+            } else {
+                dateChip.visibility = View.GONE
+            }
+            calendarButton.setOnClickListener {
+                openCalendarDialog(time)
+            }
+            dateChip.setOnClickListener {
+                openCalendarDialog(time)
+            }
+        }
         this.notesViewModel?.apply {
-            descriptionTextLiveData.observe(fragment, Observer {
+            descriptionTextLiveData ().observe(fragment, Observer {
                 if (it != null) {
                     if (it.isNotEmpty())
                         titleText.hint = it
@@ -151,15 +166,21 @@ class NoteCreationView : ConstraintLayout {
                         titleText.hint = context.getString(R.string.title_hint)
                 }
             })
-            selectedDateString().observe(fragment, Observer {
-                if (it.isNotEmpty()) {
+            selectedDate().observe(fragment, Observer { time ->
+                if (time != null) {
                     dateChip.visibility = View.VISIBLE
+                    dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
                 } else {
-                    dateChip.visibility = View.VISIBLE
+                    dateChip.visibility = View.GONE
                 }
-                dateChip.text = it
+                calendarButton.setOnClickListener {
+                    openCalendarDialog(time)
+                }
+                dateChip.setOnClickListener {
+                    openCalendarDialog(time)
+                }
             })
-            getSaveResult().observe(fragment, Observer { obj ->
+            saveResult().observe(fragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
                     Toast.makeText(context, context.getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 }
@@ -172,7 +193,7 @@ class NoteCreationView : ConstraintLayout {
         fullScreenButton.setOnClickListener {
             (fragment as BaseFragment).hideKeyboardListener(titleText) {
                 val nextFragment = EditNoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
-                        descriptionText.text.toString(), dateChip.text.toString())
+                        descriptionText.text.toString(), notesViewModel?.selectedDate()?.value)
                 clickListener?.onFullScreenClicked()
 
                 val exitFade = Fade(Fade.OUT)
@@ -230,10 +251,11 @@ class NoteCreationView : ConstraintLayout {
         }
     }
 
-    private fun openCalendarDialog() {
-        var selectedDate = notesViewModel?.selectedDate?.value
-        if (selectedDate == null)
-            selectedDate = Calendar.getInstance()
+    private fun openCalendarDialog(selectedDateInMillis: Long?) {
+        val selectedDate = Calendar.getInstance()
+        selectedDateInMillis?.let {
+            selectedDate.timeInMillis = it
+        }
         selectedDate?.let {
             DatePickerDialog(context, listener,
                     it.get(Calendar.YEAR),

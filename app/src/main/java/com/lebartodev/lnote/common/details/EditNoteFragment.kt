@@ -1,5 +1,6 @@
 package com.lebartodev.lnote.common.details
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -20,6 +21,8 @@ import com.lebartodev.lnote.di.component.AppComponent
 import com.lebartodev.lnote.di.module.NotesModule
 import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
 
 
@@ -27,18 +30,22 @@ class EditNoteFragment : BaseFragment() {
     private var text: String? = null
     private var title: String? = null
     private var hint: String? = null
-    private var dateStr: String? = null
+    private var date: Long = EMPTY_DATE
 
     private lateinit var descriptionTextView: TextView
     private lateinit var titleTextView: TextView
     private lateinit var fullScreenButton: ImageButton
     private lateinit var deleteButton: ImageButton
     private lateinit var saveNoteButton: MaterialButton
+    private lateinit var calendarButton: ImageButton
     private lateinit var dateChip: Chip
 
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
     private var notesViewModel: NoteEditViewModel? = null
+    private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
+        notesViewModel?.setDate(y, m, d)
+    }
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -72,7 +79,7 @@ class EditNoteFragment : BaseFragment() {
             title = it.getString(ARG_TITLE)
             text = it.getString(ARG_TEXT)
             hint = it.getString(ARG_HINT)
-            dateStr = it.getString(ARG_DATE)
+            date = it.getLong(ARG_DATE, EMPTY_DATE)
         }
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java]
     }
@@ -90,11 +97,13 @@ class EditNoteFragment : BaseFragment() {
         saveNoteButton = view.findViewById(R.id.save_button)
         deleteButton = view.findViewById(R.id.delete_button)
         dateChip = view.findViewById(R.id.date_chip)
+        calendarButton = view.findViewById(R.id.calendar_button)
         titleTextView.text = title
         titleTextView.hint = hint
         descriptionTextView.text = text
-        dateChip.text = dateStr
-        if (!dateStr.isNullOrEmpty()) {
+
+        if (date != EMPTY_DATE) {
+            dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(date))
             dateChip.visibility = View.VISIBLE
         } else {
             dateChip.visibility = View.GONE
@@ -136,9 +145,18 @@ class EditNoteFragment : BaseFragment() {
                 NoteContainer.currentNote.date = null
             }
         }
+        calendarButton.setOnClickListener {
+            openCalendarDialog(if (date == EMPTY_DATE) null else date)
+        }
+        dateChip.setOnClickListener {
+            openCalendarDialog(if (date == EMPTY_DATE) null else date)
+        }
+        dateChip.setOnCloseIconClickListener {
+            notesViewModel?.clearDate()
+        }
 
         this.notesViewModel?.apply {
-            descriptionTextLiveData.observe(this@EditNoteFragment, Observer {
+            descriptionTextLiveData().observe(this@EditNoteFragment, Observer {
                 if (it != null && it != titleTextView.hint) {
                     if (it.isNotEmpty())
                         titleTextView.hint = it
@@ -146,10 +164,21 @@ class EditNoteFragment : BaseFragment() {
                         titleTextView.hint = context?.getString(R.string.title_hint)
                 }
             })
-            selectedDateString().observe(this@EditNoteFragment, Observer {
-                //dateText.setText(it)
+            selectedDate().observe(this@EditNoteFragment, Observer { time ->
+                if (time != null) {
+                    dateChip.visibility = View.VISIBLE
+                    dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
+                } else {
+                    dateChip.visibility = View.GONE
+                }
+                calendarButton.setOnClickListener {
+                    openCalendarDialog(time)
+                }
+                dateChip.setOnClickListener {
+                    openCalendarDialog(time)
+                }
             })
-            getSaveResult().observe(this@EditNoteFragment, Observer { obj ->
+            saveResult().observe(this@EditNoteFragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
                     Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 } else if (obj.status == Status.SUCCESS) {
@@ -160,6 +189,20 @@ class EditNoteFragment : BaseFragment() {
         }
     }
 
+    private fun openCalendarDialog(selectedDateInMillis: Long?) {
+        val selectedDate = Calendar.getInstance()
+        selectedDateInMillis?.let {
+            selectedDate.timeInMillis = it
+        }
+        context?.let {
+            DatePickerDialog(it, listener,
+                    selectedDate.get(Calendar.YEAR),
+                    selectedDate.get(Calendar.MONTH),
+                    selectedDate.get(Calendar.DAY_OF_MONTH))
+                    .show()
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         descriptionTextView.removeTextChangedListener(descriptionTextWatcher)
@@ -167,18 +210,20 @@ class EditNoteFragment : BaseFragment() {
     }
 
     companion object {
+
         private const val ARG_TEXT = "ARG_TEXT"
         private const val ARG_TITLE = "ARG_TITLE"
         private const val ARG_HINT = "ARG_HINT"
         private const val ARG_DATE = "ARG_DATE"
+        private const val EMPTY_DATE = -1L
         @JvmStatic
-        fun startMe(title: String?, hint: String?, text: String?, dateStr: String?) =
+        fun startMe(title: String?, hint: String?, text: String?, date: Long?) =
                 EditNoteFragment().apply {
                     arguments = Bundle().apply {
                         putString(ARG_TITLE, title)
                         putString(ARG_HINT, hint)
                         putString(ARG_TEXT, text)
-                        putString(ARG_DATE, dateStr)
+                        putLong(ARG_DATE, date ?: -1)
                     }
                 }
     }
