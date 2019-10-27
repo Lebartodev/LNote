@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.di.module
+package com.lebartodev.lnote.di.app
 
 import android.app.Application
 import androidx.room.Room
@@ -10,15 +10,14 @@ import dagger.Provides
 import javax.inject.Singleton
 
 @DebugOpenClass
-@Singleton
 @Module
 class AppModule(private val app: Application) {
     @Provides
     @Singleton
     fun provideApp(): Application = app
 
-    @Singleton
     @Provides
+    @Singleton
     fun provideDatabase(application: Application): AppDatabase {
         return Room.databaseBuilder(application, AppDatabase::class.java, "database.db").build()
     }

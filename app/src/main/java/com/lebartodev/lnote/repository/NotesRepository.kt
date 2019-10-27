@@ -8,12 +8,13 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 
 @DebugOpenClass
-class NotesRepository constructor(var database: AppDatabase,
-                                  var schedulersFacade: SchedulersFacade) {
+class NotesRepository constructor(var database: AppDatabase, var schedulersFacade: SchedulersFacade) {
 
-    fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll().subscribeOn(schedulersFacade.io())
+    fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll()
+            .subscribeOn(schedulersFacade.io())
 
-    fun getNote(id: Long): Flowable<Note> = database.notesDao().getById(id).subscribeOn(schedulersFacade.io())
+    fun getNote(id: Long): Flowable<Note> = database.notesDao().getById(id)
+            .subscribeOn(schedulersFacade.io())
 
     fun createNote(title: String?, text: String?, date: Long?): Single<Long> {
         return Single.defer {
@@ -27,5 +28,4 @@ class NotesRepository constructor(var database: AppDatabase,
 
         }
     }
-
 }

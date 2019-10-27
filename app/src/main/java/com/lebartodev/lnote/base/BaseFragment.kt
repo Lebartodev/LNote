@@ -8,7 +8,7 @@ import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.di.component.AppComponent
+import com.lebartodev.lnote.di.app.AppComponent
 
 
 abstract class BaseFragment : Fragment() {

@@ -2,9 +2,9 @@ package com.lebartodev.lnote.common
 
 import android.app.Application
 import android.content.Context
-import com.lebartodev.lnote.di.component.AppComponent
-import com.lebartodev.lnote.di.component.DaggerAppComponent
-import com.lebartodev.lnote.di.module.AppModule
+import com.lebartodev.lnote.di.app.AppComponent
+import com.lebartodev.lnote.di.app.AppModule
+import com.lebartodev.lnote.di.app.DaggerAppComponent
 
 
 open class LNoteApplication : Application() {

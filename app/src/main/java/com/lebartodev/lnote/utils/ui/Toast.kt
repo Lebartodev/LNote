@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.utils
+package com.lebartodev.lnote.utils.ui
 
 import android.app.Activity
 import android.widget.Toast

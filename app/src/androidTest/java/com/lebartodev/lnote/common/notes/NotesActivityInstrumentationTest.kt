@@ -2,7 +2,6 @@ package com.lebartodev.lnote.common.notes
 
 import android.widget.DatePicker
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.lifecycle.MutableLiveData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -14,13 +13,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.data.entity.ViewModelObject
-import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.ViewActionUtil
-import com.lebartodev.lnote.utils.di.component.AppComponentTest
-import com.lebartodev.lnote.utils.di.module.NotesModuleTest
+import com.lebartodev.lnote.utils.actions.ClickCloseIconAction
+import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.notes.NotesModuleTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
@@ -32,8 +29,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
-import javax.inject.Inject
 
 
 @RunWith(AndroidJUnit4::class)
@@ -125,11 +120,11 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
         onView(withId(R.id.text_description)).check(matches(hasFocus()))
         onView(withId(R.id.fab_more)).perform(click())
-        onView(withId(R.id.date_layout)).perform(ViewActionUtil.touchDownAndUp(0F, 0F))
+        onView(withId(R.id.calendar_button)).perform(click())
         onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
                 PickerActions.setDate(2019, 5, 5))
         onView(withId(android.R.id.button1)).perform(click())
-        onView(withId(R.id.date_text)).check(matches(withText("Sun, 05 May 2019")))
+        onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))
 
         onView(withId(R.id.save_button)).perform(click())
         onView(withId(R.id.notes_list)).check(matches(hasMinimumChildCount(1)))
@@ -166,7 +161,7 @@ class NotesActivityInstrumentationTest {
 
         onView(withId(R.id.text_description)).perform(click(), typeText("Description"))
         onView(withId(R.id.text_description)).check(matches(hasFocus()))
-        onView(withId(R.id.text_title)).check(matches(withText("Description")))
+        onView(withId(R.id.text_title)).check(matches(withHint("Description")))
 
 
         onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
@@ -176,7 +171,7 @@ class NotesActivityInstrumentationTest {
         val testString = "Test test test test test test test test test test test"
         onView(withId(R.id.text_title)).perform(click(), clearText())
         onView(withId(R.id.text_description)).perform(click(), clearText(), typeText(testString))
-        onView(withId(R.id.text_title)).check(matches(withText(testString.substring(0, 24))))
+        onView(withId(R.id.text_title)).check(matches(withHint(testString.substring(0, 24))))
     }
 
     @Test
@@ -188,13 +183,12 @@ class NotesActivityInstrumentationTest {
         assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
         onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
         onView(withId(R.id.fab_more)).perform(click())
-        onView(withId(R.id.date_layout)).perform(ViewActionUtil.touchDownAndUp(0F, 0F))
-        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
-                PickerActions.setDate(2019, 5, 5))
+        onView(withId(R.id.calendar_button)).perform(ViewActionUtil.touchDownAndUp(0F, 0F))
+        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(PickerActions.setDate(2019, 5, 5))
         onView(withId(android.R.id.button1)).perform(click())
-        onView(withId(R.id.date_text)).check(matches(withText("Sun, 05 May 2019")))
-        onView(withId(R.id.date_text)).perform(ViewActionUtil.clickRightDrawable())
-        onView(withId(R.id.date_text)).check(matches(withText("")))
+        onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))
+        onView(withId(R.id.date_chip)).perform(ClickCloseIconAction())
+        onView(withId(R.id.date_chip)).check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
 
 

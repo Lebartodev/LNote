@@ -6,7 +6,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.di.component.AppComponent
+import com.lebartodev.lnote.di.app.AppComponent
 
 
 abstract class BaseActivity : AppCompatActivity() {

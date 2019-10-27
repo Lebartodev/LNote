@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.utils
+package com.lebartodev.lnote.utils.ui
 
 import android.content.res.Resources
 import android.util.TypedValue

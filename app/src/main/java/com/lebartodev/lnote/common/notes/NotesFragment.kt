@@ -23,13 +23,13 @@ import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.common.details.EditNoteFragment
 import com.lebartodev.lnote.common.details.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.di.component.AppComponent
-import com.lebartodev.lnote.di.module.NotesModule
+import com.lebartodev.lnote.di.app.AppComponent
+import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
-import com.lebartodev.lnote.utils.NotesItemDecoration
+import com.lebartodev.lnote.utils.ui.NotesItemDecoration
 import com.lebartodev.lnote.utils.error
-import com.lebartodev.lnote.utils.toPx
+import com.lebartodev.lnote.utils.ui.toPx
 import javax.inject.Inject
 
 

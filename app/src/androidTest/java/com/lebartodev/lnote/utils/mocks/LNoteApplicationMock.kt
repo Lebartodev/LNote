@@ -1,8 +1,8 @@
 package com.lebartodev.lnote.utils.mocks
 
 import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.utils.di.component.DaggerAppComponentTest
-import com.lebartodev.lnote.utils.di.module.AppModuleTest
+import com.lebartodev.lnote.utils.di.app.AppModuleTest
+import com.lebartodev.lnote.utils.di.app.DaggerAppComponentTest
 
 class LNoteApplicationMock : LNoteApplication() {
     override fun setupGraph() {

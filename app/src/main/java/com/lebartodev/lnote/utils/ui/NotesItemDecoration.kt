@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.utils
+package com.lebartodev.lnote.utils.ui
 
 import android.graphics.Rect
 import android.view.View

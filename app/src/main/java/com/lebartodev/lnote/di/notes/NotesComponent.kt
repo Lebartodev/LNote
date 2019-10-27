@@ -1,9 +1,10 @@
-package com.lebartodev.lnote.di.component
+package com.lebartodev.lnote.di.notes
 
 import com.lebartodev.lnote.common.details.EditNoteFragment
 import com.lebartodev.lnote.common.notes.NotesActivity
 import com.lebartodev.lnote.common.notes.NotesFragment
-import com.lebartodev.lnote.di.module.NotesModule
+import com.lebartodev.lnote.di.notes.NotesModule
+import dagger.Component
 import dagger.Subcomponent
 
 @Subcomponent(modules = [NotesModule::class])

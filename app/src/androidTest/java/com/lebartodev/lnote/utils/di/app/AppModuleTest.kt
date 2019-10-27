@@ -1,9 +1,9 @@
-package com.lebartodev.lnote.utils.di.module
+package com.lebartodev.lnote.utils.di.app
 
 import android.app.Application
 import androidx.room.Room
 import com.lebartodev.lnote.data.AppDatabase
-import com.lebartodev.lnote.di.module.AppModule
+import com.lebartodev.lnote.di.app.AppModule
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever

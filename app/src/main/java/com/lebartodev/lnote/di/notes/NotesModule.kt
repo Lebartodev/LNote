@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.di.module
+package com.lebartodev.lnote.di.notes
 
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.repository.NotesRepository

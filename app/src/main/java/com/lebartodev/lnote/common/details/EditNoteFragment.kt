@@ -17,8 +17,8 @@ import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
-import com.lebartodev.lnote.di.component.AppComponent
-import com.lebartodev.lnote.di.module.NotesModule
+import com.lebartodev.lnote.di.app.AppComponent
+import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import java.text.SimpleDateFormat
