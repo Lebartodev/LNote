@@ -7,14 +7,13 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
-import io.reactivex.schedulers.Schedulers
 
 @DebugOpenClass
-class NotesViewModel constructor(var notesRepository: NotesRepository) : ViewModel() {
+class NotesViewModel constructor(var notesRepository: NotesRepository, val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var notesDisposable = Disposables.empty()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
 
@@ -25,9 +24,9 @@ class NotesViewModel constructor(var notesRepository: NotesRepository) : ViewMod
         notesDisposable = notesRepository.getNotes()
                 .map { ViewModelObject.success(it) }
                 .onErrorReturn { ViewModelObject.error(it, arrayListOf()) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(Consumer { notesLiveData.postValue(it) },
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(Consumer { notesLiveData.value = it },
                         Functions.emptyConsumer())
     }
 

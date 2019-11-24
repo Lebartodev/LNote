@@ -8,7 +8,7 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 
 @DebugOpenClass
-class NotesRepository constructor(var database: AppDatabase, var schedulersFacade: SchedulersFacade) {
+class NotesRepository constructor(val database: AppDatabase, val schedulersFacade: SchedulersFacade) {
 
     fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll()
             .subscribeOn(schedulersFacade.io())

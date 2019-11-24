@@ -4,8 +4,9 @@ import android.app.Application
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.dao.NotesDAO
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.di.component.DaggerAppComponentMock
-import com.lebartodev.lnote.di.module.AppModuleMock
+import com.lebartodev.lnote.di.app.AppModuleMock
+import com.lebartodev.lnote.di.app.DaggerAppComponentMock
+import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -16,6 +17,7 @@ import io.reactivex.subscribers.TestSubscriber
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
+import javax.inject.Named
 
 class NotesRepositoryTest {
     @Inject
@@ -51,7 +53,10 @@ class NotesRepositoryTest {
         testSubscriber.assertValue(notesTest)
     }
 
-    @Test
-    fun createNote() {
+
+    private class NotesModuleMock : NotesModule() {
+        @Named("Real")
+        override fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacade): NotesRepository =
+                NotesRepository(database, schedulersFacade)
     }
 }

@@ -1,8 +1,7 @@
-package com.lebartodev.lnote.di.component
+package com.lebartodev.lnote.di.app
 
 import android.app.Application
-import com.lebartodev.lnote.di.app.AppComponent
-import com.lebartodev.lnote.di.app.AppModule
+import com.lebartodev.lnote.di.notes.NotesComponentMock
 import com.lebartodev.lnote.di.notes.NotesModule
 import dagger.Component
 import javax.inject.Singleton

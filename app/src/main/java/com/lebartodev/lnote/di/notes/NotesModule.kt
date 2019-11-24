@@ -12,12 +12,8 @@ import dagger.Provides
 @Module
 class NotesModule {
     @Provides
-    fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacade): NotesRepository {
-        return NotesRepository(database, schedulersFacade)
-    }
+    fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacade): NotesRepository = NotesRepository(database, schedulersFacade)
 
     @Provides
-    fun provideLNotesViewModelFactory(notesRepository: NotesRepository): LNoteViewModelFactory {
-        return LNoteViewModelFactory(notesRepository)
-    }
+    fun provideLNotesViewModelFactory(notesRepository: NotesRepository, schedulersFacade: SchedulersFacade): LNoteViewModelFactory = LNoteViewModelFactory(notesRepository, schedulersFacade)
 }

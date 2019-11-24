@@ -8,15 +8,14 @@ import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
-import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 @DebugOpenClass
-class NoteEditViewModel constructor(var notesRepository: NotesRepository) : ViewModel() {
+class NoteEditViewModel constructor(var notesRepository: NotesRepository, val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var saveNoteDisposable = Disposables.empty()
     private var detailsDisposable = Disposables.empty()
     private val saveResultLiveData: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
@@ -49,8 +48,8 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
         saveNoteDisposable = notesRepository.createNote(title, text, selectedDate.value)
                 .map { ViewModelObject.success(it) }
                 .onErrorReturn { ViewModelObject.error(it, null) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer { saveResultLiveData.postValue(it) }, Functions.emptyConsumer())
     }
 
@@ -67,8 +66,8 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository) : View
     fun fetchDetails(id: Long) {
         saveNoteDisposable.dispose()
         detailsDisposable = notesRepository.getNote(id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer { noteDetailsLiveData.postValue(it) }, Functions.emptyConsumer())
     }
 

@@ -13,11 +13,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.lnote.R
+import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.ViewActionUtil
 import com.lebartodev.lnote.utils.actions.ClickCloseIconAction
 import com.lebartodev.lnote.utils.di.app.AppComponentTest
-import com.lebartodev.lnote.utils.di.notes.NotesModuleTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
@@ -43,7 +43,7 @@ class NotesActivityInstrumentationTest {
     @Before
     fun setUp() {
         (getApp().component() as AppComponentTest)
-                .plus(NotesModuleTest())
+                .plus(NotesModule())
                 .inject(this)
 
         rule.launchActivity(null)

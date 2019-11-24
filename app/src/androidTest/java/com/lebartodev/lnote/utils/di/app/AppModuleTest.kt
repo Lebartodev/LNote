@@ -11,9 +11,4 @@ import io.reactivex.schedulers.Schedulers
 
 class AppModuleTest(application: Application) : AppModule(application) {
     override fun provideDatabase(application: Application): AppDatabase = Room.inMemoryDatabaseBuilder(application, AppDatabase::class.java).allowMainThreadQueries().build()
-    override fun provideSchedulersFacade(): SchedulersFacade {
-        val schedulersFacade: SchedulersFacade = mock()
-        whenever(schedulersFacade.io()).thenReturn(Schedulers.trampoline())
-        return schedulersFacade
-    }
 }

@@ -18,12 +18,9 @@ class AppModule(private val app: Application) {
 
     @Provides
     @Singleton
-    fun provideDatabase(application: Application): AppDatabase {
-        return Room.databaseBuilder(application, AppDatabase::class.java, "database.db").build()
-    }
+    fun provideDatabase(application: Application): AppDatabase = Room.databaseBuilder(application, AppDatabase::class.java, "database.db").build()
 
     @Provides
-    fun provideSchedulersFacade(): SchedulersFacade {
-        return SchedulersFacade()
-    }
+    @Singleton
+    fun provideSchedulersFacade(): SchedulersFacade = SchedulersFacade()
 }

@@ -1,8 +1,7 @@
-package com.lebartodev.lnote.di.module
+package com.lebartodev.lnote.di.app
 
 import android.app.Application
 import com.lebartodev.lnote.data.AppDatabase
-import com.lebartodev.lnote.di.app.AppModule
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -13,6 +12,7 @@ class AppModuleMock(application: Application) : AppModule(application) {
     override fun provideSchedulersFacade(): SchedulersFacade {
         val schedulersFacade: SchedulersFacade = mock()
         whenever(schedulersFacade.io()).thenReturn(Schedulers.trampoline())
+        whenever(schedulersFacade.ui()).thenReturn(Schedulers.trampoline())
         return schedulersFacade
     }
 }
