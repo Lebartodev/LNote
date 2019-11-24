@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 class NotesDAOTest {
     @Inject
-    protected lateinit var database: AppDatabase
+    internal lateinit var database: AppDatabase
 
     @Before
     fun setUp() {
