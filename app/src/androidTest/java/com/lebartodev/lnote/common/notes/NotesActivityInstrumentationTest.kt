@@ -192,5 +192,62 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.date_chip)).check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
 
+    @Test
+    fun deleteDraftedNote() {
+        onView(withId(R.id.text_title)).check(matches(not(hasFocus())))
+        onView(withId(R.id.text_description)).check(matches(not(hasFocus())))
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
+        onView(withId(R.id.text_title)).check(matches(hasFocus()))
+        onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
+        onView(withId(R.id.text_description)).check(matches(hasFocus()))
+        onView(withId(R.id.fab_more)).perform(click())
+        onView(withId(R.id.calendar_button)).perform(click())
+        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
+                PickerActions.setDate(2019, 5, 5))
+        onView(withId(android.R.id.button1)).perform(click())
+        onView(withId(R.id.delete_button)).perform(click())
+        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.note_deleted)))
+        onView(withId(R.id.text_title)).check(matches(withText("")))
+        onView(withId(R.id.text_description)).check(matches(withText("")))
+        onView(withId(R.id.date_chip)).check(matches(not(isDisplayed())))
+    }
+
+    @Test
+    fun restoreDraftedNote() {
+        onView(withId(R.id.text_title)).check(matches(not(hasFocus())))
+        onView(withId(R.id.text_description)).check(matches(not(hasFocus())))
+        val bottomAddSheetBehavior = BottomSheetBehavior.from(
+                rule.activity.findViewById<ConstraintLayout>(R.id.bottom_sheet_add))
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
+        onView(withId(R.id.fab_add)).perform(click())
+        assert(bottomAddSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED)
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
+        onView(withId(R.id.text_title)).check(matches(hasFocus()))
+        onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
+        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
+        onView(withId(R.id.text_description)).check(matches(hasFocus()))
+        onView(withId(R.id.fab_more)).perform(click())
+        onView(withId(R.id.calendar_button)).perform(click())
+        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
+                PickerActions.setDate(2019, 5, 5))
+        onView(withId(android.R.id.button1)).perform(click())
+        onView(withId(R.id.delete_button)).perform(click())
+        onView((withId(com.google.android.material.R.id.snackbar_action))).perform(click());
+        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
+        onView(withId(R.id.text_title)).check(matches(withText("Title")))
+        onView(withId(R.id.text_description)).check(matches(withText("Description")))
+        onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))
+    }
+
 
 }
