@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
+import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
@@ -17,9 +18,17 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
     private var notesDisposable = Disposables.empty()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
 
+    private val noteDeleteDialogLiveData: MutableLiveData<Boolean?> = MutableLiveData()
+
     fun getNotes(): LiveData<ViewModelObject<List<Note>>> = notesLiveData
 
-    fun fetchNotes() {
+    fun noteDeleteDialog(): LiveData<Boolean?> = noteDeleteDialogLiveData
+
+    init {
+        fetchNotes()
+    }
+
+    private fun fetchNotes() {
         notesDisposable.dispose()
         notesDisposable = notesRepository.getNotes()
                 .map { ViewModelObject.success(it) }
@@ -34,4 +43,23 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
         super.onCleared()
         notesDisposable.dispose()
     }
+
+    fun deleteDraftedNote() {
+        if (noteDeleteDialogLiveData.value != true) {
+            noteDeleteDialogLiveData.value = true
+            if (NoteContainer.state().value != NoteContainer.State.IN_DELETE)
+                NoteContainer.clearCurrentNote()
+        }
+    }
+
+    fun onDraftedNoteDeleteConfirmed() {
+        noteDeleteDialogLiveData.value = null
+        NoteContainer.deleteTempNote()
+    }
+
+    fun undoDeleteDraftedNote() {
+        noteDeleteDialogLiveData.value = null
+        NoteContainer.undoClearCurrentNote()
+    }
+
 }

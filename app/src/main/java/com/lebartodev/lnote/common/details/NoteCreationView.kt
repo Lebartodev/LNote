@@ -46,7 +46,7 @@ class NoteCreationView : ConstraintLayout {
     private val dateChip: Chip
 
     private var fragment: Fragment? = null
-    private var clickListener: ClickListener? = null
+    private var fullScreenClickListener: FullScreenClickListener? = null
     var isMoreOpen = false
 
     private val descriptionTextWatcher = object : TextWatcher {
@@ -59,7 +59,7 @@ class NoteCreationView : ConstraintLayout {
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             notesViewModel?.onDescriptionChanged(s?.toString())
-            NoteContainer.currentNote.text = s?.toString()
+            NoteContainer.currentNote().value?.text = s?.toString()
         }
     }
     private val titleTextWatcher = object : TextWatcher {
@@ -71,7 +71,7 @@ class NoteCreationView : ConstraintLayout {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            NoteContainer.currentNote.title = s?.toString()
+            NoteContainer.currentNote().value?.title = s?.toString()
         }
     }
     private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
@@ -96,9 +96,9 @@ class NoteCreationView : ConstraintLayout {
         dateChip = findViewById(R.id.date_chip)
 
         saveNoteButton.setOnClickListener {
-            clickListener?.onSaveClicked()
             val savedTitle = if (titleText.text.isNullOrEmpty()) titleText.hint.toString() else titleText.text.toString()
             notesViewModel?.saveNote(title = savedTitle, text = descriptionText.text.toString())
+            NoteContainer.saveNote()
             titleText.setText("")
             descriptionText.setText("")
             dateChip.text = ""
@@ -107,16 +107,13 @@ class NoteCreationView : ConstraintLayout {
             descriptionText.clearFocus()
         }
         deleteButton.setOnClickListener {
-            NoteContainer.tempNote.text = NoteContainer.currentNote.text
-            NoteContainer.tempNote.title = NoteContainer.currentNote.title
-            NoteContainer.tempNote.date = NoteContainer.currentNote.date
+            NoteContainer.clearCurrentNote()
             dateChip.visibility = View.GONE
             dateChip.text = ""
             titleText.setText("")
             descriptionText.setText("")
             titleText.clearFocus()
             descriptionText.clearFocus()
-            clickListener?.onDeleteClicked()
         }
         dateChip.setOnCloseIconClickListener {
             notesViewModel?.clearDate()
@@ -130,10 +127,9 @@ class NoteCreationView : ConstraintLayout {
         setupSheetView()
     }
 
-    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory, clickListener: ClickListener,
-                      isMoreOpen: Boolean) {
+    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory, isMoreOpen: Boolean, fullScreenClickListener: FullScreenClickListener) {
         this.isMoreOpen = isMoreOpen
-        this.clickListener = clickListener
+        this.fullScreenClickListener = fullScreenClickListener
         this.fragment = fragment
         this.notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
         if (isMoreOpen) {
@@ -141,24 +137,27 @@ class NoteCreationView : ConstraintLayout {
             calendarButton.visibility = View.VISIBLE
             fabMore.setImageResource(R.drawable.ic_arrow_right_24)
         }
-        titleText.setText(NoteContainer.currentNote.title)
-        descriptionText.setText(NoteContainer.currentNote.text)
-        NoteContainer.currentNote.date.let { time ->
-            if (time != null) {
-                dateChip.visibility = View.VISIBLE
-                dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
-            } else {
-                dateChip.visibility = View.GONE
+        NoteContainer.currentNote().observe(fragment, Observer { note ->
+            titleText.setText(note.title ?: "")
+            descriptionText.setText(note.text ?: "")
+            note.date.run {
+                if (this != null) {
+                    dateChip.visibility = View.VISIBLE
+                    dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(this))
+                } else {
+                    dateChip.visibility = View.GONE
+                }
+                calendarButton.setOnClickListener {
+                    openCalendarDialog(this)
+                }
+                dateChip.setOnClickListener {
+                    openCalendarDialog(this)
+                }
             }
-            calendarButton.setOnClickListener {
-                openCalendarDialog(time)
-            }
-            dateChip.setOnClickListener {
-                openCalendarDialog(time)
-            }
-        }
+        })
+
         this.notesViewModel?.apply {
-            descriptionTextLiveData ().observe(fragment, Observer {
+            descriptionTextLiveData().observe(fragment, Observer {
                 if (it != null) {
                     if (it.isNotEmpty())
                         titleText.hint = it
@@ -194,7 +193,7 @@ class NoteCreationView : ConstraintLayout {
             (fragment as BaseFragment).hideKeyboardListener(titleText) {
                 val nextFragment = EditNoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
                         descriptionText.text.toString(), notesViewModel?.selectedDate()?.value)
-                clickListener?.onFullScreenClicked()
+                fullScreenClickListener?.onFullScreenClicked()
 
                 val exitFade = Fade(Fade.OUT)
                 exitFade.duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
@@ -272,14 +271,7 @@ class NoteCreationView : ConstraintLayout {
         super.onDetachedFromWindow()
     }
 
-    fun setContent(title: String?, text: String?) {
-        titleText.setText(title)
-        descriptionText.setText(text)
-    }
-
-    interface ClickListener {
-        fun onSaveClicked()
+    interface FullScreenClickListener {
         fun onFullScreenClicked()
-        fun onDeleteClicked()
     }
 }

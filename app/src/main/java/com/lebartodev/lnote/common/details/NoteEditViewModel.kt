@@ -29,12 +29,12 @@ class NoteEditViewModel constructor(var notesRepository: NotesRepository, val sc
         calendar.set(Calendar.MONTH, month)
         calendar.set(Calendar.DAY_OF_MONTH, day)
         selectedDate.postValue(calendar.timeInMillis)
-        NoteContainer.currentNote.date = calendar.timeInMillis
+        NoteContainer.currentNote().value?.date = calendar.timeInMillis
     }
 
     fun clearDate() {
         selectedDate.postValue(null)
-        NoteContainer.currentNote.date = null
+        NoteContainer.currentNote().value?.date = null
     }
 
     fun selectedDate(): LiveData<Long?> = selectedDate

@@ -57,7 +57,7 @@ class EditNoteFragment : BaseFragment() {
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             notesViewModel?.onDescriptionChanged(s?.toString())
-            NoteContainer.currentNote.text = s?.toString()
+            NoteContainer.currentNote().value?.text = s?.toString()
         }
     }
     private val titleTextWatcher = object : TextWatcher {
@@ -68,7 +68,7 @@ class EditNoteFragment : BaseFragment() {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            NoteContainer.currentNote.title = s?.toString()
+            NoteContainer.currentNote().value?.title = s?.toString()
         }
     }
 
@@ -121,15 +121,8 @@ class EditNoteFragment : BaseFragment() {
             hideKeyboardListener(titleTextView) {
                 titleTextView.clearFocus()
                 descriptionTextView.clearFocus()
-                NoteContainer.tempNote.text = NoteContainer.currentNote.text
-                NoteContainer.tempNote.title = NoteContainer.currentNote.title
-                NoteContainer.tempNote.date = NoteContainer.currentNote.date
 
-                NoteContainer.currentNote.text = null
-                NoteContainer.currentNote.title = null
-                NoteContainer.currentNote.date = null
-
-                NoteContainer.isDeleted = true
+                NoteContainer.clearCurrentNote()
 
                 fragmentManager?.popBackStack()
             }
@@ -140,9 +133,8 @@ class EditNoteFragment : BaseFragment() {
                 notesViewModel?.saveNote(title = savedTitle, text = descriptionTextView.text.toString())
                 titleTextView.clearFocus()
                 descriptionTextView.clearFocus()
-                NoteContainer.currentNote.text = null
-                NoteContainer.currentNote.title = null
-                NoteContainer.currentNote.date = null
+
+                NoteContainer.clearCurrentNote()
             }
         }
         calendarButton.setOnClickListener {
@@ -182,7 +174,7 @@ class EditNoteFragment : BaseFragment() {
                 if (obj.status == Status.ERROR) {
                     Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 } else if (obj.status == Status.SUCCESS) {
-                    NoteContainer.isSaved = true
+                    NoteContainer.saveNote()
                     fragmentManager?.popBackStack()
                 }
             })
