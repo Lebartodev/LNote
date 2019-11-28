@@ -104,10 +104,10 @@ class NoteEditViewModelTest {
         val loadNotesObserver: Observer<String?> = mock()
         editViewModel.descriptionTextLiveData.observeForever(loadNotesObserver)
 
-        editViewModel.onDescriptionChanged("1234567890")
+        editViewModel.setDescription("1234567890")
         verify(loadNotesObserver).onChanged("1234567890")
 
-        editViewModel.onDescriptionChanged("123456789012345678901234567890")
+        editViewModel.setDescription("123456789012345678901234567890")
         verify(loadNotesObserver).onChanged("123456789012345678901234")
     }
 }

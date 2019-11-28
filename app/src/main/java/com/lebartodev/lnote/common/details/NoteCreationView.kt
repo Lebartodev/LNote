@@ -26,13 +26,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.data.entity.Status
-import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.*
 
 class NoteCreationView : ConstraintLayout {
-    private var notesViewModel: NoteEditViewModel? = null
+    private var viewModel: NoteEditViewModel? = null
 
     private val saveNoteButton: MaterialButton
     private val titleText: EditText
@@ -51,36 +50,36 @@ class NoteCreationView : ConstraintLayout {
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-
+            viewModel?.setDescription(s?.toString() ?: "")
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            notesViewModel?.onDescriptionChanged(s?.toString())
-            NoteContainer.currentNote().value?.text = s?.toString()
+
         }
     }
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-
+            viewModel?.setDescription(s?.toString() ?: "")
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            NoteContainer.currentNote().value?.title = s?.toString()
+
         }
     }
     private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
-        notesViewModel?.setDate(y, m, d)
+        viewModel?.setDate(y, m, d)
     }
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs,
+            defStyleAttr)
 
     init {
         inflate(context, R.layout.view_note_creation, this)
@@ -96,9 +95,7 @@ class NoteCreationView : ConstraintLayout {
         dateChip = findViewById(R.id.date_chip)
 
         saveNoteButton.setOnClickListener {
-            val savedTitle = if (titleText.text.isNullOrEmpty()) titleText.hint.toString() else titleText.text.toString()
-            notesViewModel?.saveNote(title = savedTitle, text = descriptionText.text.toString())
-            NoteContainer.saveNote()
+            viewModel?.saveNote()
             titleText.setText("")
             descriptionText.setText("")
             dateChip.text = ""
@@ -107,7 +104,7 @@ class NoteCreationView : ConstraintLayout {
             descriptionText.clearFocus()
         }
         deleteButton.setOnClickListener {
-            NoteContainer.clearCurrentNote()
+            viewModel?.clearCurrentNote()
             dateChip.visibility = View.GONE
             dateChip.text = ""
             titleText.setText("")
@@ -116,7 +113,7 @@ class NoteCreationView : ConstraintLayout {
             descriptionText.clearFocus()
         }
         dateChip.setOnCloseIconClickListener {
-            notesViewModel?.clearDate()
+            viewModel?.clearDate()
         }
         calendarButton.setOnClickListener {
             openCalendarDialog(null)
@@ -127,48 +124,38 @@ class NoteCreationView : ConstraintLayout {
         setupSheetView()
     }
 
-    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory, isMoreOpen: Boolean, fullScreenClickListener: FullScreenClickListener) {
+    fun setupFragment(fragment: Fragment, viewModelFactory: LNoteViewModelFactory,
+                      isMoreOpen: Boolean, fullScreenClickListener: FullScreenClickListener) {
         this.isMoreOpen = isMoreOpen
         this.fullScreenClickListener = fullScreenClickListener
         this.fragment = fragment
-        this.notesViewModel = ViewModelProviders.of(fragment, viewModelFactory)[NoteEditViewModel::class.java]
+        this.viewModel = ViewModelProviders.of(fragment,
+                viewModelFactory)[NoteEditViewModel::class.java]
         if (isMoreOpen) {
             deleteButton.visibility = View.VISIBLE
             calendarButton.visibility = View.VISIBLE
             fabMore.setImageResource(R.drawable.ic_arrow_right_24)
         }
-        NoteContainer.currentNote().observe(fragment, Observer { note ->
-            titleText.setText(note.title ?: "")
-            descriptionText.setText(note.text ?: "")
-            note.date.run {
-                if (this != null) {
-                    dateChip.visibility = View.VISIBLE
-                    dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(this))
-                } else {
-                    dateChip.visibility = View.GONE
-                }
-                calendarButton.setOnClickListener {
-                    openCalendarDialog(this)
-                }
-                dateChip.setOnClickListener {
-                    openCalendarDialog(this)
-                }
-            }
-        })
+        viewModel?.apply {
+            currentNote().observe(fragment, Observer { noteData ->
+                val description = noteData.text ?: ""
+                val title = noteData.title
+                val time = noteData.date
 
-        this.notesViewModel?.apply {
-            descriptionTextLiveData().observe(fragment, Observer {
-                if (it != null) {
-                    if (it.isNotEmpty())
-                        titleText.hint = it
-                    else
-                        titleText.hint = context.getString(R.string.title_hint)
+                if (description != titleText.hint) {
+                    if (description.isNotEmpty()) {
+                        titleText.hint = viewModel?.getFormattedHint(description)
+                    } else {
+                        titleText.hint = context?.getString(R.string.title_hint)
+                    }
                 }
-            })
-            selectedDate().observe(fragment, Observer { time ->
+                titleText.setText(title)
+                descriptionText.setText(description)
+
                 if (time != null) {
                     dateChip.visibility = View.VISIBLE
-                    dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
+                    dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern),
+                            Locale.US).format(Date(time))
                 } else {
                     dateChip.visibility = View.GONE
                 }
@@ -179,9 +166,11 @@ class NoteCreationView : ConstraintLayout {
                     openCalendarDialog(time)
                 }
             })
+
             saveResult().observe(fragment, Observer { obj ->
                 if (obj.status == Status.ERROR) {
-                    Toast.makeText(context, context.getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.error_note_create),
+                            Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -191,32 +180,41 @@ class NoteCreationView : ConstraintLayout {
     private fun setupSheetView() {
         fullScreenButton.setOnClickListener {
             (fragment as BaseFragment).hideKeyboardListener(titleText) {
-                val nextFragment = EditNoteFragment.startMe(titleText.text.toString(), titleText.hint.toString(),
-                        descriptionText.text.toString(), notesViewModel?.selectedDate()?.value)
+                val nextFragment = EditNoteFragment
+                        .initMe(titleText.text.toString(),
+                                titleText.hint.toString(),
+                                descriptionText.text.toString(),
+                                viewModel?.selectedDate()?.value)
+
                 fullScreenClickListener?.onFullScreenClicked()
 
-                val exitFade = Fade(Fade.OUT)
-                exitFade.duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                fragment?.exitTransition = exitFade
+                fragment?.exitTransition = Fade(Fade.OUT)
+                        .apply {
+                            duration = resources
+                                    .getInteger(R.integer.animation_duration).toLong() / 2
+                        }
 
-                val returnFade = Fade(Fade.IN)
-                returnFade.duration = resources.getInteger(R.integer.animation_duration).toLong()
-                fragment?.returnTransition = returnFade
+                fragment?.returnTransition = Fade(Fade.IN)
+                        .apply {
+                            duration = resources.getInteger(R.integer.animation_duration).toLong()
+                        }
+
+                nextFragment.enterTransition = Fade(Fade.IN)
+                        .apply {
+                            startDelay = resources
+                                    .getInteger(R.integer.animation_duration).toLong() / 2
+                            duration = resources
+                                    .getInteger(R.integer.animation_duration).toLong() / 2
+                        }
 
 
-                val enterFade = Fade(Fade.IN)
-                enterFade.startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                enterFade.duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
-
-                nextFragment.enterTransition = enterFade
-
-                val enterTransitionSet = TransitionSet()
-                enterTransitionSet.addTransition(
-                        TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-                enterTransitionSet.startDelay = 0
-                enterTransitionSet.duration = resources.getInteger(R.integer.animation_duration).toLong()
-
-                nextFragment.sharedElementEnterTransition = enterTransitionSet
+                nextFragment.sharedElementEnterTransition = TransitionSet()
+                        .apply {
+                            addTransition(TransitionInflater.from(context)
+                                    .inflateTransition(android.R.transition.move))
+                            startDelay = 0
+                            duration = resources.getInteger(R.integer.animation_duration).toLong()
+                        }
 
                 val transaction = fragment?.fragmentManager
                         ?.beginTransaction()
@@ -243,9 +241,12 @@ class NoteCreationView : ConstraintLayout {
             isMoreOpen = !isMoreOpen
             val set = ConstraintSet()
             set.clone(constraintLayout)
-            set.setVisibility(calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            set.setVisibility(deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+            set.setVisibility(calendarButton.id,
+                    if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(deleteButton.id,
+                    if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            fabMore.setImageResource(
+                    if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
             set.applyTo(constraintLayout)
         }
     }

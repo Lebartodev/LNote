@@ -25,7 +25,6 @@ import com.lebartodev.lnote.common.details.NoteCreationView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.app.AppComponent
 import com.lebartodev.lnote.di.notes.NotesModule
-import com.lebartodev.lnote.repository.NoteContainer
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.error
 import com.lebartodev.lnote.utils.ui.NotesItemDecoration
@@ -52,7 +51,7 @@ class NotesFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
         adapter = NotesAdapter {
-            val nextFragment = EditNoteFragment.startMe(it.title, null, it.text, it.date)
+            val nextFragment = EditNoteFragment.initMe(it.title, null, it.text, it.date)
             val exitFade = Fade(Fade.OUT).apply {
                 duration = resources.getInteger(R.integer.animation_duration).toLong()
             }
@@ -84,7 +83,8 @@ class NotesFragment : BaseFragment() {
                                     bottomAppBar.visibility = View.INVISIBLE
                                 }
 
-                                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                override fun onDismissed(transientBottomBar: Snackbar?,
+                                                         event: Int) {
                                     super.onDismissed(transientBottomBar, event)
                                     bottomAppBar.visibility = View.VISIBLE
                                     snackBarShowing = false
@@ -98,9 +98,11 @@ class NotesFragment : BaseFragment() {
                                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                                 notesViewModel.undoDeleteDraftedNote()
                             }
-                            .setActionTextColor(ContextCompat.getColor(this.context, R.color.colorAction))
+                            .setActionTextColor(
+                                    ContextCompat.getColor(this.context, R.color.colorAction))
                     val layout = snackBar.view as Snackbar.SnackbarLayout
-                    val textView = layout.findViewById(com.google.android.material.R.id.snackbar_text) as TextView
+                    val textView = layout.findViewById(
+                            com.google.android.material.R.id.snackbar_text) as TextView
                     textView.setTextColor(ContextCompat.getColor(this.context, R.color.white))
                     snackBar.show()
                 }
@@ -130,11 +132,12 @@ class NotesFragment : BaseFragment() {
         notesList = view.findViewById(R.id.notes_list)
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_add))
-        noteCreationView.setupFragment(this, viewModelFactory, isMoreOpen, object : NoteCreationView.FullScreenClickListener {
-            override fun onFullScreenClicked() {
-                isMoreOpen = noteCreationView.isMoreOpen
-            }
-        })
+        noteCreationView.setupFragment(this, viewModelFactory, isMoreOpen,
+                object : NoteCreationView.FullScreenClickListener {
+                    override fun onFullScreenClicked() {
+                        isMoreOpen = noteCreationView.isMoreOpen
+                    }
+                })
         notesList.layoutManager = LinearLayoutManager(context)
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
@@ -166,10 +169,12 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun setupBottomSheet() {
-        bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomAddSheetBehavior.setBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 if (!snackBarShowing)
-                    bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
+                    bottomAppBar.animate().translationY(
+                            slideOffset * bottomAppBar.height).setDuration(0).start()
                 if (1f - slideOffset == 1f) {
                     fabAdd.show()
                 } else {
@@ -209,8 +214,7 @@ class NotesFragment : BaseFragment() {
     }
 
     public override fun setupComponent(component: AppComponent) {
-        component.plus(NotesModule())
-                .inject(this)
+        component.plus(NotesModule()).inject(this)
     }
 
 }

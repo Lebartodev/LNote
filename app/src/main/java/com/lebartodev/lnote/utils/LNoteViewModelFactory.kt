@@ -7,7 +7,9 @@ import com.lebartodev.lnote.common.notes.NotesViewModel
 import com.lebartodev.lnote.repository.NotesRepository
 
 
-open class LNoteViewModelFactory constructor(var notesRepository: NotesRepository, val schedulersFacade: SchedulersFacade) : ViewModelProvider.Factory {
+open class LNoteViewModelFactory constructor(private val notesRepository: NotesRepository,
+                                             private val schedulersFacade: SchedulersFacade) :
+        ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass == NotesViewModel::class.java) {
             return NotesViewModel(notesRepository, schedulersFacade) as T
