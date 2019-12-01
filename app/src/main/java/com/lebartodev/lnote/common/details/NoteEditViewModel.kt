@@ -7,7 +7,6 @@ import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
-import com.lebartodev.lnote.utils.SingleLiveEvent
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
@@ -20,17 +19,20 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     private var detailsDisposable = Disposables.empty()
     private val saveResultLiveData: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
     private val selectedDate = MutableLiveData<Long?>()
-    private val saveNoteStateLiveData = SingleLiveEvent<Boolean>()
     private val deleteNoteStateLiveData = MutableLiveData<Boolean?>()
+    private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
+    private val fullScreenOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
 
     private val currentNoteLiveData = MutableLiveData<NoteData>().apply { value = NoteData() }
     private var tempNote = NoteData()
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
 
-    fun saveNoteState(): LiveData<Boolean?> = saveNoteStateLiveData
+    fun deleteNoteState(): LiveData<Boolean?> = deleteNoteStateLiveData
 
-    fun sdeleteNoteState(): LiveData<Boolean?> = deleteNoteStateLiveData
+    fun isMoreOpen(): LiveData<Boolean> = moreOpenLiveData
+
+    fun fullScreenOpen(): LiveData<Boolean> = fullScreenOpenLiveData
 
     fun selectedDate(): LiveData<Long?> = selectedDate
 
@@ -100,6 +102,10 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         tempNote = NoteData()
     }
 
+    fun toggleMore() {
+        moreOpenLiveData.value = !(moreOpenLiveData.value ?: false)
+    }
+
     fun getFormattedHint(text: String): String {
         return if (text.length > MAX_TITLE_CHARACTERS) {
             text.substring(0, MAX_TITLE_CHARACTERS)
@@ -112,6 +118,10 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         super.onCleared()
         saveNoteDisposable.dispose()
         detailsDisposable.dispose()
+    }
+
+    fun toggleFullScreen() {
+        fullScreenOpenLiveData.value = !(fullScreenOpenLiveData.value ?: false)
     }
 
     companion object {

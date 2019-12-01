@@ -79,8 +79,70 @@ class EditNoteFragment : BaseFragment() {
             hint = it.getString(ARG_HINT)
             date = it.getLong(ARG_DATE, EMPTY_DATE)
         }
-        viewModel = ViewModelProviders.of(this,
-                viewModelFactory)[NoteEditViewModel::class.java]
+        viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
+        viewModel.fullScreenOpen().observe(this, Observer {
+            if (it == false) {
+                hideKeyboardListener(titleTextView) {
+                    fragmentManager?.popBackStack()
+                }
+            }
+        })
+        viewModel.deleteNoteState().observe(this, Observer {
+            if (it == true) {
+                hideKeyboardListener(titleTextView) {
+                    titleTextView.clearFocus()
+                    descriptionTextView.clearFocus()
+                    fragmentManager?.popBackStack()
+                }
+            }
+        })
+        viewModel.saveResult().observe(this, Observer { obj ->
+            if (obj != null) {
+                if (obj.status == Status.ERROR) {
+                    Toast.makeText(context, getString(R.string.error_note_create),
+                            Toast.LENGTH_SHORT).show()
+                } else if (obj.status == Status.SUCCESS) {
+                    hideKeyboardListener(titleTextView) {
+                        titleTextView.clearFocus()
+                        descriptionTextView.clearFocus()
+                        fragmentManager?.popBackStack()
+                    }
+                }
+            }
+        })
+        viewModel.currentNote().observe(this, Observer { noteData ->
+            val description = noteData.text ?: ""
+            val title = noteData.title
+            val time = noteData.date
+
+            if (description != titleTextView.hint) {
+                if (description.isNotEmpty()) {
+                    titleTextView.hint = viewModel.getFormattedHint(description)
+                } else {
+                    titleTextView.hint = context?.getString(R.string.title_hint)
+                }
+            }
+
+            if (titleTextView.text.toString() != title) {
+                titleTextView.text = title
+            }
+            if (descriptionTextView.text.toString() != description) {
+                descriptionTextView.text = description
+            }
+            if (time != null) {
+                dateChip.visibility = View.VISIBLE
+                dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern),
+                        Locale.US).format(Date(time))
+            } else {
+                dateChip.visibility = View.GONE
+            }
+            calendarButton.setOnClickListener {
+                openCalendarDialog(time)
+            }
+            dateChip.setOnClickListener {
+                openCalendarDialog(time)
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -112,70 +174,17 @@ class EditNoteFragment : BaseFragment() {
         titleTextView.addTextChangedListener(titleTextWatcher)
 
 
-        fullScreenButton.setOnClickListener {
-            hideKeyboardListener(titleTextView) {
-                fragmentManager?.popBackStack()
-            }
-        }
-        deleteButton.setOnClickListener {
-            hideKeyboardListener(titleTextView) {
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
-                viewModel.clearCurrentNote()
-                fragmentManager?.popBackStack()
-            }
-        }
-        saveNoteButton.setOnClickListener {
-            hideKeyboardListener(titleTextView) {
-                viewModel.saveNote()
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
-                fragmentManager?.popBackStack()
-            }
-        }
+        fullScreenButton.setOnClickListener { viewModel.toggleFullScreen() }
+        deleteButton.setOnClickListener { viewModel.clearCurrentNote() }
+        saveNoteButton.setOnClickListener { viewModel.saveNote() }
+
         calendarButton.setOnClickListener {
             openCalendarDialog(if (date == EMPTY_DATE) null else date)
         }
         dateChip.setOnClickListener { openCalendarDialog(if (date == EMPTY_DATE) null else date) }
         dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
-        viewModel.currentNote().observe(this, Observer { noteData ->
-            val description = noteData.text ?: ""
-            val title = noteData.title
-            val time = noteData.date
 
-            if (description != titleTextView.hint) {
-                if (description.isNotEmpty()) {
-                    titleTextView.hint = viewModel.getFormattedHint(description)
-                } else {
-                    titleTextView.hint = context?.getString(R.string.title_hint)
-                }
-            }
-            titleTextView.text = title
-            descriptionTextView.text = description
 
-            if (time != null) {
-                dateChip.visibility = View.VISIBLE
-                dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern),
-                        Locale.US).format(Date(time))
-            } else {
-                dateChip.visibility = View.GONE
-            }
-            calendarButton.setOnClickListener {
-                openCalendarDialog(time)
-            }
-            dateChip.setOnClickListener {
-                openCalendarDialog(time)
-            }
-        })
-
-        viewModel.saveResult().observe(this@EditNoteFragment, Observer { obj ->
-            if (obj.status == Status.ERROR) {
-                Toast.makeText(context, getString(R.string.error_note_create),
-                        Toast.LENGTH_SHORT).show()
-            } else if (obj.status == Status.SUCCESS) {
-                fragmentManager?.popBackStack()
-            }
-        })
     }
 
     private fun openCalendarDialog(selectedDateInMillis: Long?) {

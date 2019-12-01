@@ -21,9 +21,8 @@ class NotesRepository constructor(val database: AppDatabase, val schedulersFacad
             if (text.isNullOrBlank()) {
                 Single.error(NullPointerException())
             } else {
-                Single.fromCallable {
-                    database.notesDao().insert(Note(null, title, date, System.currentTimeMillis(), text))
-                }.subscribeOn(schedulersFacade.io())
+                Single.fromCallable { database.notesDao().insert(Note(null, title, date, System.currentTimeMillis(), text)) }
+                        .subscribeOn(schedulersFacade.io())
             }
 
         }

@@ -10,9 +10,12 @@ class NotesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.notes_layout_container, NotesFragment(), "NotesFragment")
-                .commit()
+        val fragment = supportFragmentManager.findFragmentByTag(NotesFragment.TAG)
+        if (fragment == null) {
+            supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.notes_layout_container, NotesFragment(), NotesFragment.TAG)
+                    .commit()
+        }
     }
 }

@@ -1,5 +1,5 @@
 ext {
-    archComponentVersion = "2.0.0"
+    archComponentVersion = "2.1.0"
     mockitoVersion = "2.19.0"
 }
 apply plugin: 'com.android.application'
@@ -42,23 +42,23 @@ allOpen {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
     implementation 'com.google.android.material:material:1.0.0'
 
     implementation 'com.google.dagger:dagger:2.16'
     kapt 'com.google.dagger:dagger-compiler:2.13'
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.14'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
-    implementation "androidx.room:room-runtime:$archComponentVersion"
-    implementation "androidx.room:room-rxjava2:$archComponentVersion"
-    kapt "androidx.room:room-compiler:$archComponentVersion"
+    implementation "androidx.room:room-runtime:2.2.2"
+    implementation "androidx.room:room-rxjava2:2.2.2"
+    kapt "androidx.room:room-compiler:2.2.2"
 
     implementation "androidx.lifecycle:lifecycle-extensions:$archComponentVersion"
     implementation "androidx.lifecycle:lifecycle-reactivestreams:$archComponentVersion"
-    kapt "androidx.lifecycle:lifecycle-compiler:$archComponentVersion"
+    kapt "androidx.lifecycle:lifecycle-compiler:2.1.0"
 
     //Unit test
     testImplementation 'junit:junit:4.12'
