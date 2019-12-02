@@ -23,6 +23,7 @@ import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.common.details.EditNoteFragment
 import com.lebartodev.lnote.common.details.NoteCreationView
 import com.lebartodev.lnote.common.details.NoteEditViewModel
+import com.lebartodev.lnote.common.details.NotesCreationFragment
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.app.AppComponent
@@ -38,7 +39,7 @@ class NotesFragment : BaseFragment() {
     private lateinit var fabAdd: FloatingActionButton
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
-    private lateinit var noteCreationView: NoteCreationView
+    //private lateinit var noteCreationView: NoteCreationView
     private lateinit var adapter: NotesAdapter
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     @Inject
@@ -134,6 +135,14 @@ class NotesFragment : BaseFragment() {
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
             }
         })
+
+        val fragmentBottom = fragmentManager?.findFragmentByTag(NotesCreationFragment.TAG)
+        if (fragmentBottom == null) {
+            fragmentManager
+                    ?.beginTransaction()
+                    ?.replace(R.id.bottom_sheet_add, NotesCreationFragment(), NotesCreationFragment.TAG)
+                    ?.commit()
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -147,9 +156,9 @@ class NotesFragment : BaseFragment() {
         fabAdd = view.findViewById(R.id.fab_add)
         bottomAppBar = view.findViewById(R.id.bottom_app_bar)
         notesList = view.findViewById(R.id.notes_list)
-        noteCreationView = view.findViewById(R.id.bottom_sheet_add)
+        //noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_add))
-        noteCreationView.setupFragment(this, editNoteViewModel)
+        //noteCreationView.setupFragment(this, editNoteViewModel)
         notesList.layoutManager = LinearLayoutManager(context)
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),

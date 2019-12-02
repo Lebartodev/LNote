@@ -3,6 +3,7 @@ package com.lebartodev.lnote.common.notes
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.lebartodev.lnote.R
+import com.lebartodev.lnote.common.details.NotesCreationFragment
 
 
 class NotesActivity : AppCompatActivity() {
