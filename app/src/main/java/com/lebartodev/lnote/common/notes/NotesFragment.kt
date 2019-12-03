@@ -149,7 +149,6 @@ class NotesFragment : BaseFragment() {
         notesList = view.findViewById(R.id.notes_list)
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_add))
-        noteCreationView.setupFragment(this, editNoteViewModel)
         notesList.layoutManager = LinearLayoutManager(context)
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
