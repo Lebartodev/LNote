@@ -1,7 +1,6 @@
 package com.lebartodev.lnote.common.details
 
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,7 +10,6 @@ import android.widget.EditText
 import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.lifecycle.ViewModelProviders
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -34,9 +32,20 @@ class NoteCreationView : ConstraintLayout {
     val divider: View
     val dateChip: Chip
 
+    var descriptionListener: ((String) -> Unit)? = null
+    var titleListener: ((String) -> Unit)? = null
+    var saveListener: (() -> Unit)? = null
+    var clearDateListener: (() -> Unit)? = null
+    var clearNoteListener: (() -> Unit)? = null
+    var fullScreenListener: (() -> Unit)? = null
+    var openMoreListener: (() -> Unit)? = null
+    var formattedHintProducer: ((String) -> String)? = null
+    var calendarDialogListener: ((Calendar) -> Unit)? = null
+
+
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            viewModel?.setDescription(s?.toString() ?: "")
+            descriptionListener?.invoke(s?.toString() ?: "")
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -48,7 +57,7 @@ class NoteCreationView : ConstraintLayout {
     }
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            viewModel?.setTitle(s?.toString() ?: "")
+            titleListener?.invoke(s?.toString() ?: "")
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -57,9 +66,6 @@ class NoteCreationView : ConstraintLayout {
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
         }
-    }
-    private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
-        viewModel?.setDate(y, m, d)
     }
 
     constructor(context: Context?) : super(context)
@@ -82,41 +88,18 @@ class NoteCreationView : ConstraintLayout {
         dateChip = findViewById(R.id.date_chip)
 
         saveNoteButton.setOnClickListener {
-            viewModel?.saveNote()
-            titleText.setText("")
-            descriptionText.setText("")
-            dateChip.text = ""
-            dateChip.visibility = View.GONE
-            titleText.clearFocus()
-            descriptionText.clearFocus()
+            saveListener?.invoke()
         }
         deleteButton.setOnClickListener {
-            viewModel?.clearCurrentNote()
-            dateChip.visibility = View.GONE
-            dateChip.text = ""
-            titleText.setText("")
-            descriptionText.setText("")
-            titleText.clearFocus()
-            descriptionText.clearFocus()
+            clearNoteListener?.invoke()
         }
-        dateChip.setOnCloseIconClickListener {
-            viewModel?.clearDate()
-        }
-        calendarButton.setOnClickListener {
-            openCalendarDialog(null)
-        }
+        dateChip.setOnCloseIconClickListener { clearDateListener?.invoke() }
+        calendarButton.setOnClickListener { openCalendarDialog(null) }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
         titleText.addTextChangedListener(titleTextWatcher)
 
-        fullScreenButton.setOnClickListener { viewModel?.toggleFullScreen() }
-        fabMore.setOnClickListener { viewModel?.toggleMore() }
-
-        viewModel = getActivity()?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        if (viewModel?.isMoreOpen()?.value == true) {
-            deleteButton.visibility = View.VISIBLE
-            calendarButton.visibility = View.VISIBLE
-            fabMore.setImageResource(R.drawable.ic_arrow_right_24)
-        }
+        fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
+        fabMore.setOnClickListener { openMoreListener?.invoke() }
     }
 
     private fun openCalendarDialog(selectedDateInMillis: Long?) {
@@ -125,11 +108,7 @@ class NoteCreationView : ConstraintLayout {
             selectedDate.timeInMillis = it
         }
         selectedDate?.let {
-            DatePickerDialog(context, listener,
-                    it.get(Calendar.YEAR),
-                    it.get(Calendar.MONTH),
-                    it.get(Calendar.DAY_OF_MONTH))
-                    .show()
+            calendarDialogListener?.invoke(it)
         }
     }
 
@@ -139,6 +118,12 @@ class NoteCreationView : ConstraintLayout {
         super.onDetachedFromWindow()
     }
 
+    fun setMoreOpen() {
+        deleteButton.visibility = View.VISIBLE
+        calendarButton.visibility = View.VISIBLE
+        fabMore.setImageResource(R.drawable.ic_arrow_right_24)
+    }
+
     fun updateNoteData(noteData: NoteEditViewModel.NoteData) {
         val description = noteData.text ?: ""
         val title = noteData.title
@@ -146,7 +131,7 @@ class NoteCreationView : ConstraintLayout {
 
         if (description != titleText.hint) {
             if (description.isNotEmpty()) {
-                titleText.hint = viewModel?.getFormattedHint(description)
+                titleText.hint = formattedHintProducer?.invoke(description)
             } else {
                 titleText.hint = context?.getString(R.string.title_hint)
             }

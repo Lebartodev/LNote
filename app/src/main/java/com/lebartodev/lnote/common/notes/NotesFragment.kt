@@ -2,6 +2,7 @@ package com.lebartodev.lnote.common.notes
 
 
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
@@ -34,6 +35,7 @@ import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.error
 import com.lebartodev.lnote.utils.ui.NotesItemDecoration
 import com.lebartodev.lnote.utils.ui.toPx
+import java.util.*
 import javax.inject.Inject
 
 
@@ -42,8 +44,25 @@ class NotesFragment : BaseFragment() {
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
     private lateinit var noteCreationView: NoteCreationView
-    private lateinit var adapter: NotesAdapter
+    private val adapter: NotesAdapter = NotesAdapter {
+        val nextFragment = EditNoteFragment.initMe(it.title, null, it.text, it.date)
+        val exitFade = Fade(Fade.OUT).apply {
+            duration = resources.getInteger(R.integer.animation_duration).toLong()
+        }
+        val enterSlide = Slide(Gravity.END).apply {
+            duration = resources.getInteger(R.integer.animation_duration).toLong()
+        }
+        nextFragment.enterTransition = enterSlide
+        this.exitTransition = exitFade
+
+        val transaction = fragmentManager
+                ?.beginTransaction()
+                ?.replace(R.id.notes_layout_container, nextFragment)
+                ?.addToBackStack(null)
+        transaction?.commit()
+    }
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
     private lateinit var notesViewModel: NotesViewModel
@@ -52,95 +71,7 @@ class NotesFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
-        editNoteViewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        adapter = NotesAdapter {
-            val nextFragment = EditNoteFragment.initMe(it.title, null, it.text, it.date)
-            val exitFade = Fade(Fade.OUT).apply {
-                duration = resources.getInteger(R.integer.animation_duration).toLong()
-            }
-            val enterSlide = Slide(Gravity.END).apply {
-                duration = resources.getInteger(R.integer.animation_duration).toLong()
-            }
-            nextFragment.enterTransition = enterSlide
-            this.exitTransition = exitFade
 
-            val transaction = fragmentManager
-                    ?.beginTransaction()
-                    ?.replace(R.id.notes_layout_container, nextFragment)
-                    ?.addToBackStack(null)
-            transaction?.commit()
-        }
-
-        notesViewModel.noteDeleteDialog().observe(this, Observer {
-            if (it == true) {
-                bottomAppBar.translationY = bottomAppBar.height * 1f
-                view?.run {
-                    val snackBar = Snackbar.make(this, R.string.note_deleted, Snackbar.LENGTH_LONG)
-                            .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                                override fun onShown(transientBottomBar: Snackbar?) {
-                                    super.onShown(transientBottomBar)
-                                    fabAdd.hide()
-                                    bottomAppBar.hideOnScroll = false
-                                    bottomAppBar.visibility = View.INVISIBLE
-                                }
-
-                                override fun onDismissed(transientBottomBar: Snackbar?,
-                                                         event: Int) {
-                                    super.onDismissed(transientBottomBar, event)
-                                    bottomAppBar.visibility = View.VISIBLE
-                                    bottomAppBar.hideOnScroll = true
-                                    bottomAppBar.animate().translationY(0f).setDuration(200).start()
-                                    editNoteViewModel.deleteTempNote()
-                                    fabAdd.show()
-                                }
-                            })
-                            .setAction(R.string.undo) {
-                                notesViewModel.toggleBottomSheet()
-                                editNoteViewModel.undoClearCurrentNote()
-                            }
-                            .setActionTextColor(ContextCompat.getColor(this.context, R.color.colorAction))
-                    val layout = snackBar.view as Snackbar.SnackbarLayout
-                    val textView = layout.findViewById(
-                            com.google.android.material.R.id.snackbar_text) as TextView
-                    textView.setTextColor(ContextCompat.getColor(this.context, R.color.white))
-                    snackBar.show()
-                }
-            }
-        })
-
-        notesViewModel.getNotes().observe(this, Observer {
-            val list = it.data
-            if (it.error == null && list != null) {
-                onNotesLoaded(list)
-            } else {
-                error("loadNotes", it.error)
-            }
-        })
-
-        editNoteViewModel.deleteNoteState().observe(this, Observer {
-            if (it == true) {
-                notesViewModel.onNoteDeleted()
-            }
-        })
-        editNoteViewModel.saveResult().observe(this, Observer {
-            if (it != null)
-                if (it.status == Status.SUCCESS) {
-                    if (notesViewModel.bottomSheetOpen().value == true) {
-                        notesViewModel.toggleBottomSheet()
-                    }
-                } else if (it.status == Status.ERROR) {
-                    context?.run { Toast.makeText(this, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show() }
-                }
-
-        })
-
-        notesViewModel.bottomSheetOpen().observe(this, Observer {
-            if (it == false) {
-                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            } else if (it == true) {
-                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -163,21 +94,26 @@ class NotesFragment : BaseFragment() {
                 16f.toPx(resources),
                 16f.toPx(resources)))
 
-
-
-        setupBottomSheet()
-        fabAdd.setOnClickListener { notesViewModel.toggleBottomSheet() }
+        setupEditViewModel()
+        setupNotesView()
+        noteCreationView.apply {
+            descriptionListener = { editNoteViewModel.setDescription(it) }
+            titleListener = { editNoteViewModel.setTitle(it) }
+            saveListener = { editNoteViewModel.saveNote() }
+            clearDateListener = { editNoteViewModel.clearDate() }
+            clearNoteListener = { editNoteViewModel.clearCurrentNote() }
+            fullScreenListener = { editNoteViewModel.toggleFullScreen() }
+            openMoreListener = { editNoteViewModel.toggleMore() }
+            formattedHintProducer = { editNoteViewModel.getFormattedHint(it) }
+            calendarDialogListener = { editNoteViewModel.openDateDialog() }
+        }
+        fabAdd.setOnClickListener { editNoteViewModel.toggleBottomSheet() }
         notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN)
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             false
         }
-
-    }
-
-    private fun setupBottomSheet() {
-        bottomAddSheetBehavior.setBottomSheetCallback(object :
-                BottomSheetBehavior.BottomSheetCallback() {
+        bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
                 if (1f - slideOffset == 1f) {
@@ -190,45 +126,24 @@ class NotesFragment : BaseFragment() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     hideKeyboard(bottomSheet)
-                    if (notesViewModel.bottomSheetOpen().value != false)
-                        notesViewModel.toggleBottomSheet()
+                    if (editNoteViewModel.bottomSheetOpen().value != false)
+                        editNoteViewModel.toggleBottomSheet()
                 }
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                     hideKeyboard(bottomSheet)
-                    if (notesViewModel.bottomSheetOpen().value != true)
-                        notesViewModel.toggleBottomSheet()
+                    if (editNoteViewModel.bottomSheetOpen().value != true)
+                        editNoteViewModel.toggleBottomSheet()
                 }
             }
         })
-        if (notesViewModel.bottomSheetOpen().value == true) {
+        if (editNoteViewModel.bottomSheetOpen().value == true) {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.app_bar_settings -> {
-
-            }
-        }
-        return true
-    }
-
-
-    private fun onNotesLoaded(notes: List<Note>) {
-        adapter.data = notes
-    }
-
-    public override fun setupComponent(component: AppComponent) {
-        component.plus(NotesModule()).inject(this)
-    }
-
-    companion object {
-        const val TAG = "NotesFragment"
-    }
-
     private fun setupEditViewModel() {
-        editNoteViewModel.fullScreenOpen().observe(this, Observer {
+        editNoteViewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
+        editNoteViewModel.fullScreenOpen().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 hideKeyboardListener(noteCreationView.titleText) {
                     val nextFragment = EditNoteFragment
@@ -258,7 +173,8 @@ class NotesFragment : BaseFragment() {
 
                     val transaction = this.fragmentManager
                             ?.beginTransaction()
-                            ?.replace(R.id.notes_layout_container, nextFragment)
+                            ?.remove(this)
+                            ?.add(R.id.notes_layout_container, nextFragment)
                             ?.addSharedElement(noteCreationView.titleText, noteCreationView.titleText.transitionName)
                             ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
                             ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
@@ -275,7 +191,108 @@ class NotesFragment : BaseFragment() {
                 }
             }
         })
-        editNoteViewModel.currentNote().observe(this, Observer { noteCreationView.updateNoteData(it) })
-        editNoteViewModel.isMoreOpen().observe(this, Observer { noteCreationView.updateMoreState(it) })
+        editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
+        editNoteViewModel.isMoreOpen().observe(viewLifecycleOwner, Observer { noteCreationView.updateMoreState(it) })
+        editNoteViewModel.deleteNoteState().observe(viewLifecycleOwner, Observer {
+            if (it == true) {
+                notesViewModel.onNoteDeleted()
+            }
+        })
+        editNoteViewModel.saveResult().observe(viewLifecycleOwner, Observer {
+            if (it?.status == Status.ERROR) {
+                context?.run { Toast.makeText(this, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show() }
+            }
+        })
+        editNoteViewModel.dateDialog().observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                context?.run {
+                    val dialog = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) },
+                            it.get(Calendar.YEAR),
+                            it.get(Calendar.MONTH),
+                            it.get(Calendar.DAY_OF_MONTH))
+                    dialog.setOnDismissListener { editNoteViewModel.closeDateDialog() }
+                    dialog.show()
+                }
+
+            }
+        })
+        editNoteViewModel.bottomSheetOpen().observe(viewLifecycleOwner, Observer {
+            if (it == false) {
+                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            } else if (it == true) {
+                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        })
+        if (editNoteViewModel.isMoreOpen().value == true) {
+            noteCreationView.setMoreOpen()
+        }
+    }
+
+    private fun setupNotesView() {
+        notesViewModel.noteDeleteDialog().observe(viewLifecycleOwner, Observer {
+            if (it == true) {
+                bottomAppBar.translationY = bottomAppBar.height * 1f
+                view?.run {
+                    val snackBar = Snackbar.make(this, R.string.note_deleted, Snackbar.LENGTH_LONG)
+                            .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                                override fun onShown(transientBottomBar: Snackbar?) {
+                                    super.onShown(transientBottomBar)
+                                    fabAdd.hide()
+                                    bottomAppBar.hideOnScroll = false
+                                    bottomAppBar.visibility = View.INVISIBLE
+                                }
+
+                                override fun onDismissed(transientBottomBar: Snackbar?,
+                                                         event: Int) {
+                                    super.onDismissed(transientBottomBar, event)
+                                    bottomAppBar.visibility = View.VISIBLE
+                                    bottomAppBar.hideOnScroll = true
+                                    bottomAppBar.animate().translationY(0f).setDuration(200).start()
+                                    editNoteViewModel.deleteTempNote()
+                                    fabAdd.show()
+                                }
+                            })
+                            .setAction(R.string.undo) {
+                                editNoteViewModel.undoClearCurrentNote()
+                            }
+                            .setActionTextColor(ContextCompat.getColor(this.context, R.color.colorAction))
+                    val layout = snackBar.view as Snackbar.SnackbarLayout
+                    val textView = layout.findViewById(
+                            com.google.android.material.R.id.snackbar_text) as TextView
+                    textView.setTextColor(ContextCompat.getColor(this.context, R.color.white))
+                    snackBar.show()
+                }
+            }
+        })
+
+        notesViewModel.getNotes().observe(viewLifecycleOwner, Observer {
+            val list = it.data
+            if (it.error == null && list != null) {
+                onNotesLoaded(list)
+            } else {
+                error("loadNotes", it.error)
+            }
+        })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.app_bar_settings -> {
+
+            }
+        }
+        return true
+    }
+
+    private fun onNotesLoaded(notes: List<Note>) {
+        adapter.data = notes
+    }
+
+    public override fun setupComponent(component: AppComponent) {
+        component.plus(NotesModule()).inject(this)
+    }
+
+    companion object {
+        const val TAG = "NotesFragment"
     }
 }

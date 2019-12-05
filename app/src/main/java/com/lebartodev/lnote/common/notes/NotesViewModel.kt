@@ -16,7 +16,6 @@ import io.reactivex.internal.functions.Functions
 class NotesViewModel constructor(var notesRepository: NotesRepository, val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var notesDisposable = Disposables.empty()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
-    private val bottomSheetOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
 
     private val noteDeleteDialogLiveData: MutableLiveData<Boolean?> = MutableLiveData()
 
@@ -24,7 +23,7 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
 
     fun noteDeleteDialog(): LiveData<Boolean?> = noteDeleteDialogLiveData
 
-    fun bottomSheetOpen(): LiveData<Boolean> = bottomSheetOpenLiveData
+
 
     init {
         fetchNotes()
@@ -43,10 +42,6 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
 
     fun onNoteDeleted() {
         noteDeleteDialogLiveData.value = true
-    }
-
-    fun toggleBottomSheet() {
-        bottomSheetOpenLiveData.value = !(bottomSheetOpenLiveData.value ?: false)
     }
 
     override fun onCleared() {

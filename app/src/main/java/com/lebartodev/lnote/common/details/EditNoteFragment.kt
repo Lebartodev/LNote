@@ -99,8 +99,7 @@ class EditNoteFragment : BaseFragment() {
         viewModel.saveResult().observe(this, Observer { obj ->
             if (obj != null) {
                 if (obj.status == Status.ERROR) {
-                    Toast.makeText(context, getString(R.string.error_note_create),
-                            Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 } else if (obj.status == Status.SUCCESS) {
                     hideKeyboardListener(titleTextView) {
                         titleTextView.clearFocus()

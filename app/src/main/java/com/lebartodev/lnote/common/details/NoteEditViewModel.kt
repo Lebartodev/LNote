@@ -7,6 +7,7 @@ import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.lnote.utils.SingleLiveEvent
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
@@ -17,11 +18,14 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                                     private val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var saveNoteDisposable = Disposables.empty()
     private var detailsDisposable = Disposables.empty()
-    private val saveResultLiveData: MutableLiveData<ViewModelObject<Long>> = MutableLiveData()
+    private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
     private val selectedDate = MutableLiveData<Long?>()
     private val deleteNoteStateLiveData = MutableLiveData<Boolean?>()
     private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
     private val fullScreenOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
+    private val dateDialogLiveData = MutableLiveData<Calendar>()
+    private val bottomSheetOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
+
 
     private val currentNoteLiveData = MutableLiveData<NoteData>().apply { value = NoteData() }
     private var tempNote = NoteData()
@@ -36,7 +40,11 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun selectedDate(): LiveData<Long?> = selectedDate
 
-    fun saveResult(): LiveData<ViewModelObject<Long>> = saveResultLiveData
+    fun saveResult(): LiveData<ViewModelObject<Long>?> = saveResultLiveData
+
+    fun dateDialog(): LiveData<Calendar?> = dateDialogLiveData
+
+    fun bottomSheetOpen(): LiveData<Boolean> = bottomSheetOpenLiveData
 
     fun setDescription(text: String) {
         val note = currentNoteLiveData.value ?: NoteData()
@@ -85,7 +93,12 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                     clearCurrentNote()
                     deleteTempNote()
                 }
-                .subscribe(Consumer { saveResultLiveData.postValue(it) }, Functions.emptyConsumer())
+                .subscribe(Consumer {
+                    currentNoteLiveData.value = NoteData()
+                    moreOpenLiveData.value = false
+                    saveResultLiveData.value = it
+                    bottomSheetOpenLiveData.value = false
+                }, Functions.emptyConsumer())
     }
 
     fun clearCurrentNote() {
@@ -96,6 +109,7 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     fun undoClearCurrentNote() {
         currentNoteLiveData.value = tempNote.copy()
         tempNote = NoteData()
+        bottomSheetOpenLiveData.value = true
     }
 
     fun deleteTempNote() {
@@ -122,6 +136,18 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun toggleFullScreen() {
         fullScreenOpenLiveData.value = !(fullScreenOpenLiveData.value ?: false)
+    }
+
+    fun openDateDialog() {
+        dateDialogLiveData.value = Calendar.getInstance().apply { timeInMillis = currentNote().value?.date ?: System.currentTimeMillis() }
+    }
+
+    fun closeDateDialog() {
+        dateDialogLiveData.value = null
+    }
+
+    fun toggleBottomSheet() {
+        bottomSheetOpenLiveData.value = !(bottomSheetOpenLiveData.value ?: false)
     }
 
     companion object {
