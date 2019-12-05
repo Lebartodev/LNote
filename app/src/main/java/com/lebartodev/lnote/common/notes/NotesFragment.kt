@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Fade
 import androidx.transition.Slide
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionSet
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -120,11 +123,15 @@ class NotesFragment : BaseFragment() {
             }
         })
         editNoteViewModel.saveResult().observe(this, Observer {
-            if (it != null && it.status == Status.SUCCESS) {
-                if (notesViewModel.bottomSheetOpen().value == true) {
-                    notesViewModel.toggleBottomSheet()
+            if (it != null)
+                if (it.status == Status.SUCCESS) {
+                    if (notesViewModel.bottomSheetOpen().value == true) {
+                        notesViewModel.toggleBottomSheet()
+                    }
+                } else if (it.status == Status.ERROR) {
+                    context?.run { Toast.makeText(this, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show() }
                 }
-            }
+
         })
 
         notesViewModel.bottomSheetOpen().observe(this, Observer {
@@ -218,5 +225,57 @@ class NotesFragment : BaseFragment() {
 
     companion object {
         const val TAG = "NotesFragment"
+    }
+
+    private fun setupEditViewModel() {
+        editNoteViewModel.fullScreenOpen().observe(this, Observer {
+            if (it == true) {
+                hideKeyboardListener(noteCreationView.titleText) {
+                    val nextFragment = EditNoteFragment
+                            .initMe(noteCreationView.titleText.text.toString(),
+                                    noteCreationView.titleText.hint.toString(),
+                                    noteCreationView.descriptionText.text.toString(),
+                                    editNoteViewModel.selectedDate().value)
+                    this.exitTransition = Fade(Fade.OUT)
+                            .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
+
+                    this.returnTransition = Fade(Fade.IN)
+                            .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() }
+
+                    nextFragment.enterTransition = Fade(Fade.IN)
+                            .apply {
+                                startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                                duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                            }
+
+
+                    nextFragment.sharedElementEnterTransition = TransitionSet()
+                            .apply {
+                                addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                                startDelay = 0
+                                duration = resources.getInteger(R.integer.animation_duration).toLong()
+                            }
+
+                    val transaction = this.fragmentManager
+                            ?.beginTransaction()
+                            ?.replace(R.id.notes_layout_container, nextFragment)
+                            ?.addSharedElement(noteCreationView.titleText, noteCreationView.titleText.transitionName)
+                            ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
+                            ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
+                            ?.addSharedElement(noteCreationView.descriptionText, noteCreationView.descriptionText.transitionName)
+                            ?.addSharedElement(noteCreationView.fullScreenButton, noteCreationView.fullScreenButton.transitionName)
+                            ?.addSharedElement(noteCreationView.dateChip, noteCreationView.dateChip.transitionName)
+                            ?.addSharedElement(noteCreationView.divider, noteCreationView.divider.transitionName)
+                    if (noteCreationView.deleteButton.visibility == View.VISIBLE && noteCreationView.calendarButton.visibility == View.VISIBLE) {
+                        transaction?.addSharedElement(noteCreationView.deleteButton, noteCreationView.deleteButton.transitionName)
+                                ?.addSharedElement(noteCreationView.calendarButton, noteCreationView.calendarButton.transitionName)
+                    }
+                    transaction?.addToBackStack(null)
+                    transaction?.commit()
+                }
+            }
+        })
+        editNoteViewModel.currentNote().observe(this, Observer { noteCreationView.updateNoteData(it) })
+        editNoteViewModel.isMoreOpen().observe(this, Observer { noteCreationView.updateMoreState(it) })
     }
 }
