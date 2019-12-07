@@ -209,20 +209,19 @@ class NotesFragment : BaseFragment() {
                                 override fun onDismissed(transientBottomBar: Snackbar?,
                                                          event: Int) {
                                     super.onDismissed(transientBottomBar, event)
-                                    bottomAppBar.visibility = View.VISIBLE
-                                    bottomAppBar.hideOnScroll = true
-                                    bottomAppBar.animate().translationY(0f).setDuration(200).start()
-                                    editNoteViewModel.onCurrentNoteCleared()
-                                    fabAdd.show()
+                                    if (event == DISMISS_EVENT_SWIPE || event == DISMISS_EVENT_TIMEOUT) {
+                                        bottomAppBar.visibility = View.VISIBLE
+                                        bottomAppBar.hideOnScroll = true
+                                        bottomAppBar.animate().translationY(0f).setDuration(200).start()
+                                        editNoteViewModel.onCurrentNoteCleared()
+                                        fabAdd.show()
+                                    }
                                 }
                             })
-                            .setAction(R.string.undo) {
-                                editNoteViewModel.undoClearCurrentNote()
-                            }
+                            .setAction(R.string.undo) { editNoteViewModel.undoClearCurrentNote() }
                             .setActionTextColor(ContextCompat.getColor(this.context, R.color.colorAction))
                     val layout = snackBar.view as Snackbar.SnackbarLayout
-                    val textView = layout.findViewById(
-                            com.google.android.material.R.id.snackbar_text) as TextView
+                    val textView = layout.findViewById(com.google.android.material.R.id.snackbar_text) as TextView
                     textView.setTextColor(ContextCompat.getColor(this.context, R.color.white))
                     snackBar.show()
                 }
