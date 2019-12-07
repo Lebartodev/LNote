@@ -213,7 +213,6 @@ class NotesFragment : BaseFragment() {
                     dialog.setOnDismissListener { editNoteViewModel.closeDateDialog() }
                     dialog.show()
                 }
-
             }
         })
         editNoteViewModel.bottomSheetOpen().observe(viewLifecycleOwner, Observer {

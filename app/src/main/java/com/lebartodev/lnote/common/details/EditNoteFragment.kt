@@ -42,11 +42,6 @@ class EditNoteFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
     private lateinit var viewModel: NoteEditViewModel
-
-    private val listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
-        viewModel.setDate(y, m, d)
-    }
-
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             viewModel.setDescription(s?.toString() ?: "")
@@ -79,69 +74,6 @@ class EditNoteFragment : BaseFragment() {
             hint = it.getString(ARG_HINT)
             date = it.getLong(ARG_DATE, EMPTY_DATE)
         }
-        viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        viewModel.fullScreenOpen().observe(this, Observer {
-            if (it == false) {
-                hideKeyboardListener(titleTextView) {
-                    fragmentManager?.popBackStack()
-                }
-            }
-        })
-        viewModel.deleteNoteState().observe(this, Observer {
-            if (it == true) {
-                hideKeyboardListener(titleTextView) {
-                    titleTextView.clearFocus()
-                    descriptionTextView.clearFocus()
-                    fragmentManager?.popBackStack()
-                }
-            }
-        })
-        viewModel.saveResult().observe(this, Observer { obj ->
-            if (obj != null) {
-                if (obj.status == Status.ERROR) {
-                    Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
-                } else if (obj.status == Status.SUCCESS) {
-                    hideKeyboardListener(titleTextView) {
-                        titleTextView.clearFocus()
-                        descriptionTextView.clearFocus()
-                        fragmentManager?.popBackStack()
-                    }
-                }
-            }
-        })
-        viewModel.currentNote().observe(this, Observer { noteData ->
-            val description = noteData.text ?: ""
-            val title = noteData.title
-            val time = noteData.date
-
-            if (description != titleTextView.hint) {
-                if (description.isNotEmpty()) {
-                    titleTextView.hint = viewModel.getFormattedHint(description)
-                } else {
-                    titleTextView.hint = context?.getString(R.string.title_hint)
-                }
-            }
-
-            if (titleTextView.text.toString() != title) {
-                titleTextView.text = title
-            }
-            if (descriptionTextView.text.toString() != description) {
-                descriptionTextView.text = description
-            }
-            if (time != null) {
-                dateChip.visibility = View.VISIBLE
-                dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern),
-                        Locale.US).format(Date(time))
-            } else {
-                dateChip.visibility = View.GONE
-            }
-            calendarButton.setOnClickListener {
-                openCalendarDialog(time)
-            }
-            dateChip.setOnClickListener {
-                openCalendarDialog(time)
-            }
-        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -163,8 +95,7 @@ class EditNoteFragment : BaseFragment() {
         descriptionTextView.text = text
 
         if (date != EMPTY_DATE) {
-            dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern),
-                    Locale.US).format(Date(date))
+            dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(date))
             dateChip.visibility = View.VISIBLE
         } else {
             dateChip.visibility = View.GONE
@@ -177,26 +108,72 @@ class EditNoteFragment : BaseFragment() {
         deleteButton.setOnClickListener { viewModel.clearCurrentNote() }
         saveNoteButton.setOnClickListener { viewModel.saveNote() }
 
-        calendarButton.setOnClickListener {
-            openCalendarDialog(if (date == EMPTY_DATE) null else date)
-        }
-        dateChip.setOnClickListener { openCalendarDialog(if (date == EMPTY_DATE) null else date) }
+        calendarButton.setOnClickListener { openCalendarDialog() }
+        dateChip.setOnClickListener { openCalendarDialog() }
         dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
-
-
+        setupEditViewModel()
     }
 
-    private fun openCalendarDialog(selectedDateInMillis: Long?) {
-        val selectedDate = Calendar.getInstance().apply {
-            timeInMillis = selectedDateInMillis ?: System.currentTimeMillis()
-        }
-        context?.run {
-            DatePickerDialog(this, listener,
-                    selectedDate.get(Calendar.YEAR),
-                    selectedDate.get(Calendar.MONTH),
-                    selectedDate.get(Calendar.DAY_OF_MONTH))
-                    .show()
-        }
+    private fun setupEditViewModel() {
+        viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
+        viewModel.fullScreenOpen().observe(viewLifecycleOwner, Observer {
+            if (it == false) {
+                fragmentManager?.popBackStack()
+            }
+        })
+        viewModel.deleteNoteState().observe(viewLifecycleOwner, Observer {
+            if (it == true) {
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+            }
+        })
+        viewModel.saveResult().observe(viewLifecycleOwner, Observer { obj ->
+            if (obj != null && obj.status == Status.ERROR) {
+                Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+            }
+        })
+        viewModel.currentNote().observe(viewLifecycleOwner, Observer { noteData ->
+            val description = noteData.text ?: ""
+            val title = noteData.title
+            val time = noteData.date
+
+            if (description != titleTextView.hint) {
+                if (description.isNotEmpty()) {
+                    titleTextView.hint = viewModel.getFormattedHint(description)
+                } else {
+                    titleTextView.hint = context?.getString(R.string.title_hint)
+                }
+            }
+
+            if (titleTextView.text.toString() != title) {
+                titleTextView.text = title
+            }
+            if (descriptionTextView.text.toString() != description) {
+                descriptionTextView.text = description
+            }
+            if (time != null) {
+                dateChip.visibility = View.VISIBLE
+                dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
+            } else {
+                dateChip.visibility = View.GONE
+            }
+        })
+        viewModel.dateDialog().observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                context?.run {
+                    val dialog = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) },
+                            it.get(Calendar.YEAR),
+                            it.get(Calendar.MONTH),
+                            it.get(Calendar.DAY_OF_MONTH))
+                    dialog.setOnDismissListener { viewModel.closeDateDialog() }
+                    dialog.show()
+                }
+            }
+        })
+    }
+
+    private fun openCalendarDialog() {
+        viewModel.openDateDialog()
     }
 
     override fun setupComponent(component: AppComponent) {
@@ -222,6 +199,4 @@ class EditNoteFragment : BaseFragment() {
                     }
                 }
     }
-
-
 }

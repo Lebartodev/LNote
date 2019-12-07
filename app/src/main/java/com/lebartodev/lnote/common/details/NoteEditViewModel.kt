@@ -89,19 +89,18 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                 .onErrorReturn { ViewModelObject.error(it, null) }
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .doFinally {
-                    clearCurrentNote()
-                    deleteTempNote()
-                }
                 .subscribe(Consumer {
-                    currentNoteLiveData.value = NoteData()
+                    fullScreenOpenLiveData.value = false
                     moreOpenLiveData.value = false
-                    saveResultLiveData.value = it
                     bottomSheetOpenLiveData.value = false
+                    currentNoteLiveData.value = NoteData()
+                    deleteTempNote()
+                    saveResultLiveData.value = it
                 }, Functions.emptyConsumer())
     }
 
     fun clearCurrentNote() {
+        fullScreenOpenLiveData.value = false
         tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
         currentNoteLiveData.value = NoteData()
     }
