@@ -193,9 +193,39 @@ class NotesFragment : BaseFragment() {
         })
         editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
         editNoteViewModel.isMoreOpen().observe(viewLifecycleOwner, Observer { noteCreationView.updateMoreState(it) })
-        editNoteViewModel.deleteNoteState().observe(viewLifecycleOwner, Observer {
+        editNoteViewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
-                notesViewModel.onNoteDeleted()
+                bottomAppBar.translationY = bottomAppBar.height * 1f
+                view?.run {
+                    val snackBar = Snackbar.make(this, R.string.note_deleted, Snackbar.LENGTH_LONG)
+                            .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                                override fun onShown(transientBottomBar: Snackbar?) {
+                                    super.onShown(transientBottomBar)
+                                    fabAdd.hide()
+                                    bottomAppBar.hideOnScroll = false
+                                    bottomAppBar.visibility = View.INVISIBLE
+                                }
+
+                                override fun onDismissed(transientBottomBar: Snackbar?,
+                                                         event: Int) {
+                                    super.onDismissed(transientBottomBar, event)
+                                    bottomAppBar.visibility = View.VISIBLE
+                                    bottomAppBar.hideOnScroll = true
+                                    bottomAppBar.animate().translationY(0f).setDuration(200).start()
+                                    editNoteViewModel.onCurrentNoteCleared()
+                                    fabAdd.show()
+                                }
+                            })
+                            .setAction(R.string.undo) {
+                                editNoteViewModel.undoClearCurrentNote()
+                            }
+                            .setActionTextColor(ContextCompat.getColor(this.context, R.color.colorAction))
+                    val layout = snackBar.view as Snackbar.SnackbarLayout
+                    val textView = layout.findViewById(
+                            com.google.android.material.R.id.snackbar_text) as TextView
+                    textView.setTextColor(ContextCompat.getColor(this.context, R.color.white))
+                    snackBar.show()
+                }
             }
         })
         editNoteViewModel.saveResult().observe(viewLifecycleOwner, Observer {
@@ -228,42 +258,6 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun setupNotesView() {
-        notesViewModel.noteDeleteDialog().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                bottomAppBar.translationY = bottomAppBar.height * 1f
-                view?.run {
-                    val snackBar = Snackbar.make(this, R.string.note_deleted, Snackbar.LENGTH_LONG)
-                            .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                                override fun onShown(transientBottomBar: Snackbar?) {
-                                    super.onShown(transientBottomBar)
-                                    fabAdd.hide()
-                                    bottomAppBar.hideOnScroll = false
-                                    bottomAppBar.visibility = View.INVISIBLE
-                                }
-
-                                override fun onDismissed(transientBottomBar: Snackbar?,
-                                                         event: Int) {
-                                    super.onDismissed(transientBottomBar, event)
-                                    bottomAppBar.visibility = View.VISIBLE
-                                    bottomAppBar.hideOnScroll = true
-                                    bottomAppBar.animate().translationY(0f).setDuration(200).start()
-                                    editNoteViewModel.deleteTempNote()
-                                    fabAdd.show()
-                                }
-                            })
-                            .setAction(R.string.undo) {
-                                editNoteViewModel.undoClearCurrentNote()
-                            }
-                            .setActionTextColor(ContextCompat.getColor(this.context, R.color.colorAction))
-                    val layout = snackBar.view as Snackbar.SnackbarLayout
-                    val textView = layout.findViewById(
-                            com.google.android.material.R.id.snackbar_text) as TextView
-                    textView.setTextColor(ContextCompat.getColor(this.context, R.color.white))
-                    snackBar.show()
-                }
-            }
-        })
-
         notesViewModel.getNotes().observe(viewLifecycleOwner, Observer {
             val list = it.data
             if (it.error == null && list != null) {

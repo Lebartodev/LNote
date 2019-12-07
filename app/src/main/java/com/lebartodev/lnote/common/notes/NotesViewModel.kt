@@ -17,13 +17,7 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
     private var notesDisposable = Disposables.empty()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()
 
-    private val noteDeleteDialogLiveData: MutableLiveData<Boolean?> = MutableLiveData()
-
     fun getNotes(): LiveData<ViewModelObject<List<Note>>> = notesLiveData
-
-    fun noteDeleteDialog(): LiveData<Boolean?> = noteDeleteDialogLiveData
-
-
 
     init {
         fetchNotes()
@@ -38,10 +32,6 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer { notesLiveData.value = it },
                         Functions.emptyConsumer())
-    }
-
-    fun onNoteDeleted() {
-        noteDeleteDialogLiveData.value = true
     }
 
     override fun onCleared() {

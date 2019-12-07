@@ -20,7 +20,7 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     private var detailsDisposable = Disposables.empty()
     private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
     private val selectedDate = MutableLiveData<Long?>()
-    private val deleteNoteStateLiveData = MutableLiveData<Boolean?>()
+    private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
     private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
     private val fullScreenOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
     private val dateDialogLiveData = MutableLiveData<Calendar>()
@@ -32,7 +32,7 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
 
-    fun deleteNoteState(): LiveData<Boolean?> = deleteNoteStateLiveData
+    fun showNoteDeleted(): LiveData<Boolean?> = showNoteDeletedLiveData
 
     fun isMoreOpen(): LiveData<Boolean> = moreOpenLiveData
 
@@ -90,30 +90,38 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
-                    fullScreenOpenLiveData.value = false
-                    moreOpenLiveData.value = false
-                    bottomSheetOpenLiveData.value = false
+                    closeEditFlow()
                     currentNoteLiveData.value = NoteData()
-                    deleteTempNote()
+                    tempNote = NoteData()
                     saveResultLiveData.value = it
                 }, Functions.emptyConsumer())
     }
 
     fun clearCurrentNote() {
-        fullScreenOpenLiveData.value = false
+        closeEditFlow()
         tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
         currentNoteLiveData.value = NoteData()
+        showNoteDeletedLiveData.value = true
+    }
+
+    fun onCurrentNoteCleared() {
+        showNoteDeletedLiveData.value = false
+        tempNote = NoteData()
     }
 
     fun undoClearCurrentNote() {
         currentNoteLiveData.value = tempNote.copy()
         tempNote = NoteData()
         bottomSheetOpenLiveData.value = true
+        showNoteDeletedLiveData.value = false
     }
 
-    fun deleteTempNote() {
-        tempNote = NoteData()
+    private fun closeEditFlow() {
+        fullScreenOpenLiveData.value = false
+        moreOpenLiveData.value = false
+        bottomSheetOpenLiveData.value = false
     }
+
 
     fun toggleMore() {
         moreOpenLiveData.value = !(moreOpenLiveData.value ?: false)

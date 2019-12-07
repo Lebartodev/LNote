@@ -121,7 +121,7 @@ class EditNoteFragment : BaseFragment() {
                 fragmentManager?.popBackStack()
             }
         })
-        viewModel.deleteNoteState().observe(viewLifecycleOwner, Observer {
+        viewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 titleTextView.clearFocus()
                 descriptionTextView.clearFocus()
