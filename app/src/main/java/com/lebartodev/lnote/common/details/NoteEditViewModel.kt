@@ -22,7 +22,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     private val selectedDate = MutableLiveData<Long?>()
     private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
     private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
-    private val fullScreenOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
     private val dateDialogLiveData = MutableLiveData<Calendar>()
     private val bottomSheetOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
 
@@ -35,8 +34,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     fun showNoteDeleted(): LiveData<Boolean?> = showNoteDeletedLiveData
 
     fun isMoreOpen(): LiveData<Boolean> = moreOpenLiveData
-
-    fun fullScreenOpen(): LiveData<Boolean> = fullScreenOpenLiveData
 
     fun selectedDate(): LiveData<Long?> = selectedDate
 
@@ -117,11 +114,9 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     }
 
     private fun closeEditFlow() {
-        fullScreenOpenLiveData.value = false
         moreOpenLiveData.value = false
         bottomSheetOpenLiveData.value = false
     }
-
 
     fun toggleMore() {
         moreOpenLiveData.value = !(moreOpenLiveData.value ?: false)
@@ -139,10 +134,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         super.onCleared()
         saveNoteDisposable.dispose()
         detailsDisposable.dispose()
-    }
-
-    fun toggleFullScreen() {
-        fullScreenOpenLiveData.value = !(fullScreenOpenLiveData.value ?: false)
     }
 
     fun openDateDialog() {

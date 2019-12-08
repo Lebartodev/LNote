@@ -102,7 +102,7 @@ class NotesFragment : BaseFragment() {
             saveListener = { editNoteViewModel.saveNote() }
             clearDateListener = { editNoteViewModel.clearDate() }
             clearNoteListener = { editNoteViewModel.clearCurrentNote() }
-            fullScreenListener = { editNoteViewModel.toggleFullScreen() }
+            fullScreenListener = { openFullScreen() }
             openMoreListener = { editNoteViewModel.toggleMore() }
             formattedHintProducer = { editNoteViewModel.getFormattedHint(it) }
             calendarDialogListener = { editNoteViewModel.openDateDialog() }
@@ -141,52 +141,50 @@ class NotesFragment : BaseFragment() {
         }
     }
 
+    private fun openFullScreen() {
+        hideKeyboardListener(noteCreationView.titleText) {
+            val nextFragment = EditNoteFragment.initMe()
+            this.exitTransition = Fade(Fade.OUT)
+                    .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
+
+            this.returnTransition = Fade(Fade.IN)
+                    .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() }
+
+            nextFragment.enterTransition = Fade(Fade.IN)
+                    .apply {
+                        startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                        duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                    }
+
+
+            nextFragment.sharedElementEnterTransition = TransitionSet()
+                    .apply {
+                        addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                        startDelay = 0
+                        duration = resources.getInteger(R.integer.animation_duration).toLong()
+                    }
+
+            val transaction = this.fragmentManager
+                    ?.beginTransaction()
+                    ?.remove(this)
+                    ?.add(R.id.notes_layout_container, nextFragment)
+                    ?.addSharedElement(noteCreationView.titleText, noteCreationView.titleText.transitionName)
+                    ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
+                    ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
+                    ?.addSharedElement(noteCreationView.descriptionText, noteCreationView.descriptionText.transitionName)
+                    ?.addSharedElement(noteCreationView.fullScreenButton, noteCreationView.fullScreenButton.transitionName)
+                    ?.addSharedElement(noteCreationView.dateChip, noteCreationView.dateChip.transitionName)
+                    ?.addSharedElement(noteCreationView.divider, noteCreationView.divider.transitionName)
+            if (noteCreationView.deleteButton.visibility == View.VISIBLE && noteCreationView.calendarButton.visibility == View.VISIBLE) {
+                transaction?.addSharedElement(noteCreationView.deleteButton, noteCreationView.deleteButton.transitionName)
+                        ?.addSharedElement(noteCreationView.calendarButton, noteCreationView.calendarButton.transitionName)
+            }
+            transaction?.commit()
+        }
+    }
+
     private fun setupEditViewModel() {
         editNoteViewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        editNoteViewModel.fullScreenOpen().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                hideKeyboardListener(noteCreationView.titleText) {
-                    val nextFragment = EditNoteFragment.initMe()
-                    this.exitTransition = Fade(Fade.OUT)
-                            .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
-
-                    this.returnTransition = Fade(Fade.IN)
-                            .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() }
-
-                    nextFragment.enterTransition = Fade(Fade.IN)
-                            .apply {
-                                startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                                duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                            }
-
-
-                    nextFragment.sharedElementEnterTransition = TransitionSet()
-                            .apply {
-                                addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-                                startDelay = 0
-                                duration = resources.getInteger(R.integer.animation_duration).toLong()
-                            }
-
-                    val transaction = this.fragmentManager
-                            ?.beginTransaction()
-                            ?.remove(this)
-                            ?.add(R.id.notes_layout_container, nextFragment)
-                            ?.addSharedElement(noteCreationView.titleText, noteCreationView.titleText.transitionName)
-                            ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
-                            ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
-                            ?.addSharedElement(noteCreationView.descriptionText, noteCreationView.descriptionText.transitionName)
-                            ?.addSharedElement(noteCreationView.fullScreenButton, noteCreationView.fullScreenButton.transitionName)
-                            ?.addSharedElement(noteCreationView.dateChip, noteCreationView.dateChip.transitionName)
-                            ?.addSharedElement(noteCreationView.divider, noteCreationView.divider.transitionName)
-                    if (noteCreationView.deleteButton.visibility == View.VISIBLE && noteCreationView.calendarButton.visibility == View.VISIBLE) {
-                        transaction?.addSharedElement(noteCreationView.deleteButton, noteCreationView.deleteButton.transitionName)
-                                ?.addSharedElement(noteCreationView.calendarButton, noteCreationView.calendarButton.transitionName)
-                    }
-                    transaction?.addToBackStack(null)
-                    transaction?.commit()
-                }
-            }
-        })
         editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
         editNoteViewModel.isMoreOpen().observe(viewLifecycleOwner, Observer { noteCreationView.updateMoreState(it) })
         editNoteViewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {

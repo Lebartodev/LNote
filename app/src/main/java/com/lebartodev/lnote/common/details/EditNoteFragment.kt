@@ -78,7 +78,7 @@ class EditNoteFragment : BaseFragment() {
         titleTextView.addTextChangedListener(titleTextWatcher)
 
 
-        fullScreenButton.setOnClickListener { viewModel.toggleFullScreen() }
+        fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
         deleteButton.setOnClickListener { viewModel.clearCurrentNote() }
         saveNoteButton.setOnClickListener { viewModel.saveNote() }
 
@@ -90,11 +90,6 @@ class EditNoteFragment : BaseFragment() {
 
     private fun setupEditViewModel() {
         viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        viewModel.fullScreenOpen().observe(viewLifecycleOwner, Observer {
-            if (it == false) {
-                fragmentManager?.popBackStack()
-            }
-        })
         viewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 titleTextView.clearFocus()
@@ -102,8 +97,12 @@ class EditNoteFragment : BaseFragment() {
             }
         })
         viewModel.saveResult().observe(viewLifecycleOwner, Observer { obj ->
-            if (obj != null && obj.status == Status.ERROR) {
-                Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+            if (obj != null) {
+                if (obj.status == Status.ERROR) {
+                    Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
+                } else if (obj.status == Status.SUCCESS) {
+                    fragmentManager?.popBackStack()
+                }
             }
         })
         viewModel.currentNote().observe(viewLifecycleOwner, Observer { noteData ->
