@@ -26,11 +26,6 @@ import javax.inject.Inject
 
 
 class EditNoteFragment : BaseFragment() {
-    private var text: String? = null
-    private var title: String? = null
-    private var hint: String? = null
-    private var date: Long = EMPTY_DATE
-
     private lateinit var descriptionTextView: TextView
     private lateinit var titleTextView: TextView
     private lateinit var fullScreenButton: ImageButton
@@ -65,17 +60,6 @@ class EditNoteFragment : BaseFragment() {
         }
     }
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            title = it.getString(ARG_TITLE)
-            text = it.getString(ARG_TEXT)
-            hint = it.getString(ARG_HINT)
-            date = it.getLong(ARG_DATE, EMPTY_DATE)
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_note, container, false)
@@ -90,16 +74,6 @@ class EditNoteFragment : BaseFragment() {
         deleteButton = view.findViewById(R.id.delete_button)
         dateChip = view.findViewById(R.id.date_chip)
         calendarButton = view.findViewById(R.id.calendar_button)
-        titleTextView.text = title
-        titleTextView.hint = hint
-        descriptionTextView.text = text
-
-        if (date != EMPTY_DATE) {
-            dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(date))
-            dateChip.visibility = View.VISIBLE
-        } else {
-            dateChip.visibility = View.GONE
-        }
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
 
@@ -182,21 +156,6 @@ class EditNoteFragment : BaseFragment() {
 
 
     companion object {
-
-        private const val ARG_TEXT = "ARG_TEXT"
-        private const val ARG_TITLE = "ARG_TITLE"
-        private const val ARG_HINT = "ARG_HINT"
-        private const val ARG_DATE = "ARG_DATE"
-        private const val EMPTY_DATE = -1L
-        @JvmStatic
-        fun initMe(title: String?, hint: String?, text: String?, date: Long?) =
-                EditNoteFragment().apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_TITLE, title)
-                        putString(ARG_HINT, hint)
-                        putString(ARG_TEXT, text)
-                        putLong(ARG_DATE, date ?: -1)
-                    }
-                }
+        fun initMe() = EditNoteFragment()
     }
 }

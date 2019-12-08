@@ -45,7 +45,7 @@ class NotesFragment : BaseFragment() {
     private lateinit var notesList: RecyclerView
     private lateinit var noteCreationView: NoteCreationView
     private val adapter: NotesAdapter = NotesAdapter {
-        val nextFragment = EditNoteFragment.initMe(it.title, null, it.text, it.date)
+        val nextFragment = EditNoteFragment.initMe()
         val exitFade = Fade(Fade.OUT).apply {
             duration = resources.getInteger(R.integer.animation_duration).toLong()
         }
@@ -146,11 +146,7 @@ class NotesFragment : BaseFragment() {
         editNoteViewModel.fullScreenOpen().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 hideKeyboardListener(noteCreationView.titleText) {
-                    val nextFragment = EditNoteFragment
-                            .initMe(noteCreationView.titleText.text.toString(),
-                                    noteCreationView.titleText.hint.toString(),
-                                    noteCreationView.descriptionText.text.toString(),
-                                    editNoteViewModel.selectedDate().value)
+                    val nextFragment = EditNoteFragment.initMe()
                     this.exitTransition = Fade(Fade.OUT)
                             .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
 
