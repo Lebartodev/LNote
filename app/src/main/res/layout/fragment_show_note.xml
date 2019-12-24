@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/bottom_sheet_add_expanded"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:clickable="true"
+        android:focusable="true">
+
+    <View
+            android:id="@+id/note_creation_background"
+            style="@style/NoteCreation.Background"
+            android:layout_marginTop="8dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_button" />
+
+    <ImageButton
+            android:id="@+id/edit_button"
+            style="@style/NoteCreation.DeleteButton"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            android:id="@+id/text_title"
+            style="@style/NoteCreation.Title"
+            android:layout_marginTop="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_button" />
+
+    <View
+            android:id="@+id/add_divider"
+            style="@style/NoteCreation.Divider"
+            app:layout_constraintBottom_toTopOf="@id/text_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_title" />
+
+    <TextView
+            android:id="@+id/text_description"
+            style="@style/NoteCreation.Description"
+            android:gravity="top"
+            app:layout_constraintBottom_toTopOf="@id/save_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_title" />
+
+    <com.google.android.material.chip.Chip
+            android:id="@+id/date_chip"
+            style="@style/NoteCreation.DateChip"
+            android:layout_marginTop="16dp"
+            app:chipCornerRadius="16dp"
+            app:closeIconEnabled="true"
+            app:layout_constraintStart_toStartOf="@id/text_description"
+            app:layout_constraintTop_toBottomOf="@id/text_description"
+            tools:text="cp, 10 окт. 2018"
+            tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
