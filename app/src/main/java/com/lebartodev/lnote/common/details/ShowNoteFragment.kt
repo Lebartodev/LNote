@@ -8,8 +8,13 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.transition.Fade
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionSet
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.edit.EditNoteFragment
+import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.app.AppComponent
 import com.lebartodev.lnote.di.notes.NotesModule
@@ -27,6 +32,8 @@ class ShowNoteFragment : BaseFragment() {
     private lateinit var titleTextView: TextView
     private lateinit var editButton: ImageButton
     private lateinit var dateChip: DateChip
+    private lateinit var background: View
+    private lateinit var divider: View
 
     private lateinit var viewModel: ShowNoteViewModel
     @Inject
@@ -44,10 +51,11 @@ class ShowNoteFragment : BaseFragment() {
         descriptionTextView = view.findViewById(R.id.text_description)
         editButton = view.findViewById(R.id.edit_button)
         dateChip = view.findViewById(R.id.date_chip)
+        background = view.findViewById(R.id.note_creation_background)
+        divider = view.findViewById(R.id.add_divider)
 
         view.findViewById<View>(R.id.back_button).setOnClickListener { fragmentManager?.popBackStack() }
 
-        editButton.setOnClickListener { }
         val id = arguments?.getLong(EXTRA_ID)
         viewModel = ViewModelProviders.of(this, viewModelFactory)[ShowNoteViewModel::class.java]
 
@@ -57,6 +65,7 @@ class ShowNoteFragment : BaseFragment() {
                     titleTextView.text = data?.title
                     descriptionTextView.text = data?.text
                     dateChip.setDate(data?.date)
+                    data?.run { setupEditButton(this) }
                 }
             } else if (vmObject.status == Status.ERROR) {
                 toast(vmObject.error?.message)
@@ -65,8 +74,43 @@ class ShowNoteFragment : BaseFragment() {
         id?.run { viewModel.loadNote(this) }
     }
 
-    private fun setupViewModel() {
+    private fun setupEditButton(note: Note) {
+        editButton.setOnClickListener {
+            note.id?.run {
+                val nextFragment = EditNoteFragment.initMe(this)
+                exitTransition = Fade(Fade.OUT)
+                        .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
 
+                returnTransition = Fade(Fade.IN)
+                        .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() }
+
+                nextFragment.enterTransition = Fade(Fade.IN)
+                        .apply {
+                            startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                            duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
+                        }
+
+
+                nextFragment.sharedElementEnterTransition = TransitionSet()
+                        .apply {
+                            addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                            startDelay = 0
+                            duration = resources.getInteger(R.integer.animation_duration).toLong()
+                        }
+
+                fragmentManager
+                        ?.beginTransaction()
+                        ?.replace(R.id.notes_layout_container, nextFragment)
+                        ?.addSharedElement(titleTextView, titleTextView.transitionName)
+                        ?.addSharedElement(background, background.transitionName)
+                        ?.addSharedElement(descriptionTextView, descriptionTextView.transitionName)
+                        ?.addSharedElement(dateChip, dateChip.transitionName)
+                        ?.addSharedElement(divider, divider.transitionName)
+                        ?.addToBackStack(null)
+                        ?.commit()
+            }
+
+        }
     }
 
     override fun setupComponent(component: AppComponent) {

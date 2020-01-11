@@ -43,6 +43,16 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun bottomSheetOpen(): LiveData<Boolean> = bottomSheetOpenLiveData
 
+    fun loadNote(id: Long) {
+        detailsDisposable.dispose()
+        detailsDisposable = notesRepository.getNote(id)
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(Consumer {
+                    currentNoteLiveData.value = NoteData(it.title, it.date, it.text) //TODO: add id
+                }, Functions.emptyConsumer())
+    }
+
     fun setDescription(text: String) {
         val note = currentNoteLiveData.value ?: NoteData()
         note.text = text

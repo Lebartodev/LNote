@@ -90,6 +90,7 @@ class EditNoteFragment : BaseFragment() {
 
     private fun setupEditViewModel() {
         viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
+        arguments?.getLong(EXTRA_ID)?.run { viewModel.loadNote(this) }
         viewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 titleTextView.clearFocus()
@@ -155,6 +156,16 @@ class EditNoteFragment : BaseFragment() {
 
 
     companion object {
+        private const val EXTRA_ID = "EXTRA_ID"
+
         fun initMe() = EditNoteFragment()
+
+        fun initMe(id: Long): EditNoteFragment {
+            val fragment = EditNoteFragment()
+            val args = Bundle()
+            args.putLong(EXTRA_ID, id)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

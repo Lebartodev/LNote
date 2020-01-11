@@ -118,6 +118,7 @@ class NotesFragment : BaseFragment() {
         }
         bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                bottomAppBar.visibility = View.VISIBLE
                 bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
                 if (1f - slideOffset == 1f) {
                     fabAdd.show()
@@ -141,6 +142,9 @@ class NotesFragment : BaseFragment() {
         })
         if (editNoteViewModel.bottomSheetOpen().value == true) {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            bottomAppBar.hideOnScroll = false
+            bottomAppBar.visibility = View.INVISIBLE
+            fabAdd.hide()
         }
     }
 
@@ -169,8 +173,7 @@ class NotesFragment : BaseFragment() {
 
             val transaction = this.fragmentManager
                     ?.beginTransaction()
-                    ?.remove(this)
-                    ?.add(R.id.notes_layout_container, nextFragment)
+                    ?.replace(R.id.notes_layout_container, nextFragment)
                     ?.addSharedElement(noteCreationView.titleText, noteCreationView.titleText.transitionName)
                     ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
                     ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
@@ -182,6 +185,7 @@ class NotesFragment : BaseFragment() {
                 transaction?.addSharedElement(noteCreationView.deleteButton, noteCreationView.deleteButton.transitionName)
                         ?.addSharedElement(noteCreationView.calendarButton, noteCreationView.calendarButton.transitionName)
             }
+            transaction?.addToBackStack(null)
             transaction?.commit()
         }
     }
