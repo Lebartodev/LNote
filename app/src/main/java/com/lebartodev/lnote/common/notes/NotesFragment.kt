@@ -24,9 +24,10 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
-import com.lebartodev.lnote.common.details.EditNoteFragment
-import com.lebartodev.lnote.common.details.NoteCreationView
-import com.lebartodev.lnote.common.details.NoteEditViewModel
+import com.lebartodev.lnote.common.details.ShowNoteFragment
+import com.lebartodev.lnote.common.edit.EditNoteFragment
+import com.lebartodev.lnote.common.edit.NoteCreationView
+import com.lebartodev.lnote.common.edit.NoteEditViewModel
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.app.AppComponent
@@ -45,21 +46,23 @@ class NotesFragment : BaseFragment() {
     private lateinit var notesList: RecyclerView
     private lateinit var noteCreationView: NoteCreationView
     private val adapter: NotesAdapter = NotesAdapter {
-        val nextFragment = EditNoteFragment.initMe()
-        val exitFade = Fade(Fade.OUT).apply {
-            duration = resources.getInteger(R.integer.animation_duration).toLong()
-        }
-        val enterSlide = Slide(Gravity.END).apply {
-            duration = resources.getInteger(R.integer.animation_duration).toLong()
-        }
-        nextFragment.enterTransition = enterSlide
-        this.exitTransition = exitFade
+        it.id?.run {
+            val nextFragment = ShowNoteFragment.initMe(this)
+            val exitFade = Fade(Fade.OUT).apply {
+                duration = resources.getInteger(R.integer.animation_duration).toLong()
+            }
+            val enterSlide = Slide(Gravity.END).apply {
+                duration = resources.getInteger(R.integer.animation_duration).toLong()
+            }
+            nextFragment.enterTransition = enterSlide
+            exitTransition = exitFade
 
-        val transaction = fragmentManager
-                ?.beginTransaction()
-                ?.replace(R.id.notes_layout_container, nextFragment)
-                ?.addToBackStack(null)
-        transaction?.commit()
+            val transaction = fragmentManager
+                    ?.beginTransaction()
+                    ?.replace(R.id.notes_layout_container, nextFragment)
+                    ?.addToBackStack(null)
+            transaction?.commit()
+        }
     }
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 

@@ -21,16 +21,33 @@
 
     <ImageButton
             android:id="@+id/edit_button"
-            style="@style/NoteCreation.DeleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_create"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
             android:id="@+id/text_title"
             style="@style/NoteCreation.Title"
-            android:layout_marginTop="0dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/edit_button" />
@@ -46,20 +63,23 @@
     <TextView
             android:id="@+id/text_description"
             style="@style/NoteCreation.Description"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
             android:gravity="top"
-            app:layout_constraintBottom_toTopOf="@id/save_button"
+            app:layout_constraintBottom_toTopOf="@id/date_chip"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_title" />
 
-    <com.google.android.material.chip.Chip
+    <com.lebartodev.lnote.utils.ui.DateChip
             android:id="@+id/date_chip"
             style="@style/NoteCreation.DateChip"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             app:chipCornerRadius="16dp"
             app:closeIconEnabled="true"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/text_description"
-            app:layout_constraintTop_toBottomOf="@id/text_description"
             tools:text="cp, 10 окт. 2018"
             tools:visibility="visible" />
 

@@ -8,7 +8,7 @@
     android:background="@color/white"
     app:behavior_hideable="true"
     app:behavior_peekHeight="0dp"
-    tools:parentTag="com.lebartodev.lnote.common.details.NoteCreationView"
+    tools:parentTag="com.lebartodev.lnote.common.edit.NoteCreationView"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
     <View

@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.common.details
+package com.lebartodev.lnote.common.edit
 
 
 import android.content.Context

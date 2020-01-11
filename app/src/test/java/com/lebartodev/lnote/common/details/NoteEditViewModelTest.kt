@@ -2,6 +2,7 @@ package com.lebartodev.lnote.common.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import com.lebartodev.lnote.common.edit.NoteEditViewModel
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.di.app.AppModuleMock
 import com.lebartodev.lnote.di.app.DaggerAppComponentMock
