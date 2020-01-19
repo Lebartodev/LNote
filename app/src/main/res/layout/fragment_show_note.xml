@@ -47,6 +47,7 @@
     <TextView
             android:id="@+id/text_title"
             style="@style/NoteCreation.Title"
+            android:inputType="none"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -64,8 +65,10 @@
             android:id="@+id/text_description"
             style="@style/NoteCreation.Description"
             android:layout_height="0dp"
+            android:inputType="none"
             android:layout_marginBottom="8dp"
             android:gravity="top"
+            android:textIsSelectable="true"
             app:layout_constraintBottom_toTopOf="@id/date_chip"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

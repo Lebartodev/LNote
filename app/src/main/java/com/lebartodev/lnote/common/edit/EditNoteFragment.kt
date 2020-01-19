@@ -119,7 +119,10 @@ class EditNoteFragment : BaseFragment() {
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
         if (noteId != null) {
-            backButton.setOnClickListener { fragmentManager?.popBackStack() }
+            backButton.setOnClickListener {
+                hideKeyboard()
+                fragmentManager?.popBackStack()
+            }
             backButton.visibility = View.VISIBLE
             fullScreenButton.visibility = View.GONE
         } else {
@@ -130,6 +133,7 @@ class EditNoteFragment : BaseFragment() {
 
         deleteButton.setOnClickListener { if (noteId == null) viewModel.clearCurrentNote() else viewModel.deleteEditedNote() }
         saveNoteButton.setOnClickListener {
+            hideKeyboard()
             viewModel.currentNote().removeObserver(noteObserver)
             viewModel.saveNote()
         }
