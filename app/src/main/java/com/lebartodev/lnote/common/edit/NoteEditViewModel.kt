@@ -46,20 +46,24 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
-                    currentNoteLiveData.value = NoteData(it.title, it.date, it.text) //TODO: add id
+                    currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text)
                 }, Functions.emptyConsumer())
     }
 
     fun setDescription(text: String) {
         val note = currentNoteLiveData.value ?: NoteData()
-        note.text = text
-        currentNoteLiveData.value = note
+        if (note.text != text) {
+            note.text = text
+            currentNoteLiveData.value = note
+        }
     }
 
     fun setTitle(title: String) {
         val note = currentNoteLiveData.value ?: NoteData()
-        note.title = title
-        currentNoteLiveData.value = note
+        if (note.title != title) {
+            note.title = title
+            currentNoteLiveData.value = note
+        }
     }
 
     fun setDate(year: Int, month: Int, day: Int) {
@@ -159,7 +163,8 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         private const val MAX_TITLE_CHARACTERS = 24
     }
 
-    data class NoteData(var title: String? = null,
+    data class NoteData(var id: Long? = null,
+                        var title: String? = null,
                         var date: Long? = null,
                         var text: String? = null)
 }

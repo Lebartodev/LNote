@@ -8,7 +8,6 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.transition.Fade
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.lebartodev.lnote.R
@@ -77,19 +76,7 @@ class ShowNoteFragment : BaseFragment() {
     private fun setupEditButton(note: Note) {
         editButton.setOnClickListener {
             note.id?.run {
-                val nextFragment = EditNoteFragment.initMe(this)
-                exitTransition = Fade(Fade.OUT)
-                        .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
-
-                returnTransition = Fade(Fade.IN)
-                        .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() }
-
-                nextFragment.enterTransition = Fade(Fade.IN)
-                        .apply {
-                            startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                            duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                        }
-
+                val nextFragment = EditNoteFragment.initMe(this, note.title, note.text)
 
                 nextFragment.sharedElementEnterTransition = TransitionSet()
                         .apply {
@@ -100,6 +87,7 @@ class ShowNoteFragment : BaseFragment() {
 
                 fragmentManager
                         ?.beginTransaction()
+                        ?.setReorderingAllowed(true)
                         ?.replace(R.id.notes_layout_container, nextFragment)
                         ?.addSharedElement(titleTextView, titleTextView.transitionName)
                         ?.addSharedElement(background, background.transitionName)

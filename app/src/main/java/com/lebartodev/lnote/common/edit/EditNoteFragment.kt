@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,6 +34,7 @@ class EditNoteFragment : BaseFragment() {
     private lateinit var saveNoteButton: MaterialButton
     private lateinit var calendarButton: ImageButton
     private lateinit var dateChip: Chip
+    private lateinit var backButton: ImageButton
 
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
@@ -66,6 +68,9 @@ class EditNoteFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if (arguments?.getLong(EXTRA_ID) != null) {
+            postponeEnterTransition()
+        }
         super.onViewCreated(view, savedInstanceState)
         titleTextView = view.findViewById(R.id.text_title)
         descriptionTextView = view.findViewById(R.id.text_description)
@@ -74,23 +79,35 @@ class EditNoteFragment : BaseFragment() {
         deleteButton = view.findViewById(R.id.delete_button)
         dateChip = view.findViewById(R.id.date_chip)
         calendarButton = view.findViewById(R.id.calendar_button)
+        backButton = view.findViewById(R.id.back_button)
+        arguments?.getString(EXTRA_TEXT)?.run { descriptionTextView.text = this }
+        arguments?.getString(EXTRA_TITLE)?.run { titleTextView.text = this }
+
+
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
+        if (arguments?.getLong(EXTRA_ID) != null) {
+            backButton.setOnClickListener { fragmentManager?.popBackStack() }
+            backButton.visibility = View.VISIBLE
+            fullScreenButton.visibility = View.GONE
+        } else {
+            backButton.visibility = View.GONE
+            fullScreenButton.visibility = View.VISIBLE
+            fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
+        }
 
-
-        fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
         deleteButton.setOnClickListener { viewModel.clearCurrentNote() }
         saveNoteButton.setOnClickListener { viewModel.saveNote() }
 
         calendarButton.setOnClickListener { openCalendarDialog() }
         dateChip.setOnClickListener { openCalendarDialog() }
         dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
-        setupEditViewModel()
+        setupEditViewModel(arguments?.getLong(EXTRA_ID))
     }
 
-    private fun setupEditViewModel() {
+    private fun setupEditViewModel(id: Long?) {
         viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        arguments?.getLong(EXTRA_ID)?.run { viewModel.loadNote(this) }
+        id?.run { viewModel.loadNote(this) }
         viewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 titleTextView.clearFocus()
@@ -131,6 +148,9 @@ class EditNoteFragment : BaseFragment() {
             } else {
                 dateChip.visibility = View.GONE
             }
+            Log.d("Lebartodev", "$noteData")
+            if (noteData.id == id && id != null)
+                startPostponedEnterTransition()
         })
         viewModel.dateDialog().observe(viewLifecycleOwner, Observer {
             if (it != null) {
@@ -157,13 +177,17 @@ class EditNoteFragment : BaseFragment() {
 
     companion object {
         private const val EXTRA_ID = "EXTRA_ID"
+        private const val EXTRA_TITLE = "EXTRA_TITLE"
+        private const val EXTRA_TEXT = "EXTRA_TEXT"
 
         fun initMe() = EditNoteFragment()
 
-        fun initMe(id: Long): EditNoteFragment {
+        fun initMe(id: Long, title: String?, text: String?): EditNoteFragment {
             val fragment = EditNoteFragment()
             val args = Bundle()
             args.putLong(EXTRA_ID, id)
+            args.putString(EXTRA_TITLE, title)
+            args.putString(EXTRA_TEXT, text)
             fragment.arguments = args
             return fragment
         }
