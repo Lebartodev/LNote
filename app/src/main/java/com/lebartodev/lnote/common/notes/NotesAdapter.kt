@@ -38,8 +38,8 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
         val title: TextView = itemView.findViewById(R.id.note_title)
-        val description: TextView = itemView.findViewById(com.lebartodev.lnote.R.id.note_description)
-        val dateChip: Chip = itemView.findViewById(com.lebartodev.lnote.R.id.date_chip)
+        val description: TextView = itemView.findViewById(R.id.note_description)
+        val dateChip: Chip = itemView.findViewById(R.id.note_date_chip)
         fun bind(item: Note) = with(itemView) {
             title.text = item.title
             description.text = item.text

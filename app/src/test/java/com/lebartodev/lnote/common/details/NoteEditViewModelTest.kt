@@ -2,6 +2,7 @@ package com.lebartodev.lnote.common.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import androidx.lifecycle.Transformations
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.di.app.AppModuleMock
@@ -14,8 +15,10 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.Single
+import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.assertNull
 import org.hamcrest.CoreMatchers
-import org.hamcrest.MatcherAssert
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -31,7 +34,7 @@ class NoteEditViewModelTest {
     lateinit var notesRepository: NotesRepository
     lateinit var editViewModel: NoteEditViewModel
 
-    val calendarObserver: Observer<Long?> = mock()
+    private val calendarObserver: Observer<Long?> = mock()
 
     @Before
     fun setUp() {
@@ -48,40 +51,49 @@ class NoteEditViewModelTest {
 
     @Test
     fun setDate() {
-        editViewModel.selectedDate().observeForever(calendarObserver)
+        val dateLiveData = Transformations.map(editViewModel.currentNote()) { note -> note?.date }
+        dateLiveData.observeForever(calendarObserver)
         editViewModel.setDate(1996, 5, 5)
-        assert(editViewModel.selectedDate().value != null)
+        assert(dateLiveData.value != null)
         val date = Calendar.getInstance()
-        date.timeInMillis = editViewModel.selectedDate().value ?: 0
+        date.timeInMillis = dateLiveData.value ?: 0
 
-        MatcherAssert.assertThat(date.get(Calendar.YEAR), CoreMatchers.equalTo(1996))
-        MatcherAssert.assertThat(date.get(Calendar.MONTH), CoreMatchers.equalTo(5))
-        MatcherAssert.assertThat(date.get(Calendar.DAY_OF_MONTH), CoreMatchers.equalTo(5))
+        assertThat(date.get(Calendar.YEAR), CoreMatchers.equalTo(1996))
+        assertThat(date.get(Calendar.MONTH), CoreMatchers.equalTo(5))
+        assertThat(date.get(Calendar.DAY_OF_MONTH), CoreMatchers.equalTo(5))
     }
 
     @Test
     fun clearDate() {
-        editViewModel.selectedDate().observeForever(calendarObserver)
+        editViewModel.setDate(1, 1, 1)
+        assertNotNull(editViewModel.currentNote().value?.date)
         editViewModel.clearDate()
-        verify(calendarObserver).onChanged(null)
+        assertNull(editViewModel.currentNote().value?.date)
     }
 
     @Test
     fun saveNote() {
-        val saveNoteObserver: Observer<ViewModelObject<Long>> = mock()
+        val saveNoteObserver: Observer<ViewModelObject<Long>?> = mock()
         editViewModel.saveResult().observeForever(saveNoteObserver)
-        editViewModel.saveNote("title", "text")
+        editViewModel.setTitle("title")
+        editViewModel.setDescription("text")
+        editViewModel.saveNote()
         verify(notesRepository).createNote("title", "text", null)
         verify(saveNoteObserver).onChanged(ViewModelObject.success(1L))
     }
 
     @Test
     fun saveNoteWithDate() {
-        val saveNoteObserver: Observer<ViewModelObject<Long>> = mock()
+        val saveNoteObserver: Observer<ViewModelObject<Long>?> = mock()
         editViewModel.saveResult().observeForever(saveNoteObserver)
         editViewModel.setDate(1996, 4, 5)
-        editViewModel.saveNote("title", "text")
-        verify(notesRepository).createNote("title", "text", editViewModel.selectedDate().value)
+        editViewModel.setTitle("title")
+        editViewModel.setDescription("text")
+
+        val date = editViewModel.currentNote().value?.date
+
+        editViewModel.saveNote()
+        verify(notesRepository).createNote("title", "text", date)
         verify(saveNoteObserver).onChanged(ViewModelObject.success(1L))
     }
 
@@ -91,24 +103,26 @@ class NoteEditViewModelTest {
         whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(
                 Single.error(exception))
 
-        val saveNoteObserver: Observer<ViewModelObject<Long>> = mock()
+        val saveNoteObserver: Observer<ViewModelObject<Long>?> = mock()
         editViewModel.saveResult().observeForever(saveNoteObserver)
         editViewModel.setDate(1996, 4, 5)
-        editViewModel.saveNote("title", null)
-        verify(notesRepository).createNote("title", null, editViewModel.selectedDate().value)
+        editViewModel.setTitle("title")
+        val date = editViewModel.currentNote().value?.date
+        editViewModel.saveNote()
+        verify(notesRepository).createNote("title", null, date)
         verify(saveNoteObserver).onChanged(ViewModelObject.error(exception, null))
     }
 
 
     @Test
     fun onDescriptionChanged() {
+        val descriptionLiveData = Transformations.map(editViewModel.currentNote()) { note -> note?.text }
+
+
         val loadNotesObserver: Observer<String?> = mock()
-        editViewModel.descriptionTextLiveData.observeForever(loadNotesObserver)
+        descriptionLiveData.observeForever(loadNotesObserver)
 
         editViewModel.setDescription("1234567890")
         verify(loadNotesObserver).onChanged("1234567890")
-
-        editViewModel.setDescription("123456789012345678901234567890")
-        verify(loadNotesObserver).onChanged("123456789012345678901234")
     }
 }

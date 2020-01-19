@@ -25,7 +25,7 @@ import com.lebartodev.lnote.utils.rule.DisableAnimationRule
 import com.lebartodev.lnote.utils.rule.Repeat
 import com.lebartodev.lnote.utils.rule.RepeatRule
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -125,7 +125,7 @@ class NotesActivityInstrumentationTest {
         onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
                 PickerActions.setDate(2019, 5, 5))
         onView(withId(android.R.id.button1)).perform(click())
-        onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))
+        onView(withId(R.id.note_date_chip)).check(matches(withText("Sun, 05 May 2019")))
 
         onView(withId(R.id.save_button)).perform(click())
         onView(withId(R.id.notes_list)).check(matches(hasMinimumChildCount(1)))
@@ -187,9 +187,9 @@ class NotesActivityInstrumentationTest {
         onView(withId(R.id.calendar_button)).perform(ViewActionUtil.touchDownAndUp(0F, 0F))
         onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(PickerActions.setDate(2019, 5, 5))
         onView(withId(android.R.id.button1)).perform(click())
-        onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))
-        onView(withId(R.id.date_chip)).perform(ClickCloseIconAction())
-        onView(withId(R.id.date_chip)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(allOf(withId(R.id.date_chip), withParent(withId(R.id.bottom_sheet_add)))).check(matches(withText("Sun, 05 May 2019")))
+        onView(allOf(withId(R.id.date_chip), withParent(withId(R.id.bottom_sheet_add)))).perform(ClickCloseIconAction())
+        onView(allOf(withId(R.id.date_chip), withParent(withId(R.id.bottom_sheet_add)))).check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
 
     @Test

@@ -23,7 +23,7 @@ class NotesViewModel constructor(var notesRepository: NotesRepository, val sched
         fetchNotes()
     }
 
-    private fun fetchNotes() {
+    fun fetchNotes() {
         notesDisposable.dispose()
         notesDisposable = notesRepository.getNotes()
                 .map { ViewModelObject.success(it) }

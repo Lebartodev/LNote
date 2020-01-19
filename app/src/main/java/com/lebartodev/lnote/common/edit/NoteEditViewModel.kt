@@ -19,7 +19,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     private var saveNoteDisposable = Disposables.empty()
     private var detailsDisposable = Disposables.empty()
     private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
-    private val selectedDate = MutableLiveData<Long?>()
     private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
     private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
     private val dateDialogLiveData = MutableLiveData<Calendar>()
@@ -34,8 +33,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     fun showNoteDeleted(): LiveData<Boolean?> = showNoteDeletedLiveData
 
     fun isMoreOpen(): LiveData<Boolean> = moreOpenLiveData
-
-    fun selectedDate(): LiveData<Long?> = selectedDate
 
     fun saveResult(): LiveData<ViewModelObject<Long>?> = saveResultLiveData
 
@@ -91,7 +88,7 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
             note?.title
 
         saveNoteDisposable.dispose()
-        saveNoteDisposable = notesRepository.createNote(title, note?.text, selectedDate.value)
+        saveNoteDisposable = notesRepository.createNote(title, note?.text, note?.date)
                 .map { ViewModelObject.success(it) }
                 .onErrorReturn { ViewModelObject.error(it, null) }
                 .subscribeOn(schedulersFacade.io())

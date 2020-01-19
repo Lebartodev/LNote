@@ -2,11 +2,11 @@ package com.lebartodev.lnote.common.notes
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import com.lebartodev.lnote.di.notes.NotesModuleMock
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.di.app.AppModuleMock
 import com.lebartodev.lnote.di.app.DaggerAppComponentMock
+import com.lebartodev.lnote.di.notes.NotesModuleMock
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.nhaarman.mockitokotlin2.anyOrNull
@@ -44,20 +44,16 @@ class NotesViewModelTest {
         comp.plus(NotesModuleMock()).inject(this)
 
 
+        whenever(notesRepository.getNotes()).thenReturn(Flowable.just(arrayListOf()))
+        whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
         notesViewModel = NotesViewModel(notesRepository, schedulersFacade)
 
-
-
-        whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
     }
 
     @Test
     fun loadNotes() {
         val loadNotesObserver: Observer<ViewModelObject<List<Note>>> = mock()
-        whenever(notesRepository.getNotes()).thenReturn(Flowable.just(arrayListOf()))
-
         notesViewModel.getNotes().observeForever(loadNotesObserver)
-        notesViewModel.fetchNotes()
         verify(loadNotesObserver).onChanged(ViewModelObject.success(arrayListOf()))
         notesViewModel.getNotes().removeObserver(loadNotesObserver)
 
