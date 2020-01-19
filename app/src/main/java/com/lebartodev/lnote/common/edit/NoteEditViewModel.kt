@@ -8,7 +8,9 @@ import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
+import io.reactivex.Completable
 import io.reactivex.disposables.Disposables
+import io.reactivex.functions.Action
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 import java.util.*
@@ -17,6 +19,7 @@ import java.util.*
 class NoteEditViewModel constructor(private val notesRepository: NotesRepository,
                                     private val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var saveNoteDisposable = Disposables.empty()
+    private var deleteNoteDisposable = Disposables.empty()
     private var detailsDisposable = Disposables.empty()
     private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
     private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
@@ -43,10 +46,11 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     fun loadNote(id: Long) {
         detailsDisposable.dispose()
         detailsDisposable = notesRepository.getNote(id)
+                .firstOrError()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
-                    currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text)
+                    currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text, it.created)
                 }, Functions.emptyConsumer())
     }
 
@@ -92,36 +96,84 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
             note?.title
 
         saveNoteDisposable.dispose()
-        saveNoteDisposable = notesRepository.createNote(title, note?.text, note?.date)
+        saveNoteDisposable = Completable
+                .defer {
+                    val id = note?.id
+                    if (id == null) {
+                        notesRepository.createNote(title, note?.text, note?.date).ignoreElement()
+                    } else {
+                        notesRepository.editNote(id, title, note.text, note.date)
+                    }
+                }
+                .toSingle { 1L }
                 .map { ViewModelObject.success(it) }
                 .onErrorReturn { ViewModelObject.error(it, null) }
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
-                    closeEditFlow()
                     currentNoteLiveData.value = NoteData()
                     tempNote = NoteData()
                     saveResultLiveData.value = it
+                    closeEditFlow()
                 }, Functions.emptyConsumer())
     }
 
     fun clearCurrentNote() {
-        closeEditFlow()
-        tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
-        currentNoteLiveData.value = NoteData()
-        showNoteDeletedLiveData.value = true
+        val id = currentNoteLiveData.value?.id
+        if (id == null) {
+            closeEditFlow()
+            tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
+            showNoteDeletedLiveData.value = true
+        } else {
+            detailsDisposable.dispose()
+            detailsDisposable = notesRepository.getNote(id)
+                    .subscribeOn(schedulersFacade.io())
+                    .observeOn(schedulersFacade.ui())
+                    .subscribe(Consumer {
+                        tempNote = NoteData(it.id, it.title, it.date, it.text, it.created)
+                        closeEditFlow()
+                        showNoteDeletedLiveData.value = true
+                    }, Functions.emptyConsumer())
+        }
+    }
+
+    fun deleteEditedNote() {
+        currentNoteLiveData.value?.id?.run {
+            deleteNoteDisposable.dispose()
+            deleteNoteDisposable = notesRepository.deleteNote(this)
+                    .subscribeOn(schedulersFacade.io())
+                    .observeOn(schedulersFacade.ui())
+                    .subscribe(Action {
+                        closeEditFlow()
+                        tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
+                        showNoteDeletedLiveData.value = true
+                    }, Functions.emptyConsumer())
+        }
     }
 
     fun onCurrentNoteCleared() {
         showNoteDeletedLiveData.value = false
+        currentNoteLiveData.value = NoteData()
         tempNote = NoteData()
     }
 
     fun undoClearCurrentNote() {
-        currentNoteLiveData.value = tempNote.copy()
-        tempNote = NoteData()
-        bottomSheetOpenLiveData.value = true
-        showNoteDeletedLiveData.value = false
+        if (tempNote.id != null) {
+            tempNote.run {
+                notesRepository.restoreNote(this.id, this.title, this.text, this.date, this.dateCreated)
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe(Consumer {
+                            tempNote = NoteData()
+                            showNoteDeletedLiveData.value = false
+                        }, Functions.emptyConsumer())
+            }
+        } else {
+            currentNoteLiveData.value = tempNote.copy()
+            tempNote = NoteData()
+            bottomSheetOpenLiveData.value = true
+            showNoteDeletedLiveData.value = false
+        }
     }
 
     private fun closeEditFlow() {
@@ -145,6 +197,11 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         super.onCleared()
         saveNoteDisposable.dispose()
         detailsDisposable.dispose()
+        deleteNoteDisposable.dispose()
+    }
+
+    fun resetCurrentNote() {
+        currentNoteLiveData.value = NoteData()
     }
 
     fun openDateDialog() {
@@ -166,5 +223,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     data class NoteData(var id: Long? = null,
                         var title: String? = null,
                         var date: Long? = null,
-                        var text: String? = null)
+                        var text: String? = null,
+                        var dateCreated: Long? = null)
 }

@@ -44,6 +44,7 @@ class ShowNoteFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        postponeEnterTransition()
         super.onViewCreated(view, savedInstanceState)
         formatter = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US)
         titleTextView = view.findViewById(R.id.text_title)
@@ -65,6 +66,7 @@ class ShowNoteFragment : BaseFragment() {
                     descriptionTextView.text = data?.text
                     dateChip.setDate(data?.date)
                     data?.run { setupEditButton(this) }
+                    startPostponedEnterTransition()
                 }
             } else if (vmObject.status == Status.ERROR) {
                 toast(vmObject.error?.message)
@@ -106,6 +108,7 @@ class ShowNoteFragment : BaseFragment() {
     }
 
     companion object {
+        const val BACK_STACK_TAG = "ShowNote.BACK_STACK_TAG"
         private const val EXTRA_ID = "EXTRA_ID"
 
         fun initMe(id: Long): ShowNoteFragment {

@@ -1,6 +1,7 @@
 package com.lebartodev.lnote.common.notes
 
 
+import android.animation.Animator
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -47,21 +48,55 @@ class NotesFragment : BaseFragment() {
     private lateinit var noteCreationView: NoteCreationView
     private val adapter: NotesAdapter = NotesAdapter {
         it.id?.run {
-            val nextFragment = ShowNoteFragment.initMe(this)
-            val exitFade = Fade(Fade.OUT).apply {
-                duration = resources.getInteger(R.integer.animation_duration).toLong()
-            }
-            val enterSlide = Slide(Gravity.END).apply {
-                duration = resources.getInteger(R.integer.animation_duration).toLong()
-            }
-            nextFragment.enterTransition = enterSlide
-            exitTransition = exitFade
+            fun showFragment() {
+                val nextFragment = ShowNoteFragment.initMe(this@run)
+                val exitFade = Fade(Fade.OUT).apply {
+                    duration = resources.getInteger(R.integer.animation_duration).toLong()
+                }
+                val enterSlide = Slide(Gravity.END).apply {
+                    duration = resources.getInteger(R.integer.animation_duration).toLong()
+                }
+                nextFragment.enterTransition = enterSlide
+                exitTransition = exitFade
 
-            val transaction = fragmentManager
-                    ?.beginTransaction()
-                    ?.replace(R.id.notes_layout_container, nextFragment)
-                    ?.addToBackStack(null)
-            transaction?.commit()
+                val transaction = fragmentManager
+                        ?.beginTransaction()
+                        ?.replace(R.id.notes_layout_container, nextFragment)
+                        ?.addToBackStack(ShowNoteFragment.BACK_STACK_TAG)
+                transaction?.commit()
+            }
+
+            bottomAppBar.animate().translationY(1f * bottomAppBar.height).setDuration(100)
+                    .setListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            if (fabAdd.isShown) {
+                                fabAdd.hide(object : FloatingActionButton.OnVisibilityChangedListener() {
+                                    override fun onHidden(fab: FloatingActionButton?) {
+                                        super.onHidden(fab)
+                                        showFragment()
+                                    }
+                                })
+                            } else {
+                                showFragment()
+                            }
+
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+
+                        }
+
+                    })
+                    .start()
+
         }
     }
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -187,6 +222,7 @@ class NotesFragment : BaseFragment() {
             }
             transaction?.addToBackStack(null)
             transaction?.commit()
+
         }
     }
 
@@ -210,7 +246,12 @@ class NotesFragment : BaseFragment() {
                                 override fun onDismissed(transientBottomBar: Snackbar?,
                                                          event: Int) {
                                     super.onDismissed(transientBottomBar, event)
-                                    if (event == DISMISS_EVENT_SWIPE || event == DISMISS_EVENT_TIMEOUT) {
+                                    if (event == DISMISS_EVENT_ACTION) {
+                                        bottomAppBar.visibility = View.VISIBLE
+                                        bottomAppBar.hideOnScroll = true
+                                        bottomAppBar.animate().translationY(0f).setDuration(200).start()
+                                        fabAdd.show()
+                                    } else if (event == DISMISS_EVENT_SWIPE || event == DISMISS_EVENT_TIMEOUT) {
                                         bottomAppBar.visibility = View.VISIBLE
                                         bottomAppBar.hideOnScroll = true
                                         bottomAppBar.animate().translationY(0f).setDuration(200).start()
