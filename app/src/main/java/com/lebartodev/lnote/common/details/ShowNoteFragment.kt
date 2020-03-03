@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.transition.TransitionInflater
@@ -19,6 +20,7 @@ import com.lebartodev.lnote.di.app.AppComponent
 import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.ui.DateChip
+import com.lebartodev.lnote.utils.ui.toPx
 import com.lebartodev.lnote.utils.ui.toast
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,8 +35,9 @@ class ShowNoteFragment : BaseFragment() {
     private lateinit var dateChip: DateChip
     private lateinit var background: View
     private lateinit var divider: View
-
+    private lateinit var noteContent: NestedScrollView
     private lateinit var viewModel: ShowNoteViewModel
+    private lateinit var actionBarTitleTextView: TextView
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
 
@@ -53,8 +56,21 @@ class ShowNoteFragment : BaseFragment() {
         dateChip = view.findViewById(R.id.date_chip)
         background = view.findViewById(R.id.note_creation_background)
         divider = view.findViewById(R.id.add_divider)
+        noteContent = view.findViewById(R.id.note_content)
+        actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
 
         view.findViewById<View>(R.id.back_button).setOnClickListener { fragmentManager?.popBackStack() }
+
+        val visibleTitleLimit = 56f.toPx(resources)
+        noteContent.setOnScrollChangeListener { v: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
+            if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
+                actionBarTitleTextView.animate().cancel()
+                actionBarTitleTextView.animate().alpha(1f).start()
+            } else if (scrollY < visibleTitleLimit && oldScrollY > visibleTitleLimit) {
+                actionBarTitleTextView.animate().cancel()
+                actionBarTitleTextView.animate().alpha(0f).start()
+            }
+        }
 
         val id = arguments?.getLong(EXTRA_ID)
         viewModel = ViewModelProviders.of(this, viewModelFactory)[ShowNoteViewModel::class.java]
@@ -63,6 +79,7 @@ class ShowNoteFragment : BaseFragment() {
             if (vmObject.status == Status.SUCCESS) {
                 vmObject.run {
                     titleTextView.text = data?.title
+                    actionBarTitleTextView.text = data?.title
                     descriptionTextView.text = data?.text
                     dateChip.setDate(data?.date)
                     data?.run { setupEditButton(this) }
