@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -22,6 +23,7 @@ import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.app.AppComponent
 import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.ui.toPx
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -36,6 +38,8 @@ class EditNoteFragment : BaseFragment() {
     private lateinit var calendarButton: ImageButton
     private lateinit var dateChip: Chip
     private lateinit var backButton: ImageButton
+    private lateinit var actionBarTitleTextView: TextView
+    private lateinit var noteContent: NestedScrollView
     private var noteId: Long? = null
 
     private val noteObserver: Observer<NoteEditViewModel.NoteData> = Observer { noteData ->
@@ -65,6 +69,8 @@ class EditNoteFragment : BaseFragment() {
         }
         if (noteData.id == noteId && noteId != null)
             startPostponedEnterTransition()
+        actionBarTitleTextView.hint = titleTextView.hint
+        actionBarTitleTextView.text = titleTextView.text
     }
 
     @Inject
@@ -84,6 +90,7 @@ class EditNoteFragment : BaseFragment() {
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             viewModel.setTitle(s?.toString() ?: "")
+            actionBarTitleTextView.text = s?.toString() ?: ""
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -112,9 +119,21 @@ class EditNoteFragment : BaseFragment() {
         dateChip = view.findViewById(R.id.date_chip)
         calendarButton = view.findViewById(R.id.calendar_button)
         backButton = view.findViewById(R.id.back_button)
+        actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
+        noteContent = view.findViewById(R.id.note_content)
         arguments?.getString(EXTRA_TEXT)?.run { descriptionTextView.text = this }
         arguments?.getString(EXTRA_TITLE)?.run { titleTextView.text = this }
 
+        val visibleTitleLimit = 56f.toPx(resources)
+        noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
+            if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
+                actionBarTitleTextView.animate().cancel()
+                actionBarTitleTextView.animate().alpha(1f).start()
+            } else if (scrollY < visibleTitleLimit && oldScrollY > visibleTitleLimit) {
+                actionBarTitleTextView.animate().cancel()
+                actionBarTitleTextView.animate().alpha(0f).start()
+            }
+        }
 
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
