@@ -186,10 +186,16 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     }
 
     fun getFormattedHint(text: String): String {
-        return if (text.length > MAX_TITLE_CHARACTERS) {
-            text.substring(0, MAX_TITLE_CHARACTERS)
+        val separateIndex = text.indexOf("\n")
+        var firstLine: String = ""
+        if (separateIndex != -1) {
+            firstLine = text.substring(0, separateIndex)
+        } else
+            firstLine = text
+        return if (firstLine.length > MAX_TITLE_CHARACTERS) {
+            firstLine.substring(0, MAX_TITLE_CHARACTERS)
         } else {
-            text
+            firstLine
         }
     }
 
