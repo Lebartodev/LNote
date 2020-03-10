@@ -195,18 +195,7 @@ class NotesFragment : BaseFragment() {
 
     private fun openFullScreen() {
         hideKeyboardListener(noteCreationView.titleText) {
-            val nextFragment = EditNoteFragment.initMe()
-            this.exitTransition = Fade(Fade.OUT)
-                    .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() / 2 }
-
-            this.returnTransition = Fade(Fade.IN)
-                    .apply { duration = resources.getInteger(R.integer.animation_duration).toLong() }
-
-            nextFragment.enterTransition = Fade(Fade.IN)
-                    .apply {
-                        startDelay = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                        duration = resources.getInteger(R.integer.animation_duration).toLong() / 2
-                    }
+            val nextFragment = EditNoteFragment.initMe(noteCreationView.noteContent.scrollY)
 
 
             nextFragment.sharedElementEnterTransition = TransitionSet()
@@ -220,6 +209,7 @@ class NotesFragment : BaseFragment() {
                     ?.beginTransaction()
                     ?.replace(R.id.notes_layout_container, nextFragment)
                     ?.addSharedElement(noteCreationView.noteContent, noteCreationView.noteContent.transitionName)
+                    ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
                     ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
                     ?.addSharedElement(noteCreationView.fullScreenButton, noteCreationView.fullScreenButton.transitionName)
                     ?.addSharedElement(noteCreationView.dateChip, noteCreationView.dateChip.transitionName)

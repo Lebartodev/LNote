@@ -38,7 +38,7 @@
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
             android:fillViewport="true"
-            android:transitionName="test"
+            android:transitionName="NoteContent"
             app:layout_constraintBottom_toTopOf="@id/save_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -41,7 +41,7 @@ class EditNoteFragment : BaseFragment() {
     private lateinit var actionBarTitleTextView: TextView
     private lateinit var noteContent: NestedScrollView
     private var noteId: Long? = null
-
+    private var scroll: Int? = null
     private val noteObserver: Observer<NoteEditViewModel.NoteData> = Observer { noteData ->
         val description = noteData.text ?: ""
         val title = noteData.title
@@ -69,6 +69,13 @@ class EditNoteFragment : BaseFragment() {
         }
         if (noteData.id == noteId && noteId != null)
             startPostponedEnterTransition()
+        if (scroll != null && scroll != 0) {
+            noteContent.post {
+                noteContent.scrollTo(0, scroll ?: 0)
+                startPostponedEnterTransition()
+                scroll = null
+            }
+        }
         actionBarTitleTextView.hint = titleTextView.hint
         actionBarTitleTextView.text = titleTextView.text
     }
@@ -106,8 +113,12 @@ class EditNoteFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        noteId = arguments?.getLong(EXTRA_ID)
-        if (noteId != null) {
+        scroll = arguments?.getInt(EXTRA_SCROLL)
+        noteId = arguments?.getLong(EXTRA_ID, -1)
+        if (noteId == -1L) {
+            noteId = null
+        }
+        if (noteId != null || scroll != null || scroll != 0) {
             postponeEnterTransition()
         }
         super.onViewCreated(view, savedInstanceState)
@@ -220,17 +231,25 @@ class EditNoteFragment : BaseFragment() {
 
     companion object {
         private const val EXTRA_ID = "EXTRA_ID"
+        private const val EXTRA_SCROLL = "EXTRA_SCROLL"
         private const val EXTRA_TITLE = "EXTRA_TITLE"
         private const val EXTRA_TEXT = "EXTRA_TEXT"
 
-        fun initMe() = EditNoteFragment()
-
-        fun initMe(id: Long, title: String?, text: String?): EditNoteFragment {
+        fun initMe(id: Long, title: String?, text: String?, scrollY: Int = 0): EditNoteFragment {
             val fragment = EditNoteFragment()
             val args = Bundle()
             args.putLong(EXTRA_ID, id)
             args.putString(EXTRA_TITLE, title)
             args.putString(EXTRA_TEXT, text)
+            args.putInt(EXTRA_SCROLL, scrollY)
+            fragment.arguments = args
+            return fragment
+        }
+
+        fun initMe(scrollY: Int = 0): EditNoteFragment {
+            val fragment = EditNoteFragment()
+            val args = Bundle()
+            args.putInt(EXTRA_SCROLL, scrollY)
             fragment.arguments = args
             return fragment
         }

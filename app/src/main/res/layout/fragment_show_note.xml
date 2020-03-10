@@ -39,6 +39,7 @@
             app:layout_constraintBottom_toTopOf="@id/date_chip"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            android:transitionName="NoteContent"
             app:layout_constraintTop_toBottomOf="@id/edit_button">
 
         <LinearLayout

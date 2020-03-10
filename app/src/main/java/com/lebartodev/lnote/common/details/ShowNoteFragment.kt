@@ -95,7 +95,7 @@ class ShowNoteFragment : BaseFragment() {
     private fun setupEditButton(note: Note) {
         editButton.setOnClickListener {
             note.id?.run {
-                val nextFragment = EditNoteFragment.initMe(this, note.title, note.text)
+                val nextFragment = EditNoteFragment.initMe(this, note.title, note.text, noteContent.scrollY)
 
                 nextFragment.sharedElementEnterTransition = TransitionSet()
                         .apply {
@@ -108,11 +108,9 @@ class ShowNoteFragment : BaseFragment() {
                         ?.beginTransaction()
                         ?.setReorderingAllowed(true)
                         ?.replace(R.id.notes_layout_container, nextFragment)
-                        ?.addSharedElement(titleTextView, titleTextView.transitionName)
+                        ?.addSharedElement(noteContent, noteContent.transitionName)
                         ?.addSharedElement(background, background.transitionName)
-                        ?.addSharedElement(descriptionTextView, descriptionTextView.transitionName)
                         ?.addSharedElement(dateChip, dateChip.transitionName)
-                        ?.addSharedElement(divider, divider.transitionName)
                         ?.addToBackStack(null)
                         ?.commit()
             }
