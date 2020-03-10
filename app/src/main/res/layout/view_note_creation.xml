@@ -1,110 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/note_creation"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/white"
-    app:behavior_hideable="true"
-    app:behavior_peekHeight="0dp"
-    tools:parentTag="com.lebartodev.lnote.common.edit.NoteCreationView"
-    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/note_creation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
 
     <View
-        android:id="@+id/note_creation_background"
-        style="@style/NoteCreation.Background"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            android:id="@+id/note_creation_background"
+            style="@style/NoteCreation.Background"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/text_title"
-        style="@style/NoteCreation.Title"
-        android:hint="@string/title_hint"
-        android:saveEnabled="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.core.widget.NestedScrollView
+            android:id="@+id/note_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:transitionName="test"
+            app:layout_constraintBottom_toTopOf="@id/fab_more"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintVertical_chainStyle="packed">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <EditText
+                    android:id="@+id/text_title"
+                    style="@style/NoteCreation.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/title_hint"
+                    android:saveEnabled="false" />
+
+            <View
+                    android:id="@+id/add_divider"
+                    style="@style/NoteCreation.Divider"
+                    android:layout_width="match_parent" />
+
+            <EditText
+                    android:id="@+id/text_description"
+                    style="@style/NoteCreation.Description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/enter_note_hint"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:saveEnabled="false" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
 
     <View
-        android:id="@+id/add_divider"
-        style="@style/NoteCreation.Divider"
-        app:layout_constraintBottom_toTopOf="@id/text_description"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_title" />
+            android:id="@+id/fade_top"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/note_fade_size"
+            android:background="@drawable/note_top_gradient"
+            app:layout_constraintEnd_toEndOf="@id/note_content"
+            app:layout_constraintStart_toStartOf="@id/note_content"
+            app:layout_constraintTop_toTopOf="@id/note_content" />
 
-    <EditText
-        android:id="@+id/text_description"
-        style="@style/NoteCreation.Description"
-        android:hint="@string/enter_note_hint"
-        android:saveEnabled="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_title" />
+    <View
+            android:id="@+id/fade_bottom"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/note_fade_size"
+            android:background="@drawable/note_bottom_gradient"
+            app:layout_constraintBottom_toBottomOf="@id/note_content"
+            app:layout_constraintEnd_toEndOf="@id/note_content"
+            app:layout_constraintStart_toStartOf="@id/note_content" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_more"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_drop_down_24"
-        app:backgroundTint="@color/colorPrimary"
-        app:fabSize="mini"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/date_chip" />
+            android:id="@+id/fab_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_drop_down_24"
+            app:backgroundTint="@color/colorPrimary"
+            app:fabSize="mini"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/date_chip"
+            app:layout_constraintVertical_bias="1" />
 
     <ImageButton
-        android:id="@+id/delete_button"
-        style="@style/NoteCreation.DeleteButton"
-        android:layout_marginEnd="4dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/fab_more"
-        app:layout_constraintEnd_toStartOf="@id/full_screen_button"
-        app:layout_constraintStart_toEndOf="@id/calendar_button"
-        app:layout_constraintTop_toTopOf="@id/fab_more" />
+            android:id="@+id/delete_button"
+            style="@style/NoteCreation.DeleteButton"
+            android:layout_marginEnd="4dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/fab_more"
+            app:layout_constraintEnd_toStartOf="@id/full_screen_button"
+            app:layout_constraintStart_toEndOf="@id/calendar_button"
+            app:layout_constraintTop_toTopOf="@id/fab_more" />
 
     <ImageButton
-        android:id="@+id/calendar_button"
-        style="@style/NoteCreation.CalendarButton"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="4dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/fab_more"
-        app:layout_constraintEnd_toStartOf="@id/delete_button"
-        app:layout_constraintStart_toEndOf="@id/fab_more"
-        app:layout_constraintTop_toTopOf="@id/fab_more" />
+            android:id="@+id/calendar_button"
+            style="@style/NoteCreation.CalendarButton"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="4dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/fab_more"
+            app:layout_constraintEnd_toStartOf="@id/delete_button"
+            app:layout_constraintStart_toEndOf="@id/fab_more"
+            app:layout_constraintTop_toTopOf="@id/fab_more" />
 
     <ImageButton
-        android:id="@+id/full_screen_button"
-        style="@style/NoteCreation.FullScreenButton"
-        android:layout_marginStart="12dp"
-        app:layout_constraintBottom_toBottomOf="@id/fab_more"
-        app:layout_constraintStart_toEndOf="@id/delete_button"
-        app:layout_constraintTop_toTopOf="@id/fab_more" />
+            android:id="@+id/full_screen_button"
+            style="@style/NoteCreation.FullScreenButton"
+            android:layout_marginStart="12dp"
+            app:layout_constraintBottom_toBottomOf="@id/fab_more"
+            app:layout_constraintStart_toEndOf="@id/delete_button"
+            app:layout_constraintTop_toTopOf="@id/fab_more" />
 
     <com.google.android.material.chip.Chip
-        android:id="@+id/date_chip"
-        style="@style/NoteCreation.DateChip"
-        android:layout_marginTop="8dp"
-        app:chipCornerRadius="16dp"
-        app:closeIconEnabled="true"
-        app:layout_constraintStart_toStartOf="@id/text_description"
-        app:layout_constraintTop_toBottomOf="@id/text_description"
-        tools:text="cp, 10 окт. 2018" />
+            android:id="@+id/date_chip"
+            style="@style/NoteCreation.DateChip"
+            android:layout_marginTop="8dp"
+            app:chipCornerRadius="16dp"
+            app:closeIconEnabled="true"
+            app:layout_constraintStart_toStartOf="@id/note_content"
+            app:layout_constraintTop_toBottomOf="@id/note_content"
+            tools:text="cp, 10 окт. 2018" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/save_button"
-        style="@style/NoteCreation.SaveButton"
-        android:text="@string/save_button_text"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/date_chip" />
+            android:id="@+id/save_button"
+            style="@style/NoteCreation.SaveButton"
+            android:text="@string/save_button_text"
+            app:backgroundTint="@color/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/date_chip" />
 
 </merge>

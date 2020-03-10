@@ -1,6 +1,7 @@
 package com.lebartodev.lnote.common.edit
 
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,6 +11,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.widget.NestedScrollView
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
@@ -20,6 +22,7 @@ import com.lebartodev.lnote.di.notes.NotesModule
 import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
     val saveNoteButton: MaterialButton
     val titleText: EditText
@@ -31,6 +34,7 @@ class NoteCreationView : ConstraintLayout {
     val deleteButton: ImageButton
     val divider: View
     val dateChip: Chip
+    val noteContent: NestedScrollView
 
     var descriptionListener: ((String) -> Unit)? = null
     var titleListener: ((String) -> Unit)? = null
@@ -86,6 +90,7 @@ class NoteCreationView : ConstraintLayout {
         fullScreenButton = findViewById(R.id.full_screen_button)
         divider = findViewById(R.id.add_divider)
         dateChip = findViewById(R.id.date_chip)
+        noteContent = findViewById(R.id.note_content)
 
         saveNoteButton.setOnClickListener {
             saveListener?.invoke()

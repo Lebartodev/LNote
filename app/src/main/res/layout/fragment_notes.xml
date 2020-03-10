@@ -43,6 +43,6 @@
             android:paddingTop="4dp"
             app:behavior_hideable="true"
             app:behavior_peekHeight="0dp"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
+            app:layout_behavior=".utils.ui.LockableBottomSheetBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,6 +1,5 @@
 package com.lebartodev.lnote.common.notes
 
-
 import android.animation.Animator
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
@@ -10,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,11 +35,11 @@ import com.lebartodev.lnote.di.app.AppComponent
 import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.error
+import com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior
 import com.lebartodev.lnote.utils.ui.NotesItemDecoration
 import com.lebartodev.lnote.utils.ui.toPx
 import java.util.*
 import javax.inject.Inject
-
 
 class NotesFragment : BaseFragment() {
     private lateinit var fabAdd: FloatingActionButton
@@ -96,7 +96,6 @@ class NotesFragment : BaseFragment() {
 
                     })
                     .start()
-
         }
     }
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -181,6 +180,17 @@ class NotesFragment : BaseFragment() {
             bottomAppBar.visibility = View.INVISIBLE
             fabAdd.hide()
         }
+        val noteContent = noteCreationView.findViewById<NestedScrollView>(R.id.note_content)
+
+        noteContent.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_MOVE) {
+                if (noteContent.scrollY != 0) {
+                    (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = false
+                }
+            }
+            (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = true
+            return@setOnTouchListener false
+        }
     }
 
     private fun openFullScreen() {
@@ -209,13 +219,10 @@ class NotesFragment : BaseFragment() {
             val transaction = this.fragmentManager
                     ?.beginTransaction()
                     ?.replace(R.id.notes_layout_container, nextFragment)
-                    ?.addSharedElement(noteCreationView.titleText, noteCreationView.titleText.transitionName)
-                    ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
+                    ?.addSharedElement(noteCreationView.noteContent, noteCreationView.noteContent.transitionName)
                     ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
-                    ?.addSharedElement(noteCreationView.descriptionText, noteCreationView.descriptionText.transitionName)
                     ?.addSharedElement(noteCreationView.fullScreenButton, noteCreationView.fullScreenButton.transitionName)
                     ?.addSharedElement(noteCreationView.dateChip, noteCreationView.dateChip.transitionName)
-                    ?.addSharedElement(noteCreationView.divider, noteCreationView.divider.transitionName)
             if (noteCreationView.deleteButton.visibility == View.VISIBLE && noteCreationView.calendarButton.visibility == View.VISIBLE) {
                 transaction?.addSharedElement(noteCreationView.deleteButton, noteCreationView.deleteButton.transitionName)
                         ?.addSharedElement(noteCreationView.calendarButton, noteCreationView.calendarButton.transitionName)
