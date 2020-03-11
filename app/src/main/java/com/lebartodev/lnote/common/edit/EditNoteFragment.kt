@@ -69,7 +69,7 @@ class EditNoteFragment : BaseFragment() {
         }
         if (noteData.id == noteId && noteId != null)
             startPostponedEnterTransition()
-        if (scroll != null && scroll != 0) {
+        if (scroll != null && scroll != 0 && !noteData.text.isNullOrEmpty()) {
             noteContent.post {
                 noteContent.scrollTo(0, scroll ?: 0)
                 startPostponedEnterTransition()
@@ -178,6 +178,8 @@ class EditNoteFragment : BaseFragment() {
 
     private fun setupEditViewModel() {
         viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
+        if (noteId != null)
+            viewModel.onCurrentNoteCleared()
         viewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 titleTextView.clearFocus()

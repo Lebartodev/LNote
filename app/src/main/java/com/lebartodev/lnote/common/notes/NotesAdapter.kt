@@ -42,7 +42,20 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
         val dateChip: Chip = itemView.findViewById(R.id.note_date_chip)
         fun bind(item: Note) = with(itemView) {
             title.text = item.title
-            description.text = item.text
+            val lines = item.text.split("\n")
+
+            if (lines.size > MAX_LINES) {
+                var text = ""
+                for (index in 0..MAX_LINES) {
+                    text += (lines[index])
+                    text += "\n"
+                }
+                text += ("...")
+                description.text = text
+            } else
+                description.text = item.text
+
+
             if (item.date != null) {
                 dateChip.text = formatter.format(item.date)
                 dateChip.visibility = View.VISIBLE
@@ -53,5 +66,9 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
                 listener(item)
             }
         }
+    }
+
+    companion object {
+        private const val MAX_LINES = 6
     }
 }

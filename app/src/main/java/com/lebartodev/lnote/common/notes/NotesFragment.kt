@@ -83,15 +83,12 @@ class NotesFragment : BaseFragment() {
                             } else {
                                 showFragment()
                             }
-
                         }
 
                         override fun onAnimationCancel(animation: Animator?) {
-
                         }
 
                         override fun onAnimationStart(animation: Animator?) {
-
                         }
 
                     })
@@ -153,11 +150,13 @@ class NotesFragment : BaseFragment() {
         bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 bottomAppBar.visibility = View.VISIBLE
-                bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
-                if (1f - slideOffset == 1f) {
-                    fabAdd.show()
-                } else {
-                    fabAdd.hide()
+                if (slideOffset <= 1f && slideOffset >= -1f) {
+                    bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
+                    if (1f - slideOffset == 1f) {
+                        fabAdd.show()
+                    } else {
+                        fabAdd.hide()
+                    }
                 }
             }
 
