@@ -148,7 +148,7 @@ class EditNoteFragment : BaseFragment() {
 
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
-        if (noteId != null) {
+        if (noteId != null || arguments?.getBoolean(EXTRA_BACK_BUTTON_VISIBLE) == true) {
             backButton.setOnClickListener {
                 hideKeyboard()
                 fragmentManager?.popBackStack()
@@ -236,6 +236,7 @@ class EditNoteFragment : BaseFragment() {
         private const val EXTRA_SCROLL = "EXTRA_SCROLL"
         private const val EXTRA_TITLE = "EXTRA_TITLE"
         private const val EXTRA_TEXT = "EXTRA_TEXT"
+        private const val EXTRA_BACK_BUTTON_VISIBLE = "EXTRA_BACK_BUTTON_VISIBLE"
 
         fun initMe(id: Long, title: String?, text: String?, scrollY: Int = 0): EditNoteFragment {
             val fragment = EditNoteFragment()
@@ -248,10 +249,11 @@ class EditNoteFragment : BaseFragment() {
             return fragment
         }
 
-        fun initMe(scrollY: Int = 0): EditNoteFragment {
+        fun initMe(forceBackButtonVisible: Boolean = false, scrollY: Int = 0): EditNoteFragment {
             val fragment = EditNoteFragment()
             val args = Bundle()
             args.putInt(EXTRA_SCROLL, scrollY)
+            args.putBoolean(EXTRA_BACK_BUTTON_VISIBLE, forceBackButtonVisible)
             fragment.arguments = args
             return fragment
         }

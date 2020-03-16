@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
+import com.lebartodev.lnote.repository.SettingsRepository
 import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
@@ -17,6 +18,7 @@ import java.util.*
 
 @DebugOpenClass
 class NoteEditViewModel constructor(private val notesRepository: NotesRepository,
+                                    private val settingsRepository: SettingsRepository,
                                     private val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var saveNoteDisposable = Disposables.empty()
     private var deleteNoteDisposable = Disposables.empty()
@@ -25,7 +27,8 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
     private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
     private val dateDialogLiveData = MutableLiveData<Calendar>()
-    private val bottomSheetOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
+    private val noteCreationViewOpen = MutableLiveData<Boolean>().apply { value = false }
+    private val openFullScreenCreation = SingleLiveEvent<Boolean>().apply { value = false }
 
 
     private val currentNoteLiveData = MutableLiveData<NoteData>().apply { value = NoteData() }
@@ -41,7 +44,9 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun dateDialog(): LiveData<Calendar?> = dateDialogLiveData
 
-    fun bottomSheetOpen(): LiveData<Boolean> = bottomSheetOpenLiveData
+    fun noteCreationOpen(): LiveData<Boolean> = noteCreationViewOpen
+
+    fun openFullScreenCreation(): LiveData<Boolean?> = openFullScreenCreation
 
     fun loadNote(id: Long) {
         detailsDisposable.dispose()
@@ -171,14 +176,14 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         } else {
             currentNoteLiveData.value = tempNote.copy()
             tempNote = NoteData()
-            bottomSheetOpenLiveData.value = true
+            setNoteCreationOpen(true)
             showNoteDeletedLiveData.value = false
         }
     }
 
     private fun closeEditFlow() {
         moreOpenLiveData.value = false
-        bottomSheetOpenLiveData.value = false
+        setNoteCreationOpen(false)
     }
 
     fun toggleMore() {
@@ -218,9 +223,15 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         dateDialogLiveData.value = null
     }
 
-    fun toggleBottomSheet() {
-        bottomSheetOpenLiveData.value = !(bottomSheetOpenLiveData.value ?: false)
+    fun setNoteCreationOpen(state: Boolean) {
+        if (isBottomPanelEnabled()) {
+            noteCreationViewOpen.value = state
+        } else {
+            openFullScreenCreation.value = state
+        }
     }
+
+    fun isBottomPanelEnabled() = settingsRepository.isBottomPanelEnabled()
 
     companion object {
         private const val MAX_TITLE_CHARACTERS = 24

@@ -6,6 +6,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
         <item name="android:textColorHint">@color/black_40</item>
     </style>
 

@@ -13,4 +13,7 @@
     <string name="undo">UNDO</string>
     <string name="note_deleted">Note deleted</string>
     <string name="date_pattern">EEE, dd MMM yyyy</string>
+    <string name="settings_tag">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_bottom_panel">Enable bottom panel</string>
 </resources>

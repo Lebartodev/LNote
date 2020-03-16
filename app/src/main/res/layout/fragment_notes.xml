@@ -17,20 +17,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
+            android:elevation="0dp"
             app:backgroundTint="@color/colorPrimary"
             app:fabAlignmentMode="center"
             app:fabCradleRoundedCornerRadius="0dp"
-            android:elevation="0dp"
-            app:hideOnScroll="true"
-            app:navigationIcon="@drawable/ic_menu_24dp" />
+            app:hideOnScroll="true" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:elevation="0dp"
             android:src="@drawable/ic_add_24"
             app:backgroundTint="@color/colorPrimary"
+            app:elevation="0dp"
             app:layout_anchor="@id/bottom_app_bar" />
 
     <com.lebartodev.lnote.common.edit.NoteCreationView
@@ -44,5 +43,15 @@
             app:behavior_hideable="true"
             app:behavior_peekHeight="0dp"
             app:layout_behavior=".utils.ui.LockableBottomSheetBehavior" />
+
+    <com.lebartodev.lnote.common.settings.SettingsBottomView
+            android:id="@+id/bottom_sheet_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="24dp"
+            android:paddingTop="4dp"
+            app:behavior_hideable="true"
+            app:behavior_peekHeight="0dp"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -29,6 +29,7 @@ import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.edit.EditNoteFragment
 import com.lebartodev.lnote.common.edit.NoteCreationView
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
+import com.lebartodev.lnote.common.settings.SettingsBottomView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.app.AppComponent
@@ -46,6 +47,7 @@ class NotesFragment : BaseFragment() {
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
     private lateinit var noteCreationView: NoteCreationView
+    private lateinit var settingsView: SettingsBottomView
     private val adapter: NotesAdapter = NotesAdapter {
         it.id?.run {
             fun showFragment() {
@@ -96,6 +98,7 @@ class NotesFragment : BaseFragment() {
         }
     }
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+    private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
@@ -120,7 +123,9 @@ class NotesFragment : BaseFragment() {
         bottomAppBar = view.findViewById(R.id.bottom_app_bar)
         notesList = view.findViewById(R.id.notes_list)
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
-        bottomAddSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_add))
+        settingsView = view.findViewById(R.id.bottom_sheet_settings)
+        bottomAddSheetBehavior = BottomSheetBehavior.from(noteCreationView)
+        settingsSheetBehavior = BottomSheetBehavior.from(settingsView)
         notesList.layoutManager = LinearLayoutManager(context)
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
@@ -141,7 +146,7 @@ class NotesFragment : BaseFragment() {
             formattedHintProducer = { editNoteViewModel.getFormattedHint(it) }
             calendarDialogListener = { editNoteViewModel.openDateDialog() }
         }
-        fabAdd.setOnClickListener { editNoteViewModel.toggleBottomSheet() }
+        fabAdd.setOnClickListener { editNoteViewModel.setNoteCreationOpen(true) }
         notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN)
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -163,17 +168,15 @@ class NotesFragment : BaseFragment() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     hideKeyboard(bottomSheet)
-                    if (editNoteViewModel.bottomSheetOpen().value != false)
-                        editNoteViewModel.toggleBottomSheet()
+                    editNoteViewModel.setNoteCreationOpen(false)
                 }
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                     hideKeyboard(bottomSheet)
-                    if (editNoteViewModel.bottomSheetOpen().value != true)
-                        editNoteViewModel.toggleBottomSheet()
+                    editNoteViewModel.setNoteCreationOpen(true)
                 }
             }
         })
-        if (editNoteViewModel.bottomSheetOpen().value == true) {
+        if (editNoteViewModel.noteCreationOpen().value == true) {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
             bottomAppBar.hideOnScroll = false
             bottomAppBar.visibility = View.INVISIBLE
@@ -190,11 +193,21 @@ class NotesFragment : BaseFragment() {
             (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = true
             return@setOnTouchListener false
         }
+        bottomAppBar.replaceMenu(R.menu.settings_menu)
+        bottomAppBar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.app_bar_settings -> {
+                    settingsSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun openFullScreen() {
         hideKeyboardListener(noteCreationView.titleText) {
-            val nextFragment = EditNoteFragment.initMe(noteCreationView.noteContent.scrollY)
+            val nextFragment = EditNoteFragment.initMe(scrollY = noteCreationView.noteContent.scrollY)
 
 
             nextFragment.sharedElementEnterTransition = TransitionSet()
@@ -282,11 +295,30 @@ class NotesFragment : BaseFragment() {
                 }
             }
         })
-        editNoteViewModel.bottomSheetOpen().observe(viewLifecycleOwner, Observer {
+        editNoteViewModel.noteCreationOpen().observe(viewLifecycleOwner, Observer {
             if (it == false) {
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             } else if (it == true) {
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        })
+        editNoteViewModel.openFullScreenCreation().observe(viewLifecycleOwner, Observer {
+            if (it == true) {
+                val nextFragment = EditNoteFragment.initMe(forceBackButtonVisible = true)
+                val exitFade = Fade(Fade.OUT).apply {
+                    duration = resources.getInteger(R.integer.animation_duration).toLong()
+                }
+                val enterSlide = Slide(Gravity.END).apply {
+                    duration = resources.getInteger(R.integer.animation_duration).toLong()
+                }
+                nextFragment.enterTransition = enterSlide
+                exitTransition = exitFade
+
+                val transaction = fragmentManager
+                        ?.beginTransaction()
+                        ?.replace(R.id.notes_layout_container, nextFragment)
+                        ?.addToBackStack(null)
+                transaction?.commit()
             }
         })
         if (editNoteViewModel.isMoreOpen().value == true) {
@@ -303,15 +335,6 @@ class NotesFragment : BaseFragment() {
                 error("loadNotes", it.error)
             }
         })
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.app_bar_settings -> {
-
-            }
-        }
-        return true
     }
 
     private fun onNotesLoaded(notes: List<Note>) {
