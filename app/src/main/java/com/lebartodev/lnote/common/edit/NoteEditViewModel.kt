@@ -38,8 +38,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun showNoteDeleted(): LiveData<Boolean?> = showNoteDeletedLiveData
 
-    fun isMoreOpen(): LiveData<Boolean> = moreOpenLiveData
-
     fun saveResult(): LiveData<ViewModelObject<Long>?> = saveResultLiveData
 
     fun dateDialog(): LiveData<Calendar?> = dateDialogLiveData
@@ -184,10 +182,6 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
     private fun closeEditFlow() {
         moreOpenLiveData.value = false
         setNoteCreationOpen(false)
-    }
-
-    fun toggleMore() {
-        moreOpenLiveData.value = !(moreOpenLiveData.value ?: false)
     }
 
     fun getFormattedHint(text: String): String {

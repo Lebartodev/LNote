@@ -108,7 +108,6 @@ class NotesFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
-
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -142,7 +141,6 @@ class NotesFragment : BaseFragment() {
             clearDateListener = { editNoteViewModel.clearDate() }
             clearNoteListener = { editNoteViewModel.clearCurrentNote() }
             fullScreenListener = { openFullScreen() }
-            openMoreListener = { editNoteViewModel.toggleMore() }
             formattedHintProducer = { editNoteViewModel.getFormattedHint(it) }
             calendarDialogListener = { editNoteViewModel.openDateDialog() }
         }
@@ -206,7 +204,7 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun openFullScreen() {
-        hideKeyboardListener(noteCreationView.titleText) {
+        hideKeyboardListener(noteCreationView.findFocus()) {
             val nextFragment = EditNoteFragment.initMe(scrollY = noteCreationView.noteContent.scrollY)
 
 
@@ -238,7 +236,6 @@ class NotesFragment : BaseFragment() {
     private fun setupEditViewModel() {
         editNoteViewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
         editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
-        editNoteViewModel.isMoreOpen().observe(viewLifecycleOwner, Observer { noteCreationView.updateMoreState(it) })
         editNoteViewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 bottomAppBar.translationY = bottomAppBar.height * 1f
@@ -321,9 +318,6 @@ class NotesFragment : BaseFragment() {
                 transaction?.commit()
             }
         })
-        if (editNoteViewModel.isMoreOpen().value == true) {
-            noteCreationView.setMoreOpen()
-        }
     }
 
     private fun setupNotesView() {

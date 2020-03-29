@@ -3,6 +3,8 @@ package com.lebartodev.lnote.common.edit
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
@@ -22,17 +24,18 @@ import com.lebartodev.lnote.di.notes.NotesModule
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 @SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
     val saveNoteButton: MaterialButton
-    val titleText: EditText
-    val descriptionText: EditText
+    private val titleText: EditText
+    private val descriptionText: EditText
     private val fabMore: FloatingActionButton
     val background: View
     val fullScreenButton: ImageButton
     val calendarButton: ImageButton
     val deleteButton: ImageButton
-    val divider: View
+    private val divider: View
     val dateChip: Chip
     val noteContent: NestedScrollView
 
@@ -42,9 +45,10 @@ class NoteCreationView : ConstraintLayout {
     var clearDateListener: (() -> Unit)? = null
     var clearNoteListener: (() -> Unit)? = null
     var fullScreenListener: (() -> Unit)? = null
-    var openMoreListener: (() -> Unit)? = null
     var formattedHintProducer: ((String) -> String)? = null
     var calendarDialogListener: ((Calendar) -> Unit)? = null
+
+    private var isMoreOpen = false
 
 
     private val descriptionTextWatcher = object : TextWatcher {
@@ -79,6 +83,7 @@ class NoteCreationView : ConstraintLayout {
 
     init {
         inflate(context, R.layout.view_note_creation, this)
+        isSaveEnabled = true
         context?.let { LNoteApplication[it].component().plus(NotesModule()).inject(this) }
         calendarButton = findViewById(R.id.calendar_button)
         deleteButton = findViewById(R.id.delete_button)
@@ -104,7 +109,23 @@ class NoteCreationView : ConstraintLayout {
         titleText.addTextChangedListener(titleTextWatcher)
 
         fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
-        fabMore.setOnClickListener { openMoreListener?.invoke() }
+        fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.isMoreOpen = isMoreOpen
+        return savedState
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is SavedState) {
+            super.onRestoreInstanceState(state.superState)
+            isMoreOpen = state.isMoreOpen
+            setMoreOpen(isMoreOpen, false)
+        } else {
+            super.onRestoreInstanceState(state)
+        }
     }
 
     private fun openCalendarDialog(selectedDateInMillis: Long?) {
@@ -123,11 +144,6 @@ class NoteCreationView : ConstraintLayout {
         super.onDetachedFromWindow()
     }
 
-    fun setMoreOpen() {
-        deleteButton.visibility = View.VISIBLE
-        calendarButton.visibility = View.VISIBLE
-        fabMore.setImageResource(R.drawable.ic_arrow_right_24)
-    }
 
     fun updateNoteData(noteData: NoteEditViewModel.NoteData) {
         val description = noteData.text ?: ""
@@ -163,14 +179,51 @@ class NoteCreationView : ConstraintLayout {
         }
     }
 
-    fun updateMoreState(isMoreOpen: Boolean) {
-        val constraintLayout = this
-        TransitionManager.beginDelayedTransition(constraintLayout)
-        val set = ConstraintSet()
-        set.clone(constraintLayout)
-        set.setVisibility(calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-        set.setVisibility(deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-        fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
-        set.applyTo(constraintLayout)
+    fun setMoreOpen(isMoreOpen: Boolean, animate: Boolean = true) {
+        if (animate) {
+            val constraintLayout = this
+            TransitionManager.beginDelayedTransition(constraintLayout)
+            val set = ConstraintSet()
+            set.clone(constraintLayout)
+            set.setVisibility(calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+            set.applyTo(constraintLayout)
+        } else {
+            deleteButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
+            calendarButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
+            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+        }
+        this.isMoreOpen = isMoreOpen
     }
+
+    private class SavedState : BaseSavedState {
+        var isMoreOpen: Boolean = false
+
+        constructor(parcel: Parcel) : super(parcel) {
+            isMoreOpen = parcel.readByte().toInt() != 0
+        }
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            super.writeToParcel(parcel, flags)
+            parcel.writeByte((if (isMoreOpen) 1 else 0).toByte())
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel): SavedState {
+                return SavedState(parcel)
+            }
+
+            override fun newArray(size: Int): Array<SavedState?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+
 }
