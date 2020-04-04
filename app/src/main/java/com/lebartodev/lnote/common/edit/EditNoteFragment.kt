@@ -188,6 +188,10 @@ class EditNoteFragment : BaseFragment() {
         setupEditViewModel()
         if (savedInstanceState == null)
             noteId?.run { viewModel.loadNote(this) }
+
+        fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
+            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
+        }
     }
 
     private fun setupEditViewModel() {
@@ -221,7 +225,8 @@ class EditNoteFragment : BaseFragment() {
     private fun openCalendarDialog() {
         fragmentManager?.run {
             val calendar = Calendar.getInstance().apply { timeInMillis = viewModel.currentNote().value?.date ?: System.currentTimeMillis() }
-            val dialog = SelectDateFragment(DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }, calendar)
+            val dialog = SelectDateFragment.initMe(calendar)
+            dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
             dialog.show(this, TAG_CALENDAR_DIAlOG)
         }
     }

@@ -151,7 +151,8 @@ class NotesFragment : BaseFragment() {
             fullScreenListener = { openFullScreen(true) }
             calendarDialogListener = {
                 fragmentManager?.run {
-                    val dialog = SelectDateFragment(DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }, it)
+                    val dialog = SelectDateFragment.initMe(it)
+                    dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
                     dialog.show(this, TAG_CALENDAR_DIAlOG)
                 }
             }
@@ -164,11 +165,15 @@ class NotesFragment : BaseFragment() {
 
         initBottomAddSheetBehavior()
         initBottomAppBar()
+
         if (savedInstanceState?.getBoolean(SETTINGS_OPEN_STATE) == true) {
             openSettings()
         }
         if (savedInstanceState?.getBoolean(NOTE_CREATION_OPEN) == true) {
             openNoteCreation()
+        }
+        fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
+            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
         }
     }
 
