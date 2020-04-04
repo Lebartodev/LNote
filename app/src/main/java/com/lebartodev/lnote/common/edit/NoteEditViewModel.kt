@@ -3,7 +3,7 @@ package com.lebartodev.lnote.common.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.lebartodev.lnote.data.CurrentNoteManager
+import com.lebartodev.lnote.data.Manager
 import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.Repository
@@ -19,9 +19,9 @@ import io.reactivex.internal.functions.Functions
 import java.util.*
 
 class NoteEditViewModel constructor(private val notesRepository: Repository.Notes,
-                                    settingsRepository: Repository.Settings,
+                                    settingsManager: Manager.Settings,
                                     private val schedulersFacade: SchedulersFacade,
-                                    private val currentNoteManager: CurrentNoteManager) : ViewModel() {
+                                    private val currentNoteManager: Manager.CurrentNote) : ViewModel() {
     private var saveNoteDisposable = Disposables.empty()
     private var deleteNoteDisposable = Disposables.empty()
     private var detailsDisposable = Disposables.empty()
@@ -35,7 +35,7 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
     private val currentNoteLiveData = MutableLiveData<NoteData>()
 
     init {
-        bottomPanelEnabledDisposable = settingsRepository.bottomPanelEnabled()
+        bottomPanelEnabledDisposable = settingsManager.bottomPanelEnabled()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(Consumer { bottomPanelEnabled -> bottomPanelEnabledLiveData.value = bottomPanelEnabled },
                         Functions.emptyConsumer())

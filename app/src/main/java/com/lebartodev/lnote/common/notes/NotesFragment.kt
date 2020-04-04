@@ -259,7 +259,9 @@ class NotesFragment : BaseFragment() {
                     openNoteCreation()
                 }
             } else if (it == false) {
-                openFullScreen(false)
+                fabAdd.setOnClickListener {
+                    openFullScreen(false)
+                }
             }
         })
     }

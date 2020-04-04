@@ -5,17 +5,16 @@ import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.lnote.common.details.ShowNoteViewModel
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
 import com.lebartodev.lnote.common.notes.NotesViewModel
-import com.lebartodev.lnote.data.CurrentNoteManager
+import com.lebartodev.lnote.data.Manager
 import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.repository.SettingsRepository
 import javax.inject.Inject
 
 
 class LNoteViewModelFactory @Inject constructor(private val notesRepository: NotesRepository,
-                                                private val settingsRepository: SettingsRepository,
+                                                private val settingsManager: Manager.Settings,
                                                 private val schedulersFacade: SchedulersFacade,
-                                                private val currentNoteManager: CurrentNoteManager) : ViewModelProvider.Factory {
-    private val editViewModel by lazy { NoteEditViewModel(notesRepository, settingsRepository, schedulersFacade, currentNoteManager) }
+                                                private val currentNoteManager: Manager.CurrentNote) : ViewModelProvider.Factory {
+    private val editViewModel by lazy { NoteEditViewModel(notesRepository, settingsManager, schedulersFacade, currentNoteManager) }
     private val notesViewModel by lazy { NotesViewModel(notesRepository, schedulersFacade) }
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when (modelClass) {
