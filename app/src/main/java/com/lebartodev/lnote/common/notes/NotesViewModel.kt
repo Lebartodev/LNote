@@ -6,13 +6,11 @@ import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 
-@DebugOpenClass
 class NotesViewModel constructor(var notesRepository: NotesRepository, val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var notesDisposable = Disposables.empty()
     private val notesLiveData: MutableLiveData<ViewModelObject<List<Note>>> = MutableLiveData()

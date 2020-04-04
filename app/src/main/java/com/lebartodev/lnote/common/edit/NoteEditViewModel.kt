@@ -3,48 +3,57 @@ package com.lebartodev.lnote.common.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.lebartodev.lnote.data.CurrentNoteManager
+import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.data.entity.ViewModelObject
-import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.repository.SettingsRepository
-import com.lebartodev.lnote.utils.DebugOpenClass
+import com.lebartodev.lnote.repository.Repository
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
+import com.lebartodev.lnote.utils.extensions.formattedHint
 import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Action
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 import java.util.*
 
-@DebugOpenClass
-class NoteEditViewModel constructor(private val notesRepository: NotesRepository,
-                                    private val settingsRepository: SettingsRepository,
-                                    private val schedulersFacade: SchedulersFacade) : ViewModel() {
+class NoteEditViewModel constructor(private val notesRepository: Repository.Notes,
+                                    settingsRepository: Repository.Settings,
+                                    private val schedulersFacade: SchedulersFacade,
+                                    private val currentNoteManager: CurrentNoteManager) : ViewModel() {
     private var saveNoteDisposable = Disposables.empty()
     private var deleteNoteDisposable = Disposables.empty()
     private var detailsDisposable = Disposables.empty()
+    private var bottomPanelEnabledDisposable = Disposables.empty()
+    private var noteDisposable = Disposables.empty()
+
     private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
     private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
-    private val moreOpenLiveData = MutableLiveData<Boolean>().apply { value = false }
-    private val dateDialogLiveData = MutableLiveData<Calendar>()
-    private val noteCreationViewOpen = MutableLiveData<Boolean>().apply { value = false }
-    private val openFullScreenCreation = SingleLiveEvent<Boolean>().apply { value = false }
+    private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
 
+    private val currentNoteLiveData = MutableLiveData<NoteData>()
 
-    private val currentNoteLiveData = MutableLiveData<NoteData>().apply { value = NoteData() }
-    private var tempNote = NoteData()
+    init {
+        bottomPanelEnabledDisposable = settingsRepository.bottomPanelEnabled()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(Consumer { bottomPanelEnabled -> bottomPanelEnabledLiveData.value = bottomPanelEnabled },
+                        Functions.emptyConsumer())
+        noteDisposable = currentNoteManager.currentNote()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(Consumer {
+                    currentNoteLiveData.value = it
+                }, Functions.emptyConsumer())
+    }
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
+
+    fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     fun showNoteDeleted(): LiveData<Boolean?> = showNoteDeletedLiveData
 
     fun saveResult(): LiveData<ViewModelObject<Long>?> = saveResultLiveData
-
-    fun dateDialog(): LiveData<Calendar?> = dateDialogLiveData
-
-    fun noteCreationOpen(): LiveData<Boolean> = noteCreationViewOpen
-
-    fun openFullScreenCreation(): LiveData<Boolean?> = openFullScreenCreation
 
     fun loadNote(id: Long) {
         detailsDisposable.dispose()
@@ -53,24 +62,16 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
-                    currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text, it.created)
+                    currentNoteManager.setCurrentNote(it)
                 }, Functions.emptyConsumer())
     }
 
     fun setDescription(text: String) {
-        val note = currentNoteLiveData.value ?: NoteData()
-        if (note.text != text) {
-            note.text = text
-            currentNoteLiveData.value = note
-        }
+        currentNoteManager.setText(text)
     }
 
     fun setTitle(title: String) {
-        val note = currentNoteLiveData.value ?: NoteData()
-        if (note.title != title) {
-            note.title = title
-            currentNoteLiveData.value = note
-        }
+        currentNoteManager.setTitle(title)
     }
 
     fun setDate(year: Int, month: Int, day: Int) {
@@ -80,21 +81,17 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                     set(Calendar.MONTH, month)
                     set(Calendar.DAY_OF_MONTH, day)
                 }
-        val note = currentNoteLiveData.value ?: NoteData()
-        note.date = calendar.timeInMillis
-        currentNoteLiveData.value = note
+        currentNoteManager.setDate(calendar.timeInMillis)
     }
 
     fun clearDate() {
-        val note = currentNoteLiveData.value ?: NoteData()
-        note.date = null
-        currentNoteLiveData.value = note
+        currentNoteManager.setDate(null)
     }
 
     fun saveNote() {
         val note = currentNoteLiveData.value
         val title = if (note?.title.isNullOrEmpty())
-            getFormattedHint(note?.text ?: "")
+            (note?.text ?: "").formattedHint()
         else
             note?.title
 
@@ -114,30 +111,13 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
-                    currentNoteLiveData.value = NoteData()
-                    tempNote = NoteData()
+                    currentNoteManager.clearAll()
                     saveResultLiveData.value = it
-                    closeEditFlow()
                 }, Functions.emptyConsumer())
     }
 
     fun clearCurrentNote() {
-        val id = currentNoteLiveData.value?.id
-        if (id == null) {
-            closeEditFlow()
-            tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
-            showNoteDeletedLiveData.value = true
-        } else {
-            detailsDisposable.dispose()
-            detailsDisposable = notesRepository.getNote(id)
-                    .subscribeOn(schedulersFacade.io())
-                    .observeOn(schedulersFacade.ui())
-                    .subscribe(Consumer {
-                        tempNote = NoteData(it.id, it.title, it.date, it.text, it.created)
-                        closeEditFlow()
-                        showNoteDeletedLiveData.value = true
-                    }, Functions.emptyConsumer())
-        }
+        currentNoteManager.deleteCurrentNote()
     }
 
     fun deleteEditedNote() {
@@ -147,8 +127,7 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
                     .subscribeOn(schedulersFacade.io())
                     .observeOn(schedulersFacade.ui())
                     .subscribe(Action {
-                        closeEditFlow()
-                        tempNote = currentNoteLiveData.value?.copy() ?: NoteData()
+                        currentNoteManager.deleteCurrentNote()
                         showNoteDeletedLiveData.value = true
                     }, Functions.emptyConsumer())
         }
@@ -156,45 +135,23 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
 
     fun onCurrentNoteCleared() {
         showNoteDeletedLiveData.value = false
-        currentNoteLiveData.value = NoteData()
-        tempNote = NoteData()
+        currentNoteManager.clearAll()
     }
 
     fun undoClearCurrentNote() {
-        if (tempNote.id != null) {
-            tempNote.run {
+        if (currentNoteManager.getTempNote()?.id != null) {
+            currentNoteManager.getTempNote()?.run {
                 notesRepository.restoreNote(this.id, this.title, this.text, this.date, this.dateCreated)
                         .subscribeOn(schedulersFacade.io())
                         .observeOn(schedulersFacade.ui())
                         .subscribe(Consumer {
-                            tempNote = NoteData()
+                            currentNoteManager.undoDeletingNote()
                             showNoteDeletedLiveData.value = false
                         }, Functions.emptyConsumer())
             }
         } else {
-            currentNoteLiveData.value = tempNote.copy()
-            tempNote = NoteData()
-            setNoteCreationOpen(true)
+            currentNoteManager.undoDeletingNote()
             showNoteDeletedLiveData.value = false
-        }
-    }
-
-    private fun closeEditFlow() {
-        moreOpenLiveData.value = false
-        setNoteCreationOpen(false)
-    }
-
-    fun getFormattedHint(text: String): String {
-        val separateIndex = text.indexOf("\n")
-        var firstLine: String = ""
-        if (separateIndex != -1) {
-            firstLine = text.substring(0, separateIndex)
-        } else
-            firstLine = text
-        return if (firstLine.length > MAX_TITLE_CHARACTERS) {
-            firstLine.substring(0, MAX_TITLE_CHARACTERS)
-        } else {
-            firstLine
         }
     }
 
@@ -203,37 +160,10 @@ class NoteEditViewModel constructor(private val notesRepository: NotesRepository
         saveNoteDisposable.dispose()
         detailsDisposable.dispose()
         deleteNoteDisposable.dispose()
+        bottomPanelEnabledDisposable.dispose()
     }
 
     fun resetCurrentNote() {
-        currentNoteLiveData.value = NoteData()
+        currentNoteManager.clearAll()
     }
-
-    fun openDateDialog() {
-        dateDialogLiveData.value = Calendar.getInstance().apply { timeInMillis = currentNote().value?.date ?: System.currentTimeMillis() }
-    }
-
-    fun closeDateDialog() {
-        dateDialogLiveData.value = null
-    }
-
-    fun setNoteCreationOpen(state: Boolean) {
-        if (isBottomPanelEnabled()) {
-            noteCreationViewOpen.value = state
-        } else {
-            openFullScreenCreation.value = state
-        }
-    }
-
-    fun isBottomPanelEnabled() = settingsRepository.isBottomPanelEnabled()
-
-    companion object {
-        private const val MAX_TITLE_CHARACTERS = 24
-    }
-
-    data class NoteData(var id: Long? = null,
-                        var title: String? = null,
-                        var date: Long? = null,
-                        var text: String? = null,
-                        var dateCreated: Long? = null)
 }

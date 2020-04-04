@@ -1,15 +1,24 @@
 package com.lebartodev.lnote.di.app
 
-import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.di.notes.NotesComponent
-import com.lebartodev.lnote.di.notes.NotesModule
+import android.app.Application
+import com.lebartodev.lnote.data.AppDatabase
+import com.lebartodev.lnote.data.CurrentNoteManager
+import com.lebartodev.lnote.utils.SchedulersFacade
+import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
-
 @Singleton
-@Component(modules = [AppModule::class])
+@Component(modules = [DatabaseModule::class, SchedulersModule::class])
 interface AppComponent {
-    fun plus(module: NotesModule): NotesComponent
-    fun inject(application: LNoteApplication)
+    fun appDatabase(): AppDatabase
+    fun schedulersFacade(): SchedulersFacade
+    fun currentNoteManager(): CurrentNoteManager
+
+    @Component.Builder
+    interface Builder {
+        fun build(): AppComponent
+        @BindsInstance
+        fun applicationContext(application: Application): Builder
+    }
 }

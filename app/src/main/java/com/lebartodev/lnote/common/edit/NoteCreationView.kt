@@ -19,8 +19,8 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.di.notes.NotesModule
+import com.lebartodev.lnote.data.NoteData
+import com.lebartodev.lnote.utils.extensions.formattedHint
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,7 +35,6 @@ class NoteCreationView : ConstraintLayout {
     val fullScreenButton: ImageButton
     val calendarButton: ImageButton
     val deleteButton: ImageButton
-    private val divider: View
     val dateChip: Chip
     val noteContent: NestedScrollView
 
@@ -45,7 +44,6 @@ class NoteCreationView : ConstraintLayout {
     var clearDateListener: (() -> Unit)? = null
     var clearNoteListener: (() -> Unit)? = null
     var fullScreenListener: (() -> Unit)? = null
-    var formattedHintProducer: ((String) -> String)? = null
     var calendarDialogListener: ((Calendar) -> Unit)? = null
 
     private var isMoreOpen = false
@@ -84,7 +82,7 @@ class NoteCreationView : ConstraintLayout {
     init {
         inflate(context, R.layout.view_note_creation, this)
         isSaveEnabled = true
-        context?.let { LNoteApplication[it].component().plus(NotesModule()).inject(this) }
+
         calendarButton = findViewById(R.id.calendar_button)
         deleteButton = findViewById(R.id.delete_button)
         background = findViewById(R.id.note_creation_background)
@@ -93,7 +91,6 @@ class NoteCreationView : ConstraintLayout {
         descriptionText = findViewById(R.id.text_description)
         fabMore = findViewById(R.id.fab_more)
         fullScreenButton = findViewById(R.id.full_screen_button)
-        divider = findViewById(R.id.add_divider)
         dateChip = findViewById(R.id.date_chip)
         noteContent = findViewById(R.id.note_content)
 
@@ -145,14 +142,14 @@ class NoteCreationView : ConstraintLayout {
     }
 
 
-    fun updateNoteData(noteData: NoteEditViewModel.NoteData) {
+    fun updateNoteData(noteData: NoteData) {
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
 
         if (description != titleText.hint) {
             if (description.isNotEmpty()) {
-                titleText.hint = formattedHintProducer?.invoke(description)
+                titleText.hint = description.formattedHint()
             } else {
                 titleText.hint = context?.getString(R.string.title_hint)
             }
@@ -179,7 +176,7 @@ class NoteCreationView : ConstraintLayout {
         }
     }
 
-    fun setMoreOpen(isMoreOpen: Boolean, animate: Boolean = true) {
+    private fun setMoreOpen(isMoreOpen: Boolean, animate: Boolean = true) {
         if (animate) {
             val constraintLayout = this
             TransitionManager.beginDelayedTransition(constraintLayout)

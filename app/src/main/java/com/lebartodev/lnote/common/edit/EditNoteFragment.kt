@@ -18,11 +18,14 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.details.ShowNoteFragment
+import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.data.entity.Status
-import com.lebartodev.lnote.di.app.AppComponent
-import com.lebartodev.lnote.di.notes.NotesModule
+import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.extensions.formattedHint
+import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,14 +45,14 @@ class EditNoteFragment : BaseFragment() {
     private lateinit var noteContent: NestedScrollView
     private var noteId: Long? = null
     private var scroll: Int? = null
-    private val noteObserver: Observer<NoteEditViewModel.NoteData> = Observer { noteData ->
+    private val noteObserver: Observer<NoteData> = Observer { noteData ->
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
 
         if (description != titleTextView.hint) {
             if (description.isNotEmpty()) {
-                titleTextView.hint = viewModel.getFormattedHint(description)
+                titleTextView.hint = description.formattedHint()
             } else {
                 titleTextView.hint = context?.getString(R.string.title_hint)
             }
@@ -104,6 +107,17 @@ class EditNoteFragment : BaseFragment() {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        context?.run {
+            DaggerNotesComponent.builder()
+                    .appComponent(LNoteApplication[this].appComponent)
+                    .context(this)
+                    .build()
+                    .inject(this@EditNoteFragment)
         }
     }
 
@@ -202,26 +216,14 @@ class EditNoteFragment : BaseFragment() {
             }
         })
         viewModel.currentNote().observe(viewLifecycleOwner, noteObserver)
-        viewModel.dateDialog().observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                context?.run {
-                    val dialog = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) },
-                            it.get(Calendar.YEAR),
-                            it.get(Calendar.MONTH),
-                            it.get(Calendar.DAY_OF_MONTH))
-                    dialog.setOnDismissListener { viewModel.closeDateDialog() }
-                    dialog.show()
-                }
-            }
-        })
     }
 
     private fun openCalendarDialog() {
-        viewModel.openDateDialog()
-    }
-
-    override fun setupComponent(component: AppComponent) {
-        component.plus(NotesModule()).inject(this)
+        fragmentManager?.run {
+            val calendar = Calendar.getInstance().apply { timeInMillis = viewModel.currentNote().value?.date ?: System.currentTimeMillis() }
+            val dialog = SelectDateFragment(DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }, calendar)
+            dialog.show(this, TAG_CALENDAR_DIAlOG)
+        }
     }
 
     override fun onDestroy() {
@@ -237,6 +239,7 @@ class EditNoteFragment : BaseFragment() {
         private const val EXTRA_TITLE = "EXTRA_TITLE"
         private const val EXTRA_TEXT = "EXTRA_TEXT"
         private const val EXTRA_BACK_BUTTON_VISIBLE = "EXTRA_BACK_BUTTON_VISIBLE"
+        private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
 
         fun initMe(id: Long, title: String?, text: String?, scrollY: Int = 0): EditNoteFragment {
             val fragment = EditNoteFragment()

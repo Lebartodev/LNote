@@ -8,7 +8,7 @@ import com.lebartodev.lnote.di.app.AppModuleMock
 import com.lebartodev.lnote.di.app.DaggerAppComponentMock
 import com.lebartodev.lnote.di.notes.NotesModuleMock
 import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.lnote.utils.SchedulersFacadeImpl
 import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -30,7 +30,7 @@ class NotesViewModelTest {
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Inject
-    lateinit var schedulersFacade: SchedulersFacade
+    lateinit var schedulersFacade: SchedulersFacadeImpl
     @Inject
     lateinit var notesRepository: NotesRepository
     lateinit var notesViewModel: NotesViewModel

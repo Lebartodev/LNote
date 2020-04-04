@@ -13,11 +13,11 @@ import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.edit.EditNoteFragment
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
-import com.lebartodev.lnote.di.app.AppComponent
-import com.lebartodev.lnote.di.notes.NotesModule
+import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.toPx
@@ -41,6 +41,18 @@ class ShowNoteFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        context?.run {
+            DaggerNotesComponent.builder()
+                    .context(this)
+                    .appComponent(LNoteApplication[this].appComponent)
+                    .context(this)
+                    .build()
+                    .inject(this@ShowNoteFragment)
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_show_note, container, false)
@@ -62,7 +74,7 @@ class ShowNoteFragment : BaseFragment() {
         view.findViewById<View>(R.id.back_button).setOnClickListener { fragmentManager?.popBackStack() }
 
         val visibleTitleLimit = 56f.toPx(resources)
-        noteContent.setOnScrollChangeListener { v: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
+        noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
             if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
                 actionBarTitleTextView.animate().cancel()
                 actionBarTitleTextView.animate().alpha(1f).start()
@@ -118,9 +130,6 @@ class ShowNoteFragment : BaseFragment() {
         }
     }
 
-    override fun setupComponent(component: AppComponent) {
-        component.plus(NotesModule()).inject(this)
-    }
 
     companion object {
         const val BACK_STACK_TAG = "ShowNote.BACK_STACK_TAG"

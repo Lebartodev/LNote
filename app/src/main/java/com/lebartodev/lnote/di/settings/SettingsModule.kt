@@ -1,21 +1,18 @@
 package com.lebartodev.lnote.di.settings
 
-import android.content.Context
-import android.content.SharedPreferences
-import com.lebartodev.lnote.R
+import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.lnote.common.settings.SettingsViewModelFactory
+import com.lebartodev.lnote.di.app.PreferencesModule
+import com.lebartodev.lnote.repository.Repository
 import com.lebartodev.lnote.repository.SettingsRepository
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 
-@Module
-class SettingsModule(private val context: Context) {
-    @Provides
-    fun providePreferences(): SharedPreferences = context.getSharedPreferences(context.getString(R.string.settings_tag), Context.MODE_PRIVATE)
+@Module(includes = [PreferencesModule::class])
+interface SettingsModule {
+    @Binds
+    fun provideSettingsRepository(settingsRepository: SettingsRepository): Repository.Settings
 
-    @Provides
-    fun provideNotesRepository(preferences: SharedPreferences): SettingsRepository = SettingsRepository(preferences)
-
-    @Provides
-    fun provideLNotesViewModelFactory(settingsRepository: SettingsRepository): SettingsViewModelFactory = SettingsViewModelFactory(settingsRepository)
+    @Binds
+    fun provideSettingsViewModelFactory(viewModel: SettingsViewModelFactory): ViewModelProvider.Factory
 }

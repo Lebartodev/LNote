@@ -7,7 +7,7 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.app.AppModuleMock
 import com.lebartodev.lnote.di.app.DaggerAppComponentMock
 import com.lebartodev.lnote.di.notes.NotesModule
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.lnote.utils.SchedulersFacadeImpl
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -21,7 +21,7 @@ import javax.inject.Named
 
 class NotesRepositoryTest {
     @Inject
-    lateinit var schedulersFacade: SchedulersFacade
+    lateinit var schedulersFacade: SchedulersFacadeImpl
     @Inject
     lateinit var database: AppDatabase
     @Inject
@@ -56,7 +56,7 @@ class NotesRepositoryTest {
 
     private class NotesModuleMock : NotesModule() {
         @Named("Real")
-        override fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacade): NotesRepository =
+        override fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacadeImpl): NotesRepository =
                 NotesRepository(database, schedulersFacade)
     }
 }

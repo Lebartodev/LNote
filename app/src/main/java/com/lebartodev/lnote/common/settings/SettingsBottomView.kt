@@ -8,8 +8,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.lebartodev.lnote.R
+import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.di.settings.DaggerSettingsComponent
-import com.lebartodev.lnote.di.settings.SettingsModule
 import javax.inject.Inject
 
 class SettingsBottomView : ConstraintLayout {
@@ -27,7 +27,8 @@ class SettingsBottomView : ConstraintLayout {
         inflate(context, R.layout.view_settings, this)
         bottomPanelSwitch = findViewById(R.id.bottom_panel_switch)
         DaggerSettingsComponent.builder()
-                .settingsModule(SettingsModule(context))
+                .context(context)
+                .appComponent(LNoteApplication[context].appComponent)
                 .build()
                 .inject(this)
     }
@@ -37,12 +38,8 @@ class SettingsBottomView : ConstraintLayout {
 
         notesViewModel = ViewModelProviders.of(context as FragmentActivity, viewModelFactory)[SettingsViewModel::class.java]
 
-        notesViewModel.bottomPanelEnabled().observe(context as FragmentActivity, Observer {
-            bottomPanelSwitch.isChecked = it
-        })
+        notesViewModel.bottomPanelEnabled().observe(context as FragmentActivity, Observer { bottomPanelSwitch.isChecked = it })
 
-        bottomPanelSwitch.setOnCheckedChangeListener { v, b -> notesViewModel.setBottomPanelEnabled(b) }
-
-
+        bottomPanelSwitch.setOnCheckedChangeListener { _, b -> notesViewModel.setBottomPanelEnabled(b) }
     }
 }

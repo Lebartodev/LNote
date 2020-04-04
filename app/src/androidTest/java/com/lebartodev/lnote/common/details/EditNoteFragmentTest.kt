@@ -1,7 +1,6 @@
 package com.lebartodev.lnote.common.details
 
 import android.widget.DatePicker
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
@@ -13,12 +12,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.common.notes.NotesActivity
 import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.RecyclerViewMatcher
-import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.app.NotesComponentTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
 import com.lebartodev.lnote.utils.rule.RepeatRule
@@ -40,7 +38,7 @@ class EditNoteFragmentTest {
 
     @Before
     fun setUp() {
-        (getApp().component() as AppComponentTest)
+        (getApp().component() as NotesComponentTest)
                 .plus(NotesModule())
                 .inject(this)
 

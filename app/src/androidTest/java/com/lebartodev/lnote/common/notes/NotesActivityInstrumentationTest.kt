@@ -18,7 +18,7 @@ import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.ViewActionUtil
 import com.lebartodev.lnote.utils.actions.ClickCloseIconAction
-import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.app.NotesComponentTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
@@ -43,7 +43,7 @@ class NotesActivityInstrumentationTest {
 
     @Before
     fun setUp() {
-        (getApp().component() as AppComponentTest)
+        (getApp().component() as NotesComponentTest)
                 .plus(NotesModule())
                 .inject(this)
 

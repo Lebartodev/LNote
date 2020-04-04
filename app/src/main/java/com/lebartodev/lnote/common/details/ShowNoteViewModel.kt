@@ -6,11 +6,9 @@ import androidx.lifecycle.ViewModel
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.utils.DebugOpenClass
 import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.disposables.Disposables
 
-@DebugOpenClass
 class ShowNoteViewModel constructor(private val notesRepository: NotesRepository,
                                     private val schedulersFacade: SchedulersFacade) : ViewModel() {
     private var disposable = Disposables.empty()

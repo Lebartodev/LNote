@@ -1,17 +1,27 @@
 package com.lebartodev.lnote.di.notes
 
+import android.content.Context
 import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.edit.EditNoteFragment
-import com.lebartodev.lnote.common.edit.NoteCreationView
-import com.lebartodev.lnote.common.notes.NotesActivity
 import com.lebartodev.lnote.common.notes.NotesFragment
-import dagger.Subcomponent
+import com.lebartodev.lnote.di.app.AppComponent
+import com.lebartodev.lnote.di.utils.NotesScope
+import dagger.BindsInstance
+import dagger.Component
 
-@Subcomponent(modules = [NotesModule::class])
+@NotesScope
+@Component(dependencies = [AppComponent::class], modules = [NotesModule::class])
 interface NotesComponent {
-    fun inject(activity: NotesActivity)
-    fun inject(fragment: NotesFragment)
-    fun inject(fragment: EditNoteFragment)
-    fun inject(noteCreationView: NoteCreationView)
-    fun inject(fragment: ShowNoteFragment)
+    fun inject(notesFragment: NotesFragment)
+    fun inject(editNoteFragment: EditNoteFragment)
+    fun inject(showNoteFragment: ShowNoteFragment)
+
+    @Component.Builder
+    interface Builder {
+        fun build(): NotesComponent
+        @BindsInstance
+        fun context(context: Context): Builder
+
+        fun appComponent(appComponent: AppComponent): Builder
+    }
 }

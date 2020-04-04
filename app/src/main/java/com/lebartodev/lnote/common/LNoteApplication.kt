@@ -3,30 +3,23 @@ package com.lebartodev.lnote.common
 import android.app.Application
 import android.content.Context
 import com.lebartodev.lnote.di.app.AppComponent
-import com.lebartodev.lnote.di.app.AppModule
 import com.lebartodev.lnote.di.app.DaggerAppComponent
 
 
 open class LNoteApplication : Application() {
-    open lateinit var component: AppComponent
-
     companion object {
         operator fun get(context: Context): LNoteApplication {
             return context.applicationContext as LNoteApplication
         }
     }
 
+    lateinit var appComponent: AppComponent
+        private set
+
     override fun onCreate() {
         super.onCreate()
-        setupGraph()
-    }
-
-    open fun setupGraph() {
-        component = DaggerAppComponent.builder().appModule(AppModule(this)).build()
-        component.inject(this)
-    }
-
-    open fun component(): AppComponent {
-        return component
+        appComponent = DaggerAppComponent.builder()
+                .applicationContext(this)
+                .build()
     }
 }
