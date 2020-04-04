@@ -31,13 +31,15 @@ import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.edit.EditNoteFragment
 import com.lebartodev.lnote.common.edit.NoteCreationView
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
-import com.lebartodev.lnote.common.settings.SettingsBottomView
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.error
-import com.lebartodev.lnote.utils.ui.*
+import com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior
+import com.lebartodev.lnote.utils.ui.NotesItemDecoration
+import com.lebartodev.lnote.utils.ui.SelectDateFragment
+import com.lebartodev.lnote.utils.ui.toPx
 import javax.inject.Inject
 
 class NotesFragment : BaseFragment() {
@@ -48,7 +50,7 @@ class NotesFragment : BaseFragment() {
 
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
-    private var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
+    private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private val adapter: NotesAdapter = NotesAdapter {
         it.id?.run {
             fun showFragment() {
@@ -133,6 +135,7 @@ class NotesFragment : BaseFragment() {
         notesList = view.findViewById(R.id.notes_list)
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(noteCreationView)
+        settingsSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_settings))
         notesList.layoutManager = LinearLayoutManager(context)
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
@@ -163,7 +166,7 @@ class NotesFragment : BaseFragment() {
             false
         }
 
-        initBottomAddSheetBehavior()
+        initBottomSheets()
         initBottomAppBar()
 
         if (savedInstanceState?.getBoolean(SETTINGS_OPEN_STATE) == true) {
@@ -178,8 +181,8 @@ class NotesFragment : BaseFragment() {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun initBottomAddSheetBehavior() {
-        bottomAddSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+    private fun initBottomSheets() {
+        val callback = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) = onSlideBottomSheet(slideOffset)
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -190,7 +193,12 @@ class NotesFragment : BaseFragment() {
                     hideKeyboard(bottomSheet)
                 }
             }
-        })
+        }
+
+        settingsSheetBehavior.setBottomSheetCallback(callback)
+
+        bottomAddSheetBehavior.setBottomSheetCallback(callback)
+
         val noteContent = noteCreationView.findViewById<NestedScrollView>(R.id.note_content)
         noteContent.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_MOVE) {
@@ -279,7 +287,7 @@ class NotesFragment : BaseFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(SETTINGS_OPEN_STATE, settingsSheetBehavior != null)
+        outState.putBoolean(SETTINGS_OPEN_STATE, settingsSheetBehavior.state != BottomSheetBehavior.STATE_HIDDEN)
         outState.putBoolean(NOTE_CREATION_OPEN, bottomAddSheetBehavior.state != BottomSheetBehavior.STATE_HIDDEN)
     }
 
@@ -329,39 +337,7 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun openSettings() {
-        if (settingsSheetBehavior == null) {
-            val settingsView = SettingsBottomView(context)
-            val params = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
-
-            settingsView.elevation = 24f.toPx(resources)
-            settingsView.setPadding(0, 4f.toPx(resources).toInt(), 0, 0)
-            settingsSheetBehavior = BottomSheetBehavior<ConstraintLayout>().apply {
-                isHideable = true
-                peekHeight = 0
-                setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                    override fun onSlide(view: View, slideOffset: Float) {
-                        onSlideBottomSheet(slideOffset)
-                    }
-
-                    override fun onStateChanged(view: View, state: Int) {
-                        if (state == BottomSheetBehavior.STATE_COLLAPSED) {
-                            notesContent.removeView(settingsView)
-                            setBottomSheetCallback(null)
-                            settingsSheetBehavior = null
-                        } else if (state == BottomSheetBehavior.STATE_EXPANDED) {
-                            activeBottomSheetBehavior = settingsSheetBehavior
-                        }
-                    }
-                })
-            }
-            params.behavior = settingsSheetBehavior
-            settingsView.layoutParams = params
-
-            settingsView.onLayout { settingsSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED }
-            notesContent.addView(settingsView)
-        } else {
-            settingsSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-        }
+        settingsSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     private fun onSlideBottomSheet(slideOffset: Float) {
