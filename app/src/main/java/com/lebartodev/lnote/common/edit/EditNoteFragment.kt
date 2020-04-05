@@ -175,7 +175,7 @@ class EditNoteFragment : BaseFragment() {
             fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
         }
 
-        deleteButton.setOnClickListener { if (noteId == null) viewModel.clearCurrentNote() else viewModel.deleteEditedNote() }
+        deleteButton.setOnClickListener { if (noteId == null) viewModel.deleteCurrentNote() else viewModel.deleteEditedNote() }
         saveNoteButton.setOnClickListener {
             hideKeyboard()
             viewModel.currentNote().removeObserver(noteObserver)
@@ -196,9 +196,9 @@ class EditNoteFragment : BaseFragment() {
 
     private fun setupEditViewModel() {
         viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-        if (noteId != null)
-            viewModel.onCurrentNoteCleared()
-        viewModel.showNoteDeleted().observe(viewLifecycleOwner, Observer {
+//        if (noteId != null)
+//            viewModel.onCurrentNoteCleared()
+        viewModel.pendingDelete().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 titleTextView.clearFocus()
                 descriptionTextView.clearFocus()
@@ -234,7 +234,7 @@ class EditNoteFragment : BaseFragment() {
     override fun onDestroy() {
         super.onDestroy()
         if (noteId != null)
-            viewModel.resetCurrentNote()
+            viewModel.clearCurrentNote()
     }
 
 

@@ -27,18 +27,25 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
     private var detailsDisposable = Disposables.empty()
     private var bottomPanelEnabledDisposable = Disposables.empty()
     private var noteDisposable = Disposables.empty()
+    private var pendingDeleteDisposable = Disposables.empty()
 
     private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
-    private val showNoteDeletedLiveData = MutableLiveData<Boolean?>()
     private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
+    private val pendingDeleteLiveData = MutableLiveData<Boolean?>()
 
     private val currentNoteLiveData = MutableLiveData<NoteData>()
 
     init {
         bottomPanelEnabledDisposable = settingsManager.bottomPanelEnabled()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(Consumer { bottomPanelEnabled -> bottomPanelEnabledLiveData.value = bottomPanelEnabled },
+                .subscribe(Consumer { bottomPanelEnabledLiveData.value = it },
                         Functions.emptyConsumer())
+
+        pendingDeleteDisposable = currentNoteManager.pendingDelete()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(Consumer { pendingDeleteLiveData.value = it },
+                        Functions.emptyConsumer())
+
         noteDisposable = currentNoteManager.currentNote()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
@@ -49,9 +56,9 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
 
-    fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
+    fun pendingDelete(): LiveData<Boolean?> = pendingDeleteLiveData
 
-    fun showNoteDeleted(): LiveData<Boolean?> = showNoteDeletedLiveData
+    fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     fun saveResult(): LiveData<ViewModelObject<Long>?> = saveResultLiveData
 
@@ -116,7 +123,7 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                 }, Functions.emptyConsumer())
     }
 
-    fun clearCurrentNote() {
+    fun deleteCurrentNote() {
         currentNoteManager.deleteCurrentNote()
     }
 
@@ -128,17 +135,11 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                     .observeOn(schedulersFacade.ui())
                     .subscribe(Action {
                         currentNoteManager.deleteCurrentNote()
-                        showNoteDeletedLiveData.value = true
                     }, Functions.emptyConsumer())
         }
     }
 
-    fun onCurrentNoteCleared() {
-        showNoteDeletedLiveData.value = false
-        currentNoteManager.clearAll()
-    }
-
-    fun undoClearCurrentNote() {
+    fun undoDeleteCurrentNote() {
         if (currentNoteManager.getTempNote()?.id != null) {
             currentNoteManager.getTempNote()?.run {
                 notesRepository.restoreNote(this.id, this.title, this.text, this.date, this.dateCreated)
@@ -146,12 +147,10 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                         .observeOn(schedulersFacade.ui())
                         .subscribe(Consumer {
                             currentNoteManager.undoDeletingNote()
-                            showNoteDeletedLiveData.value = false
                         }, Functions.emptyConsumer())
             }
         } else {
             currentNoteManager.undoDeletingNote()
-            showNoteDeletedLiveData.value = false
         }
     }
 
@@ -161,9 +160,11 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
         detailsDisposable.dispose()
         deleteNoteDisposable.dispose()
         bottomPanelEnabledDisposable.dispose()
+        noteDisposable.dispose()
+        pendingDeleteDisposable.dispose()
     }
 
-    fun resetCurrentNote() {
+    fun clearCurrentNote() {
         currentNoteManager.clearAll()
     }
 }

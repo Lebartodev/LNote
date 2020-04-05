@@ -23,6 +23,8 @@ class CurrentNoteManager @Inject constructor(private val schedulersFacade: Sched
 
     override fun currentNote(): Observable<NoteData> = currentNote
 
+    override fun pendingDelete(): Observable<Boolean> = pendingDeleteSubject
+
 
     override fun setCurrentNote(note: Note) {
         currentNote.onNext(NoteData(note.id, note.title, note.date, note.text, note.created))
@@ -44,6 +46,7 @@ class CurrentNoteManager @Inject constructor(private val schedulersFacade: Sched
     override fun setDate(value: Long?) = currentNote.value?.run { currentNote.onNext(apply { date = value }) }
 
     override fun clearAll() {
+        pendingDeleteSubject.onNext(false)
         currentNote.onNext(NoteData())
         tempNote = NoteData()
     }
@@ -60,7 +63,6 @@ class CurrentNoteManager @Inject constructor(private val schedulersFacade: Sched
                 .subscribeOn(schedulersFacade.io())
                 .subscribe {
                     clearAll()
-                    pendingDeleteSubject.onNext(false)
                 }
     }
 

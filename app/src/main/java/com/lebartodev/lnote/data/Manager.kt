@@ -19,5 +19,6 @@ interface Manager {
         fun clearAll()
         fun deleteCurrentNote()
         fun undoDeletingNote()
+        fun pendingDelete(): Observable<Boolean>
     }
 }
