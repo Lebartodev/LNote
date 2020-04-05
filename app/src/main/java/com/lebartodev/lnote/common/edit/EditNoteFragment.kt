@@ -18,6 +18,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.EditorEventContainer
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.data.NoteData
@@ -46,6 +47,8 @@ class EditNoteFragment : BaseFragment() {
     private var noteId: Long? = null
     private var scroll: Int? = null
     private val noteObserver: Observer<NoteData> = Observer { noteData ->
+        titleTextView.removeTextChangedListener(titleTextWatcher)
+        descriptionTextView.removeTextChangedListener(descriptionTextWatcher)
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
@@ -81,6 +84,8 @@ class EditNoteFragment : BaseFragment() {
         }
         actionBarTitleTextView.hint = titleTextView.hint
         actionBarTitleTextView.text = titleTextView.text
+        titleTextView.addTextChangedListener(titleTextWatcher)
+        descriptionTextView.addTextChangedListener(descriptionTextWatcher)
     }
 
     @Inject
@@ -175,7 +180,9 @@ class EditNoteFragment : BaseFragment() {
             fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
         }
 
-        deleteButton.setOnClickListener { if (noteId == null) viewModel.deleteCurrentNote() else viewModel.deleteEditedNote() }
+        deleteButton.setOnClickListener {
+            viewModel.deleteEditedNote()
+        }
         saveNoteButton.setOnClickListener {
             hideKeyboard()
             viewModel.currentNote().removeObserver(noteObserver)
@@ -195,27 +202,32 @@ class EditNoteFragment : BaseFragment() {
     }
 
     private fun setupEditViewModel() {
-        viewModel = activity?.run { ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java] } ?: throw NullPointerException()
-//        if (noteId != null)
-//            viewModel.onCurrentNoteCleared()
-        viewModel.pendingDelete().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
-                if (noteId == null) {
-                    fragmentManager?.popBackStack()
-                } else {
-                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                }
-            }
-        })
+        viewModel = ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java]
         viewModel.saveResult().observe(viewLifecycleOwner, Observer { obj ->
             if (obj != null) {
                 if (obj.status == Status.ERROR) {
-                    viewModel.currentNote().observe(viewLifecycleOwner, noteObserver)
                     Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
                 } else if (obj.status == Status.SUCCESS) {
+                    (activity as EditorEventContainer).saveNote()
+                    titleTextView.clearFocus()
+                    descriptionTextView.clearFocus()
+                    sharedElementReturnTransition = null
                     fragmentManager?.popBackStack()
+                }
+            }
+        })
+        viewModel.deleteResult().observe(viewLifecycleOwner, Observer { obj ->
+            if (obj != null) {
+                if (obj.status == Status.SUCCESS) {
+                    (activity as EditorEventContainer).deleteNote()
+                    titleTextView.clearFocus()
+                    descriptionTextView.clearFocus()
+                    sharedElementReturnTransition = null
+                    if (noteId == null) {
+                        fragmentManager?.popBackStack()
+                    } else {
+                        fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    }
                 }
             }
         })
@@ -229,12 +241,6 @@ class EditNoteFragment : BaseFragment() {
             dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
             dialog.show(this, TAG_CALENDAR_DIAlOG)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (noteId != null)
-            viewModel.clearCurrentNote()
     }
 
 

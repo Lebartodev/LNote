@@ -30,6 +30,7 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
     private var pendingDeleteDisposable = Disposables.empty()
 
     private val saveResultLiveData: SingleLiveEvent<ViewModelObject<Long>> = SingleLiveEvent()
+    private val deleteResultLiveData: SingleLiveEvent<ViewModelObject<Boolean>> = SingleLiveEvent()
     private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
     private val pendingDeleteLiveData = MutableLiveData<Boolean?>()
 
@@ -62,6 +63,8 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
 
     fun saveResult(): LiveData<ViewModelObject<Long>?> = saveResultLiveData
 
+    fun deleteResult(): LiveData<ViewModelObject<Boolean>?> = deleteResultLiveData
+
     fun loadNote(id: Long) {
         detailsDisposable.dispose()
         detailsDisposable = notesRepository.getNote(id)
@@ -69,6 +72,7 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer {
+                    clearAll()
                     currentNoteManager.setCurrentNote(it)
                 }, Functions.emptyConsumer())
     }
@@ -123,19 +127,21 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                 }, Functions.emptyConsumer())
     }
 
-    fun deleteCurrentNote() {
-        currentNoteManager.deleteCurrentNote()
-    }
-
     fun deleteEditedNote() {
-        currentNoteLiveData.value?.id?.run {
-            deleteNoteDisposable.dispose()
-            deleteNoteDisposable = notesRepository.deleteNote(this)
-                    .subscribeOn(schedulersFacade.io())
-                    .observeOn(schedulersFacade.ui())
-                    .subscribe(Action {
-                        currentNoteManager.deleteCurrentNote()
-                    }, Functions.emptyConsumer())
+        if (currentNoteLiveData.value?.id == null) {
+            deleteResultLiveData.value = ViewModelObject.success(true)
+            currentNoteManager.deleteCurrentNote()
+        } else {
+            currentNoteLiveData.value?.id?.run {
+                deleteNoteDisposable.dispose()
+                deleteNoteDisposable = notesRepository.deleteNote(this)
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe(Action {
+                            deleteResultLiveData.value = ViewModelObject.success(true)
+                            currentNoteManager.deleteCurrentNote()
+                        }, Functions.emptyConsumer())
+            }
         }
     }
 
@@ -154,6 +160,10 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
         }
     }
 
+    fun isTempNoteHaveId(): Boolean {
+        return currentNoteManager.getTempNote()?.id != null
+    }
+
     override fun onCleared() {
         super.onCleared()
         saveNoteDisposable.dispose()
@@ -162,9 +172,16 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
         bottomPanelEnabledDisposable.dispose()
         noteDisposable.dispose()
         pendingDeleteDisposable.dispose()
+        if (currentNoteLiveData.value?.id != null)
+            clearCurrentNote()
+
+    }
+
+    fun clearAll() {
+        currentNoteManager.clearAll()
     }
 
     fun clearCurrentNote() {
-        currentNoteManager.clearAll()
+        currentNoteManager.clearCurrentNote()
     }
 }

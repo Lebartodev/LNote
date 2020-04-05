@@ -45,6 +45,10 @@ class CurrentNoteManager @Inject constructor(private val schedulersFacade: Sched
 
     override fun setDate(value: Long?) = currentNote.value?.run { currentNote.onNext(apply { date = value }) }
 
+    override fun clearCurrentNote() {
+        currentNote.onNext(NoteData())
+    }
+
     override fun clearAll() {
         pendingDeleteSubject.onNext(false)
         currentNote.onNext(NoteData())
@@ -63,12 +67,15 @@ class CurrentNoteManager @Inject constructor(private val schedulersFacade: Sched
                 .subscribeOn(schedulersFacade.io())
                 .subscribe {
                     clearAll()
+                    pendingDeleteSubject.onNext(false)
                 }
     }
 
     override fun undoDeletingNote() {
         deleteNoteTimerDisposable.dispose()
-        currentNote.onNext(tempNote.copy())
+        if(tempNote.id==null) {
+            currentNote.onNext(tempNote.copy())
+        }
         tempNote = NoteData()
         pendingDeleteSubject.onNext(false)
     }

@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.EditorEventCallback
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.edit.EditNoteFragment
@@ -41,7 +42,7 @@ import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
 import javax.inject.Inject
 
-class NotesFragment : BaseFragment() {
+class NotesFragment : BaseFragment(), EditorEventCallback {
     private lateinit var fabAdd: FloatingActionButton
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
@@ -147,13 +148,6 @@ class NotesFragment : BaseFragment() {
 
         initBottomSheets()
         initBottomAppBar()
-
-        if (savedInstanceState?.getBoolean(SETTINGS_OPEN_STATE) == true) {
-            openSettings()
-        }
-        if (savedInstanceState?.getBoolean(NOTE_CREATION_OPEN) == true) {
-            openNoteCreation()
-        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -182,7 +176,7 @@ class NotesFragment : BaseFragment() {
             }
             clearDateListener = { editNoteViewModel.clearDate() }
             clearNoteListener = {
-                editNoteViewModel.deleteCurrentNote()
+                editNoteViewModel.deleteEditedNote()
                 closeNoteCreation()
             }
             fullScreenListener = { openFullScreen(true) }
@@ -271,15 +265,17 @@ class NotesFragment : BaseFragment() {
                                                  event: Int) {
                             super.onDismissed(transientBottomBar, event)
                             if (event == DISMISS_EVENT_SWIPE) {
-                                editNoteViewModel.clearCurrentNote()
+                                editNoteViewModel.clearAll()
                             }
                             isSnackBarVisible = false
                             onSlideBottomSheet(0f)
                         }
                     })
                     .setAction(R.string.undo) {
+                        val isTempNoteHaveId = editNoteViewModel.isTempNoteHaveId()
                         editNoteViewModel.undoDeleteCurrentNote()
-                        openNoteCreation()
+                        if (!isTempNoteHaveId)
+                            openNoteCreation()
                     }
                     .setActionTextColor(ContextCompat.getColor(context, R.color.colorAction))
                     .apply {
@@ -302,12 +298,6 @@ class NotesFragment : BaseFragment() {
                 error("loadNotes", it.error)
             }
         })
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean(SETTINGS_OPEN_STATE, settingsSheetBehavior.state != BottomSheetBehavior.STATE_HIDDEN)
-        outState.putBoolean(NOTE_CREATION_OPEN, bottomAddSheetBehavior.state != BottomSheetBehavior.STATE_HIDDEN)
     }
 
     private fun openFullScreen(withTransaction: Boolean) {
@@ -384,8 +374,14 @@ class NotesFragment : BaseFragment() {
 
     companion object {
         const val TAG = "NotesFragment"
-        private const val SETTINGS_OPEN_STATE = "SETTINGS_OPEN_STATE"
-        private const val NOTE_CREATION_OPEN = "NOTE_CREATION_OPEN"
         private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
+    }
+
+    override fun onNoteDeleted() {
+        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+    }
+
+    override fun onNoteSaved() {
+        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 }
