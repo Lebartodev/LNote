@@ -1,9 +1,9 @@
 package com.lebartodev.lnote.common.notes
 
-import android.animation.Animator
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -35,7 +35,6 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
-import com.lebartodev.lnote.utils.error
 import com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior
 import com.lebartodev.lnote.utils.ui.NotesItemDecoration
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
@@ -55,49 +54,15 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
         it.id?.run {
             fun showFragment() {
                 val nextFragment = ShowNoteFragment.initMe(this@run)
-                val exitFade = Fade(Fade.OUT).apply {
-                    duration = resources.getInteger(R.integer.animation_duration).toLong()
-                }
-                val enterSlide = Slide(Gravity.END).apply {
-                    duration = resources.getInteger(R.integer.animation_duration).toLong()
-                }
-                nextFragment.enterTransition = enterSlide
-                exitTransition = exitFade
-
-                val transaction = fragmentManager
+                fragmentManager
                         ?.beginTransaction()
-                        ?.replace(R.id.notes_layout_container, nextFragment)
+                        ?.setCustomAnimations(R.anim.slide_start, android.R.anim.fade_out)
+                        ?.hide(this@NotesFragment)
+                        ?.add(R.id.notes_layout_container, nextFragment)
                         ?.addToBackStack(ShowNoteFragment.BACK_STACK_TAG)
-                transaction?.commit()
+                        ?.commit()
             }
-
-            bottomAppBar.animate().translationY(1f * bottomAppBar.height).setDuration(100)
-                    .setListener(object : Animator.AnimatorListener {
-                        override fun onAnimationRepeat(animation: Animator?) {
-
-                        }
-
-                        override fun onAnimationEnd(animation: Animator?) {
-                            if (fabAdd.isShown) {
-                                fabAdd.hide(object : FloatingActionButton.OnVisibilityChangedListener() {
-                                    override fun onHidden(fab: FloatingActionButton?) {
-                                        super.onHidden(fab)
-                                        showFragment()
-                                    }
-                                })
-                            } else {
-                                showFragment()
-                            }
-                        }
-
-                        override fun onAnimationCancel(animation: Animator?) {
-                        }
-
-                        override fun onAnimationStart(animation: Animator?) {
-                        }
-
-                    })
-                    .start()
+            showFragment()
         }
     }
 
@@ -291,12 +256,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
 
     private fun setupNotesViewModel() {
         notesViewModel.getNotes().observe(viewLifecycleOwner, Observer {
-            val list = it.data
-            if (it.error == null && list != null) {
-                onNotesLoaded(list)
-            } else {
-                error("loadNotes", it.error)
-            }
+            onNotesLoaded(it)
         })
     }
 
@@ -357,6 +317,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
         if (!isSnackBarVisible) {
             bottomAppBar.visibility = View.VISIBLE
             if (slideOffset <= 1f && slideOffset >= -1f) {
+                Log.d(TAG, "elevation: ${bottomAppBar.elevation}")
                 bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
                 if (1f - slideOffset == 1f) {
                     fabAdd.show()
@@ -364,12 +325,15 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     fabAdd.hide()
                 }
             }
-            bottomAppBar.hideOnScroll = slideOffset == 1f
+            bottomAppBar.hideOnScroll = slideOffset != 1f
         }
     }
 
     private fun onNotesLoaded(notes: List<Note>) {
-        adapter.data = notes
+        if (adapter.data.isEmpty()) {
+            adapter.updateData(notes)
+        } else
+            notesList.post { adapter.updateData(notes) }
     }
 
     companion object {

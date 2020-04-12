@@ -4,24 +4,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.lnote.utils.NoteDiffUtilCallback
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
-    var data: List<Note> = listOf()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
-
+    val data: MutableList<Note> = mutableListOf()
 
     init {
         setHasStableIds(true)
+    }
+
+    fun updateData(notes: List<Note>) {
+        val result = DiffUtil.calculateDiff(NoteDiffUtilCallback(data, notes))
+        data.clear()
+        data.addAll(notes)
+        result.dispatchUpdatesTo(this)
     }
 
     override fun getItemId(position: Int): Long {
