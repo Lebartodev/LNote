@@ -43,6 +43,7 @@ class ShowNoteFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        postponeEnterTransition()
         context?.run {
             DaggerNotesComponent.builder()
                     .context(this)
@@ -59,7 +60,6 @@ class ShowNoteFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        postponeEnterTransition()
         super.onViewCreated(view, savedInstanceState)
         formatter = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US)
         titleTextView = view.findViewById(R.id.text_title)
@@ -70,6 +70,8 @@ class ShowNoteFragment : BaseFragment() {
         divider = view.findViewById(R.id.add_divider)
         noteContent = view.findViewById(R.id.note_content)
         actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
+        val id = arguments?.getLong(EXTRA_ID)
+        view.transitionName = resources.getString(R.string.note_content_transition_name, id)
 
         view.findViewById<View>(R.id.back_button).setOnClickListener { fragmentManager?.popBackStack() }
 
@@ -84,7 +86,7 @@ class ShowNoteFragment : BaseFragment() {
             }
         }
 
-        val id = arguments?.getLong(EXTRA_ID)
+
         viewModel = ViewModelProviders.of(this, viewModelFactory)[ShowNoteViewModel::class.java]
 
         viewModel.note().observe(this, Observer { vmObject ->
@@ -134,6 +136,7 @@ class ShowNoteFragment : BaseFragment() {
     companion object {
         const val BACK_STACK_TAG = "ShowNote.BACK_STACK_TAG"
         private const val EXTRA_ID = "EXTRA_ID"
+        private const val EXTRA_CONTENT_TRANSITION_NAME = "EXTRA_CONTENT_TRANSITION_NAME"
 
         fun initMe(id: Long): ShowNoteFragment {
             val fragment = ShowNoteFragment()

@@ -56,7 +56,9 @@
                     style="@style/NoteCreation.Description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="top|start"
                     android:hint="@string/enter_note_hint"
+                    android:minLines="2"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:saveEnabled="false" />

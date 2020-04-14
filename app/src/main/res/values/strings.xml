@@ -13,4 +13,7 @@
     <string name="settings_tag">Settings</string>
     <string name="settings_title">Settings</string>
     <string name="settings_bottom_panel">Enable bottom panel</string>
+
+
+    <string name="note_content_transition_name">note_content_%1$d</string>
 </resources>

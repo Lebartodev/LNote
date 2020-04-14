@@ -4,17 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.utils.NoteDiffUtilCallback
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
+class NotesAdapter(private val listener: (note: Note, sharedView: View) -> Unit) : RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
     val data: MutableList<Note> = mutableListOf()
 
     init {
@@ -22,29 +20,29 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
     }
 
     fun updateData(notes: List<Note>) {
-        val result = DiffUtil.calculateDiff(NoteDiffUtilCallback(data, notes))
         data.clear()
         data.addAll(notes)
-        result.dispatchUpdatesTo(this)
+        notifyDataSetChanged()
     }
 
     override fun getItemId(position: Int): Long {
-        return data.get(position).id ?: 0
+        return data[position].id ?: 0
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.i_note, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position], listener)
 
     override fun getItemCount() = data.size
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.US)
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val formatter = SimpleDateFormat(itemView.resources.getString(R.string.date_pattern), Locale.US)
         val title: TextView = itemView.findViewById(R.id.note_title)
         val description: TextView = itemView.findViewById(R.id.note_description)
         val dateChip: Chip = itemView.findViewById(R.id.note_date_chip)
-        fun bind(item: Note) = with(itemView) {
+        val noteContent: View = itemView.findViewById(R.id.note_item_content)
+        fun bind(item: Note, listener: (note: Note, sharedView: View) -> Unit) {
             title.text = item.title
             val lines = item.text.split("\n")
 
@@ -66,9 +64,10 @@ class NotesAdapter(private val listener: (note: Note) -> Unit) : RecyclerView.Ad
             } else {
                 dateChip.visibility = View.GONE
             }
-            this.setOnClickListener {
-                listener(item)
+            itemView.setOnClickListener {
+                listener(item, noteContent)
             }
+            noteContent.transitionName = itemView.resources.getString(R.string.note_content_transition_name, item.id)
         }
     }
 

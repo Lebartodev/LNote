@@ -27,16 +27,16 @@ import java.util.*
 
 @SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
-    val saveNoteButton: MaterialButton
+    private val saveNoteButton: MaterialButton
     private val titleText: EditText
     private val descriptionText: EditText
     private val fabMore: FloatingActionButton
-    val background: View
-    val fullScreenButton: ImageButton
-    val calendarButton: ImageButton
-    val deleteButton: ImageButton
-    val dateChip: Chip
-    val noteContent: NestedScrollView
+    private val background: View
+    private val fullScreenButton: ImageButton
+    private val calendarButton: ImageButton
+    private val deleteButton: ImageButton
+    private val dateChip: Chip
+    private val noteContent: NestedScrollView
 
     var descriptionListener: ((String) -> Unit)? = null
     var titleListener: ((String) -> Unit)? = null
@@ -193,6 +193,16 @@ class NoteCreationView : ConstraintLayout {
         }
         this.isMoreOpen = isMoreOpen
     }
+
+    fun getSharedViews(): List<View> {
+        val result = mutableListOf(noteContent, background, saveNoteButton, fullScreenButton, dateChip)
+        if (isMoreOpen) {
+            result.addAll(listOf(deleteButton, calendarButton))
+        }
+        return result
+    }
+
+    fun getContentScroll(): Int = noteContent.scrollY
 
     private class SavedState : BaseSavedState {
         var isMoreOpen: Boolean = false

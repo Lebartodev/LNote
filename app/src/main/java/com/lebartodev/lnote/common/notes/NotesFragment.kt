@@ -3,8 +3,10 @@ package com.lebartodev.lnote.common.notes
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -14,8 +16,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.Fade
-import androidx.transition.Slide
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.google.android.material.bottomappbar.BottomAppBar
@@ -50,19 +50,22 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
     private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
-    private val adapter: NotesAdapter = NotesAdapter {
-        it.id?.run {
-            fun showFragment() {
-                val nextFragment = ShowNoteFragment.initMe(this@run)
-                fragmentManager
-                        ?.beginTransaction()
-                        ?.setCustomAnimations(R.anim.slide_start, android.R.anim.fade_out)
-                        ?.hide(this@NotesFragment)
-                        ?.add(R.id.notes_layout_container, nextFragment)
-                        ?.addToBackStack(ShowNoteFragment.BACK_STACK_TAG)
-                        ?.commit()
+    private val adapter = NotesAdapter { note, sharedView ->
+        note.id?.run {
+            val nextFragment = ShowNoteFragment.initMe(this@run)
+
+            nextFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
+                    .apply { duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).times(1.2).toLong() }
+
+            fragmentManager?.beginTransaction()?.run {
+                setReorderingAllowed(true)
+                setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                addSharedElement(sharedView, sharedView.transitionName)
+                add(R.id.notes_layout_container, nextFragment)
+                hide(this@NotesFragment)
+                addToBackStack(ShowNoteFragment.BACK_STACK_TAG)
+                commit()
             }
-            showFragment()
         }
     }
 
@@ -263,41 +266,28 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private fun openFullScreen(withTransaction: Boolean) {
         hideKeyboardListener(noteCreationView.findFocus()) {
 
-            val nextFragment = EditNoteFragment.initMe(forceBackButtonVisible = !withTransaction, scrollY = noteCreationView.noteContent.scrollY)
-
-            if (!withTransaction) {
-                val exitFade = Fade(Fade.OUT).apply {
-                    duration = resources.getInteger(R.integer.animation_duration).toLong()
-                }
-                val enterSlide = Slide(Gravity.END).apply {
-                    duration = resources.getInteger(R.integer.animation_duration).toLong()
-                }
-                nextFragment.enterTransition = enterSlide
-                exitTransition = exitFade
-            }
-            nextFragment.sharedElementEnterTransition = TransitionSet()
+            val nextFragment = EditNoteFragment.initMe(forceBackButtonVisible = !withTransaction,
+                    scrollY = noteCreationView.getContentScroll())
                     .apply {
-                        addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-                        startDelay = 0
-                        duration = resources.getInteger(R.integer.animation_duration).toLong()
+                        sharedElementEnterTransition = TransitionSet()
+                                .apply {
+                                    addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
+                                    duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).toLong()
+                                }
                     }
 
-            val transaction = this.fragmentManager
-                    ?.beginTransaction()
-                    ?.replace(R.id.notes_layout_container, nextFragment)
-            if (withTransaction) {
-                transaction?.addSharedElement(noteCreationView.noteContent, noteCreationView.noteContent.transitionName)
-                        ?.addSharedElement(noteCreationView.background, noteCreationView.background.transitionName)
-                        ?.addSharedElement(noteCreationView.saveNoteButton, noteCreationView.saveNoteButton.transitionName)
-                        ?.addSharedElement(noteCreationView.fullScreenButton, noteCreationView.fullScreenButton.transitionName)
-                        ?.addSharedElement(noteCreationView.dateChip, noteCreationView.dateChip.transitionName)
+            fragmentManager?.beginTransaction()?.run {
+                if (!withTransaction) {
+                    setCustomAnimations(R.anim.slide_to_top, R.anim.fade_out, R.anim.fade_in, R.anim.slide_to_bottom)
+                } else {
+                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    noteCreationView.getSharedViews()
+                            .forEach { addSharedElement(it, it.transitionName) }
+                }
+                replace(R.id.notes_layout_container, nextFragment)
+                addToBackStack(null)
+                commit()
             }
-            if (withTransaction && noteCreationView.deleteButton.visibility == View.VISIBLE && noteCreationView.calendarButton.visibility == View.VISIBLE) {
-                transaction?.addSharedElement(noteCreationView.deleteButton, noteCreationView.deleteButton.transitionName)
-                        ?.addSharedElement(noteCreationView.calendarButton, noteCreationView.calendarButton.transitionName)
-            }
-            transaction?.addToBackStack(null)
-            transaction?.commit()
         }
     }
 
@@ -313,13 +303,13 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
         settingsSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
+    var test = false
     private fun onSlideBottomSheet(slideOffset: Float) {
         if (!isSnackBarVisible) {
-            bottomAppBar.visibility = View.VISIBLE
             if (slideOffset <= 1f && slideOffset >= -1f) {
-                Log.d(TAG, "elevation: ${bottomAppBar.elevation}")
-                bottomAppBar.animate().translationY(slideOffset * bottomAppBar.height).setDuration(0).start()
-                if (1f - slideOffset == 1f) {
+                val targetTranslationY = slideOffset * bottomAppBar.height
+                bottomAppBar.animate().translationY(targetTranslationY).setDuration(0).start()
+                if (slideOffset == 0f) {
                     fabAdd.show()
                 } else {
                     fabAdd.hide()
