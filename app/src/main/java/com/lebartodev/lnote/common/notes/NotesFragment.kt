@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -225,7 +226,8 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
                         override fun onShown(transientBottomBar: Snackbar?) {
                             super.onShown(transientBottomBar)
-                            onSlideBottomSheet(1f)
+                            setBottomAppBarVisibility(false, withAnimation = false)
+                            bottomAppBar.hideOnScroll = false
                             isSnackBarVisible = true
                         }
 
@@ -236,7 +238,8 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                                 editNoteViewModel.clearAll()
                             }
                             isSnackBarVisible = false
-                            onSlideBottomSheet(0f)
+                            setBottomAppBarVisibility(true, withAnimation = true)
+                            bottomAppBar.hideOnScroll = true
                         }
                     })
                     .setAction(R.string.undo) {
@@ -303,19 +306,28 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
         settingsSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-    var test = false
-    private fun onSlideBottomSheet(slideOffset: Float) {
+    private fun onSlideBottomSheet(slideOffset: Float, withAnimation: Boolean = true) {
         if (!isSnackBarVisible) {
-            if (slideOffset <= 1f && slideOffset >= -1f) {
-                val targetTranslationY = slideOffset * bottomAppBar.height
-                bottomAppBar.animate().translationY(targetTranslationY).setDuration(0).start()
-                if (slideOffset == 0f) {
-                    fabAdd.show()
-                } else {
-                    fabAdd.hide()
-                }
+            if (slideOffset <= 0f) {
+                setBottomAppBarVisibility(true, withAnimation)
+            } else if (slideOffset == 1f) {
+                setBottomAppBarVisibility(false, withAnimation)
             }
-            bottomAppBar.hideOnScroll = slideOffset != 1f
+        }
+    }
+
+    private fun setBottomAppBarVisibility(visible: Boolean, withAnimation: Boolean = true) {
+        val translationY = if (visible) 0f else bottomAppBar.height.toFloat()
+        bottomAppBar.animate().cancel()
+        bottomAppBar.animate()
+                .setInterpolator(LinearOutSlowInInterpolator())
+                .translationY(translationY)
+                .setDuration(if (withAnimation) resources.getInteger(R.integer.animation_duration).toLong() / 2 else 0)
+                .start()
+        if (visible) {
+            fabAdd.show()
+        } else {
+            fabAdd.hide()
         }
     }
 
