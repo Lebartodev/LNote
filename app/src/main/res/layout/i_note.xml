@@ -42,7 +42,7 @@
                 app:layout_constraintTop_toBottomOf="@id/note_title"
                 tools:text="Description" />
 
-        <com.google.android.material.chip.Chip
+        <com.lebartodev.lnote.utils.ui.DateChip
                 android:id="@+id/note_date_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

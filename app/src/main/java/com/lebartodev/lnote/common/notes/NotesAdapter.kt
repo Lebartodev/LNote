@@ -5,14 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.data.entity.Note
-import java.text.SimpleDateFormat
-import java.util.*
+import com.lebartodev.lnote.utils.ui.DateChip
 
 
-class NotesAdapter(private val listener: (note: Note, sharedView: View) -> Unit) : RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
+class NotesAdapter(private val listener: (note: Note, sharedViews: List<View>) -> Unit) : RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
     val data: MutableList<Note> = mutableListOf()
 
     init {
@@ -37,12 +35,16 @@ class NotesAdapter(private val listener: (note: Note, sharedView: View) -> Unit)
     override fun getItemCount() = data.size
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val formatter = SimpleDateFormat(itemView.resources.getString(R.string.date_pattern), Locale.US)
-        val title: TextView = itemView.findViewById(R.id.note_title)
-        val description: TextView = itemView.findViewById(R.id.note_description)
-        val dateChip: Chip = itemView.findViewById(R.id.note_date_chip)
-        val noteContent: View = itemView.findViewById(R.id.note_item_content)
-        fun bind(item: Note, listener: (note: Note, sharedView: View) -> Unit) {
+        private val title: TextView = itemView.findViewById(R.id.note_title)
+        private val description: TextView = itemView.findViewById(R.id.note_description)
+        private val dateChip: DateChip = itemView.findViewById(R.id.note_date_chip)
+        private val noteContent: View = itemView.findViewById(R.id.note_item_content)
+        fun bind(item: Note, listener: (note: Note, sharedViews: List<View>) -> Unit) {
+            noteContent.transitionName = itemView.resources.getString(R.string.note_content_transition_name, item.id)
+            title.transitionName = itemView.resources.getString(R.string.note_title_transition_name, item.id)
+            description.transitionName = itemView.resources.getString(R.string.note_description_transition_name, item.id)
+            dateChip.transitionName = itemView.resources.getString(R.string.note_date_transition_name, item.id)
+
             title.text = item.title
             val lines = item.text.split("\n")
 
@@ -57,17 +59,11 @@ class NotesAdapter(private val listener: (note: Note, sharedView: View) -> Unit)
             } else
                 description.text = item.text
 
+            dateChip.setDate(item.date)
 
-            if (item.date != null) {
-                dateChip.text = formatter.format(item.date)
-                dateChip.visibility = View.VISIBLE
-            } else {
-                dateChip.visibility = View.GONE
-            }
             itemView.setOnClickListener {
-                listener(item, noteContent)
+                listener(item, listOf(noteContent, title, description,dateChip))
             }
-            noteContent.transitionName = itemView.resources.getString(R.string.note_content_transition_name, item.id)
         }
     }
 

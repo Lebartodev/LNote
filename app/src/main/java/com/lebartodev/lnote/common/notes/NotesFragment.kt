@@ -36,10 +36,7 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
-import com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior
-import com.lebartodev.lnote.utils.ui.NotesItemDecoration
-import com.lebartodev.lnote.utils.ui.SelectDateFragment
-import com.lebartodev.lnote.utils.ui.toPx
+import com.lebartodev.lnote.utils.ui.*
 import javax.inject.Inject
 
 class NotesFragment : BaseFragment(), EditorEventCallback {
@@ -51,19 +48,20 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
     private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
-    private val adapter = NotesAdapter { note, sharedView ->
+    private val adapter = NotesAdapter { note, sharedViews ->
         note.id?.run {
             val nextFragment = ShowNoteFragment.initMe(this@run)
+            val transitionSet = TransitionSet()
+            transitionSet.addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+            transitionSet.addTransition(CardExpandTransition())
+            nextFragment.sharedElementEnterTransition = transitionSet
 
-            nextFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
-                    .apply { duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).times(1.2).toLong() }
 
             fragmentManager?.beginTransaction()?.run {
                 setReorderingAllowed(true)
                 setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                addSharedElement(sharedView, sharedView.transitionName)
-                add(R.id.notes_layout_container, nextFragment)
-                hide(this@NotesFragment)
+                sharedViews.forEach { addSharedElement(it, it.transitionName) }
+                replace(R.id.notes_layout_container, nextFragment)
                 addToBackStack(ShowNoteFragment.BACK_STACK_TAG)
                 commit()
             }
@@ -93,6 +91,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        postponeEnterTransition()
         return inflater.inflate(R.layout.fragment_notes, container, false)
     }
 
@@ -246,7 +245,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                         val isTempNoteHaveId = editNoteViewModel.isTempNoteHaveId()
                         editNoteViewModel.undoDeleteCurrentNote()
                         if (!isTempNoteHaveId)
-                            openNoteCreation()
+                            fabAdd.callOnClick()
                     }
                     .setActionTextColor(ContextCompat.getColor(context, R.color.colorAction))
                     .apply {
@@ -266,10 +265,10 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
         })
     }
 
-    private fun openFullScreen(withTransaction: Boolean) {
+    private fun openFullScreen(fromBottomSheet: Boolean) {
         hideKeyboardListener(noteCreationView.findFocus()) {
 
-            val nextFragment = EditNoteFragment.initMe(forceBackButtonVisible = !withTransaction,
+            val nextFragment = EditNoteFragment.initMe(forceBackButtonVisible = !fromBottomSheet,
                     scrollY = noteCreationView.getContentScroll())
                     .apply {
                         sharedElementEnterTransition = TransitionSet()
@@ -280,10 +279,10 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     }
 
             fragmentManager?.beginTransaction()?.run {
-                if (!withTransaction) {
+                setReorderingAllowed(true)
+                if (!fromBottomSheet) {
                     setCustomAnimations(R.anim.slide_to_top, R.anim.fade_out, R.anim.fade_in, R.anim.slide_to_bottom)
                 } else {
-                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                     noteCreationView.getSharedViews()
                             .forEach { addSharedElement(it, it.transitionName) }
                 }
@@ -334,8 +333,12 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private fun onNotesLoaded(notes: List<Note>) {
         if (adapter.data.isEmpty()) {
             adapter.updateData(notes)
+            startPostponedEnterTransition()
         } else
-            notesList.post { adapter.updateData(notes) }
+            notesList.post {
+                adapter.updateData(notes)
+                startPostponedEnterTransition()
+            }
     }
 
     companion object {

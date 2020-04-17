@@ -71,7 +71,11 @@ class ShowNoteFragment : BaseFragment() {
         noteContent = view.findViewById(R.id.note_content)
         actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
         val id = arguments?.getLong(EXTRA_ID)
+
         view.transitionName = resources.getString(R.string.note_content_transition_name, id)
+        titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, id)
+        descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, id)
+        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id)
 
         view.findViewById<View>(R.id.back_button).setOnClickListener { fragmentManager?.popBackStack() }
 
@@ -128,7 +132,6 @@ class ShowNoteFragment : BaseFragment() {
                         ?.addToBackStack(null)
                         ?.commit()
             }
-
         }
     }
 
@@ -136,7 +139,6 @@ class ShowNoteFragment : BaseFragment() {
     companion object {
         const val BACK_STACK_TAG = "ShowNote.BACK_STACK_TAG"
         private const val EXTRA_ID = "EXTRA_ID"
-        private const val EXTRA_CONTENT_TRANSITION_NAME = "EXTRA_CONTENT_TRANSITION_NAME"
 
         fun initMe(id: Long): ShowNoteFragment {
             val fragment = ShowNoteFragment()

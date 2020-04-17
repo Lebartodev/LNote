@@ -12,7 +12,7 @@ class DateChip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private var formatter = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US)
 
     fun setDate(date: Long?) {
-        if (date != null) {
+        if (date != null && date != 0L) {
             text = formatter.format(date)
             visibility = View.VISIBLE
         } else {

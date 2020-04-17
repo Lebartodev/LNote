@@ -16,12 +16,11 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.NestedScrollView
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.utils.extensions.formattedHint
-import java.text.SimpleDateFormat
+import com.lebartodev.lnote.utils.ui.DateChip
 import java.util.*
 
 
@@ -35,7 +34,7 @@ class NoteCreationView : ConstraintLayout {
     private val fullScreenButton: ImageButton
     private val calendarButton: ImageButton
     private val deleteButton: ImageButton
-    private val dateChip: Chip
+    private val dateChip: DateChip
     private val noteContent: NestedScrollView
 
     var descriptionListener: ((String) -> Unit)? = null
@@ -160,14 +159,7 @@ class NoteCreationView : ConstraintLayout {
         if (descriptionText.text.toString() != description) {
             descriptionText.setText(description)
         }
-
-        if (time != null) {
-            dateChip.visibility = View.VISIBLE
-            dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern),
-                    Locale.US).format(Date(time))
-        } else {
-            dateChip.visibility = View.GONE
-        }
+        dateChip.setDate(time)
         calendarButton.setOnClickListener {
             openCalendarDialog(time)
         }

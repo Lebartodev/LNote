@@ -15,7 +15,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.common.EditorEventContainer
@@ -26,9 +25,9 @@ import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.extensions.formattedHint
+import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
@@ -40,7 +39,7 @@ class EditNoteFragment : BaseFragment() {
     private lateinit var deleteButton: ImageButton
     private lateinit var saveNoteButton: MaterialButton
     private lateinit var calendarButton: ImageButton
-    private lateinit var dateChip: Chip
+    private lateinit var dateChip: DateChip
     private lateinit var backButton: ImageButton
     private lateinit var actionBarTitleTextView: TextView
     private lateinit var noteContent: NestedScrollView
@@ -67,20 +66,18 @@ class EditNoteFragment : BaseFragment() {
         if (descriptionTextView.text.toString() != description) {
             descriptionTextView.text = description
         }
-        if (time != null) {
-            dateChip.visibility = View.VISIBLE
-            dateChip.text = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US).format(Date(time))
-        } else {
-            dateChip.visibility = View.GONE
-        }
+        dateChip.setDate(time)
+
         if (noteData.id == noteId && noteId != null)
             startPostponedEnterTransition()
-        if (scroll != null && scroll != 0 && !noteData.text.isNullOrEmpty()) {
+        else if (scroll != null && scroll != 0 && !noteData.text.isNullOrEmpty()) {
             noteContent.post {
                 noteContent.scrollTo(0, scroll ?: 0)
                 startPostponedEnterTransition()
                 scroll = null
             }
+        } else {
+            startPostponedEnterTransition()//TODO: check
         }
         actionBarTitleTextView.hint = titleTextView.hint
         actionBarTitleTextView.text = titleTextView.text
@@ -117,6 +114,7 @@ class EditNoteFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        postponeEnterTransition()
         context?.run {
             DaggerNotesComponent.builder()
                     .appComponent(LNoteApplication[this].appComponent)
@@ -248,6 +246,7 @@ class EditNoteFragment : BaseFragment() {
         private const val EXTRA_ID = "EXTRA_ID"
         private const val EXTRA_SCROLL = "EXTRA_SCROLL"
         private const val EXTRA_TITLE = "EXTRA_TITLE"
+        private const val EXTRA_DATE = "EXTRA_DATE"
         private const val EXTRA_TEXT = "EXTRA_TEXT"
         private const val EXTRA_BACK_BUTTON_VISIBLE = "EXTRA_BACK_BUTTON_VISIBLE"
         private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
@@ -258,6 +257,7 @@ class EditNoteFragment : BaseFragment() {
             args.putLong(EXTRA_ID, id)
             args.putString(EXTRA_TITLE, title)
             args.putString(EXTRA_TEXT, text)
+            //date?.run { args.putLong(EXTRA_DATE, this) }
             args.putInt(EXTRA_SCROLL, scrollY)
             fragment.arguments = args
             return fragment

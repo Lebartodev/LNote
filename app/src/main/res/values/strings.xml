@@ -16,4 +16,7 @@
 
 
     <string name="note_content_transition_name">note_content_%1$d</string>
+    <string name="note_title_transition_name">note_title_%1$d</string>
+    <string name="note_description_transition_name">note_description_%1$d</string>
+    <string name="note_date_transition_name">note_date_%1$d</string>
 </resources>
