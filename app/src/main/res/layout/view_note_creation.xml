@@ -43,7 +43,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:hint="@string/title_hint"
                     android:saveEnabled="false" />
 
             <View
@@ -57,7 +56,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="top|start"
-                    android:hint="@string/enter_note_hint"
                     android:minLines="2"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
@@ -103,6 +101,8 @@
     <ImageButton
             android:id="@+id/delete_button"
             style="@style/NoteCreation.DeleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/fab_more"
@@ -113,6 +113,8 @@
     <ImageButton
             android:id="@+id/calendar_button"
             style="@style/NoteCreation.CalendarButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="4dp"
             android:visibility="gone"
@@ -124,6 +126,8 @@
     <ImageButton
             android:id="@+id/full_screen_button"
             style="@style/NoteCreation.FullScreenButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             app:layout_constraintBottom_toBottomOf="@id/fab_more"
             app:layout_constraintStart_toEndOf="@id/delete_button"
@@ -136,8 +140,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
-            app:chipCornerRadius="16dp"
-            app:closeIconEnabled="true"
             app:layout_constraintStart_toStartOf="@id/note_content"
             app:layout_constraintTop_toBottomOf="@id/note_content"
             tools:text="cp, 10 окт. 2018" />
@@ -145,8 +147,8 @@
     <com.google.android.material.button.MaterialButton
             android:id="@+id/save_button"
             style="@style/NoteCreation.SaveButton"
-            android:text="@string/save_button_text"
-            app:backgroundTint="@color/colorPrimary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/date_chip" />

@@ -60,7 +60,6 @@
                     android:id="@+id/add_divider"
                     style="@style/NoteCreation.Divider"
                     android:layout_width="match_parent"
-
                     app:layout_constraintBottom_toTopOf="@id/text_description"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -106,12 +105,10 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            app:chipCornerRadius="16dp"
             app:closeIconEnabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="cp, 10 окт. 2018"
-            tools:visibility="visible" />
+            tools:text="cp, 10 окт. 2018" />
 
     <ImageButton
             android:id="@+id/edit_button"
@@ -127,13 +124,12 @@
 
     <ImageButton
             android:id="@+id/back_button"
+            style="@style/BackButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:src="@drawable/ic_arrow_back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

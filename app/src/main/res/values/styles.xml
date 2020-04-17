@@ -35,31 +35,28 @@
     </style>
 
     <style name="NoteCreation.Title" parent="LNote.Text.Title">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">24dp</item>
         <item name="android:imeOptions">flagNoFullscreen</item>
         <item name="android:layout_marginTop">20dp</item>
         <item name="android:layout_marginEnd">24dp</item>
         <item name="android:background">@null</item>
+        <item name="android:hint">@string/title_hint</item>
         <item name="android:inputType">textCapSentences|textAutoComplete|textNoSuggestions</item>
         <item name="android:transitionName">Title</item>
     </style>
 
     <style name="NoteCreation.Divider" parent="LNote.Divider">
-        <item name="android:layout_width">0dp</item>
         <item name="android:layout_marginStart">16dp</item>
         <item name="android:layout_marginEnd">16dp</item>
         <item name="android:transitionName">Divider</item>
     </style>
 
     <style name="NoteCreation.Description" parent="LNote.Text.Description">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginStart">24dp</item>
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginEnd">24dp</item>
         <item name="android:background">@null</item>
+        <item name="android:hint">@string/enter_note_hint</item>
         <item name="android:inputType">
             textCapSentences|textAutoComplete|textMultiLine|textNoSuggestions
         </item>
@@ -69,8 +66,6 @@
     </style>
 
     <style name="NoteCreation.FullScreenButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:src">@drawable/ic_full_screen_24</item>
         <item name="android:background">?selectableItemBackgroundBorderless</item>
         <item name="android:transitionName">FullScreenButton</item>
@@ -78,8 +73,6 @@
     </style>
 
     <style name="NoteCreation.DeleteButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:src">@drawable/ic_delete_24</item>
         <item name="android:background">?selectableItemBackgroundBorderless</item>
         <item name="android:transitionName">DeleteButton</item>
@@ -87,8 +80,6 @@
     </style>
 
     <style name="NoteCreation.CalendarButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:src">@drawable/ic_date_24</item>
         <item name="android:background">?selectableItemBackgroundBorderless</item>
         <item name="android:transitionName">CalendarButton</item>
@@ -96,12 +87,12 @@
     </style>
 
     <style name="NoteCreation.SaveButton">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">16dp</item>
         <item name="android:layout_marginEnd">24dp</item>
         <item name="android:layout_marginBottom">16dp</item>
         <item name="android:transitionName">Save</item>
+        <item name="android:text">@string/save_button_text</item>
+        <item name="backgroundTint">@color/colorPrimary</item>
     </style>
 
     <style name="TextAppearance.Design.Snackbar.Message" parent="android:TextAppearance" tools:override="true">
@@ -111,12 +102,20 @@
     <style name="NoteCreation.DateChip">
         <item name="android:transitionName">DateChip</item>
         <item name="android:visibility">gone</item>
+        <item name="chipCornerRadius">16dp</item>
+        <item name="closeIconEnabled">true</item>
     </style>
 
     <style name="NoteCreation.Content">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:layout_marginBottom">8dp</item>
         <item name="android:transitionName">NoteContent</item>
+    </style>
+
+    <style name="BackButton">
+        <item name="android:background">?selectableItemBackgroundBorderless</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:src">@drawable/ic_arrow_back</item>
     </style>
 
 </resources>
