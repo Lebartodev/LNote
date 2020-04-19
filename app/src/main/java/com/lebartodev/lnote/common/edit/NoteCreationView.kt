@@ -13,6 +13,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButton
@@ -30,7 +31,6 @@ class NoteCreationView : ConstraintLayout {
     private val titleText: EditText
     private val descriptionText: EditText
     private val fabMore: FloatingActionButton
-    private val background: View
     private val fullScreenButton: ImageButton
     private val calendarButton: ImageButton
     private val deleteButton: ImageButton
@@ -75,8 +75,7 @@ class NoteCreationView : ConstraintLayout {
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs,
-            defStyleAttr)
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     init {
         inflate(context, R.layout.view_note_creation, this)
@@ -84,7 +83,6 @@ class NoteCreationView : ConstraintLayout {
 
         calendarButton = findViewById(R.id.calendar_button)
         deleteButton = findViewById(R.id.delete_button)
-        background = findViewById(R.id.note_creation_background)
         saveNoteButton = findViewById(R.id.save_button)
         titleText = findViewById(R.id.text_title)
         descriptionText = findViewById(R.id.text_description)
@@ -92,6 +90,15 @@ class NoteCreationView : ConstraintLayout {
         fullScreenButton = findViewById(R.id.full_screen_button)
         dateChip = findViewById(R.id.date_chip)
         noteContent = findViewById(R.id.note_content)
+
+        background = ContextCompat.getDrawable(context, R.drawable.bottom_card_bg)
+
+
+        transitionName = resources.getString(R.string.note_container_transition_name, "local")
+        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, "local")
+        titleText.transitionName = resources.getString(R.string.note_title_transition_name, "local")
+        descriptionText.transitionName = resources.getString(R.string.note_description_transition_name, "local")
+        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, "local")
 
         saveNoteButton.setOnClickListener {
             saveListener?.invoke()
@@ -106,6 +113,7 @@ class NoteCreationView : ConstraintLayout {
 
         fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
         fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
+
     }
 
     override fun onSaveInstanceState(): Parcelable? {
@@ -187,7 +195,7 @@ class NoteCreationView : ConstraintLayout {
     }
 
     fun getSharedViews(): List<View> {
-        val result = mutableListOf(noteContent, background, saveNoteButton, fullScreenButton, dateChip)
+        val result = mutableListOf(this, noteContent, saveNoteButton, fullScreenButton, dateChip)
         if (isMoreOpen) {
             result.addAll(listOf(deleteButton, calendarButton))
         }

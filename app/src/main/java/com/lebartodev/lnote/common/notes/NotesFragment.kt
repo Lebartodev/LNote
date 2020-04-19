@@ -54,6 +54,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
             val transitionSet = TransitionSet()
             transitionSet.addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
             transitionSet.addTransition(CardExpandTransition())
+            transitionSet.interpolator = LinearOutSlowInInterpolator()
             nextFragment.sharedElementEnterTransition = transitionSet
 
 
@@ -275,14 +276,16 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                                 .apply {
                                     addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
                                     duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).toLong()
+                                    interpolator = LinearOutSlowInInterpolator()
                                 }
                     }
 
             fragmentManager?.beginTransaction()?.run {
                 setReorderingAllowed(true)
                 if (!fromBottomSheet) {
-                    setCustomAnimations(R.anim.slide_to_top, R.anim.fade_out, R.anim.fade_in, R.anim.slide_to_bottom)
+                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                 } else {
+                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                     noteCreationView.getSharedViews()
                             .forEach { addSharedElement(it, it.transitionName) }
                 }

@@ -40,10 +40,10 @@ class NotesAdapter(private val listener: (note: Note, sharedViews: List<View>) -
         private val dateChip: DateChip = itemView.findViewById(R.id.note_date_chip)
         private val noteContent: View = itemView.findViewById(R.id.note_item_content)
         fun bind(item: Note, listener: (note: Note, sharedViews: List<View>) -> Unit) {
-            noteContent.transitionName = itemView.resources.getString(R.string.note_content_transition_name, item.id)
-            title.transitionName = itemView.resources.getString(R.string.note_title_transition_name, item.id)
-            description.transitionName = itemView.resources.getString(R.string.note_description_transition_name, item.id)
-            dateChip.transitionName = itemView.resources.getString(R.string.note_date_transition_name, item.id)
+            noteContent.transitionName = itemView.resources.getString(R.string.note_container_transition_name, item.id.toString())
+            title.transitionName = itemView.resources.getString(R.string.note_title_transition_name, item.id.toString())
+            description.transitionName = itemView.resources.getString(R.string.note_description_transition_name, item.id.toString())
+            dateChip.transitionName = itemView.resources.getString(R.string.note_date_transition_name, item.id.toString())
 
             title.text = item.title
             val lines = item.text.split("\n")
@@ -62,7 +62,7 @@ class NotesAdapter(private val listener: (note: Note, sharedViews: List<View>) -
             dateChip.setDate(item.date)
 
             itemView.setOnClickListener {
-                listener(item, listOf(noteContent, title, description,dateChip))
+                listener(item, listOf(noteContent, title, description, dateChip))
             }
         }
     }

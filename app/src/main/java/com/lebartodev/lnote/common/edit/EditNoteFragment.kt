@@ -48,6 +48,7 @@ class EditNoteFragment : BaseFragment() {
     private val noteObserver: Observer<NoteData> = Observer { noteData ->
         titleTextView.removeTextChangedListener(titleTextWatcher)
         descriptionTextView.removeTextChangedListener(descriptionTextWatcher)
+
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
@@ -67,17 +68,16 @@ class EditNoteFragment : BaseFragment() {
             descriptionTextView.text = description
         }
         dateChip.setDate(time)
-
-        if (noteData.id == noteId && noteId != null)
-            startPostponedEnterTransition()
-        else if (scroll != null && scroll != 0 && !noteData.text.isNullOrEmpty()) {
+        if (scroll != null && !noteData.text.isNullOrEmpty()) {
             noteContent.post {
                 noteContent.scrollTo(0, scroll ?: 0)
                 startPostponedEnterTransition()
                 scroll = null
             }
-        } else {
-            startPostponedEnterTransition()//TODO: check
+        } else if (noteId != null && noteData.id == noteId) {
+            startPostponedEnterTransition()
+        } else if (noteId == null) {
+            startPostponedEnterTransition()
         }
         actionBarTitleTextView.hint = titleTextView.hint
         actionBarTitleTextView.text = titleTextView.text
@@ -130,13 +130,11 @@ class EditNoteFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        scroll = arguments?.getInt(EXTRA_SCROLL)
-        noteId = arguments?.getLong(EXTRA_ID, -1)
-        if (noteId == -1L) {
-            noteId = null
-        }
-        if (noteId != null || scroll != null || scroll != 0) {
-            postponeEnterTransition()
+        arguments?.run {
+            if (containsKey(EXTRA_SCROLL))
+                scroll = getInt(EXTRA_SCROLL)
+            if (containsKey(EXTRA_ID))
+                noteId = getLong(EXTRA_ID)
         }
         super.onViewCreated(view, savedInstanceState)
         titleTextView = view.findViewById(R.id.text_title)
@@ -149,8 +147,12 @@ class EditNoteFragment : BaseFragment() {
         backButton = view.findViewById(R.id.back_button)
         actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
         noteContent = view.findViewById(R.id.note_content)
-        arguments?.getString(EXTRA_TEXT)?.run { descriptionTextView.text = this }
-        arguments?.getString(EXTRA_TITLE)?.run { titleTextView.text = this }
+
+        view.transitionName = resources.getString(R.string.note_container_transition_name, noteId?.toString() ?: "local")
+        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, noteId?.toString() ?: "local")
+        titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, noteId?.toString() ?: "local")
+        descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, noteId?.toString() ?: "local")
+        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, noteId?.toString() ?: "local")
 
         val visibleTitleLimit = 56f.toPx(resources)
         noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
@@ -245,29 +247,16 @@ class EditNoteFragment : BaseFragment() {
     companion object {
         private const val EXTRA_ID = "EXTRA_ID"
         private const val EXTRA_SCROLL = "EXTRA_SCROLL"
-        private const val EXTRA_TITLE = "EXTRA_TITLE"
-        private const val EXTRA_DATE = "EXTRA_DATE"
-        private const val EXTRA_TEXT = "EXTRA_TEXT"
         private const val EXTRA_BACK_BUTTON_VISIBLE = "EXTRA_BACK_BUTTON_VISIBLE"
+
         private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
 
-        fun initMe(id: Long, title: String?, text: String?, scrollY: Int = 0): EditNoteFragment {
+        fun initMe(id: Long? = null, forceBackButtonVisible: Boolean = false, scrollY: Int? = null): EditNoteFragment {
             val fragment = EditNoteFragment()
             val args = Bundle()
-            args.putLong(EXTRA_ID, id)
-            args.putString(EXTRA_TITLE, title)
-            args.putString(EXTRA_TEXT, text)
-            //date?.run { args.putLong(EXTRA_DATE, this) }
-            args.putInt(EXTRA_SCROLL, scrollY)
-            fragment.arguments = args
-            return fragment
-        }
-
-        fun initMe(forceBackButtonVisible: Boolean = false, scrollY: Int = 0): EditNoteFragment {
-            val fragment = EditNoteFragment()
-            val args = Bundle()
-            args.putInt(EXTRA_SCROLL, scrollY)
+            id?.run { args.putLong(EXTRA_ID, this) }
             args.putBoolean(EXTRA_BACK_BUTTON_VISIBLE, forceBackButtonVisible)
+            scrollY?.run { if (this != 0) args.putInt(EXTRA_SCROLL, this) }
             fragment.arguments = args
             return fragment
         }

@@ -5,19 +5,10 @@
         android:id="@+id/note_creation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         app:behavior_hideable="true"
         app:behavior_peekHeight="0dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
-
-    <View
-            android:id="@+id/note_creation_background"
-            style="@style/NoteCreation.Background"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.core.widget.NestedScrollView
             android:id="@+id/note_content"
@@ -140,9 +131,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="8dp"
+            app:closeIconEnabled="true"
             app:layout_constraintStart_toStartOf="@id/note_content"
             app:layout_constraintTop_toBottomOf="@id/note_content"
-            tools:text="cp, 10 окт. 2018" />
+            tools:text="cp, 10 окт. 2018"
+            tools:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton
             android:id="@+id/save_button"

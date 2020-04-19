@@ -9,19 +9,11 @@
         android:clickable="true"
         android:focusable="true">
 
-    <View
-            android:id="@+id/note_creation_background"
-            style="@style/NoteCreation.Background"
-            android:layout_marginTop="8dp"
-            android:background="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/edit_button" />
-
     <TextView
             android:id="@+id/text_title_action_bar"
             style="@style/NoteCreation.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:alpha="0"
             android:transitionName=""
@@ -50,6 +42,7 @@
                     android:id="@+id/text_title"
                     style="@style/NoteCreation.Title"
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:inputType="none"
                     app:layout_constraintEnd_toEndOf="parent"

@@ -33,7 +33,6 @@ class ShowNoteFragment : BaseFragment() {
     private lateinit var titleTextView: TextView
     private lateinit var editButton: ImageButton
     private lateinit var dateChip: DateChip
-    private lateinit var background: View
     private lateinit var divider: View
     private lateinit var noteContent: NestedScrollView
     private lateinit var viewModel: ShowNoteViewModel
@@ -66,16 +65,16 @@ class ShowNoteFragment : BaseFragment() {
         descriptionTextView = view.findViewById(R.id.text_description)
         editButton = view.findViewById(R.id.edit_button)
         dateChip = view.findViewById(R.id.date_chip)
-        background = view.findViewById(R.id.note_creation_background)
         divider = view.findViewById(R.id.add_divider)
         noteContent = view.findViewById(R.id.note_content)
         actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
         val id = arguments?.getLong(EXTRA_ID)
 
-        view.transitionName = resources.getString(R.string.note_content_transition_name, id)
-        titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, id)
-        descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, id)
-        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id)
+        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
+        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
+        titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, id?.toString() ?: "local")
+        descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, id?.toString() ?: "local")
+        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id?.toString() ?: "local")
 
         view.findViewById<View>(R.id.back_button).setOnClickListener { fragmentManager?.popBackStack() }
 
@@ -113,7 +112,7 @@ class ShowNoteFragment : BaseFragment() {
     private fun setupEditButton(note: Note) {
         editButton.setOnClickListener {
             note.id?.run {
-                val nextFragment = EditNoteFragment.initMe(this, note.title, note.text, noteContent.scrollY)
+                val nextFragment = EditNoteFragment.initMe(this, scrollY = noteContent.scrollY)
 
                 nextFragment.sharedElementEnterTransition = TransitionSet()
                         .apply {
@@ -127,7 +126,6 @@ class ShowNoteFragment : BaseFragment() {
                         ?.setReorderingAllowed(true)
                         ?.replace(R.id.notes_layout_container, nextFragment)
                         ?.addSharedElement(noteContent, noteContent.transitionName)
-                        ?.addSharedElement(background, background.transitionName)
                         ?.addSharedElement(dateChip, dateChip.transitionName)
                         ?.addToBackStack(null)
                         ?.commit()
