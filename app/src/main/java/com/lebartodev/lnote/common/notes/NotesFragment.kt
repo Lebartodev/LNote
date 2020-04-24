@@ -2,6 +2,8 @@ package com.lebartodev.lnote.common.notes
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -36,6 +38,7 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.*
 import javax.inject.Inject
 
@@ -212,10 +215,14 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                 fabAdd.setOnClickListener {
                     openNoteCreation()
                 }
+                fabAdd.transitionName = null
+                noteCreationView.transitionName = resources.getString(R.string.note_container_transition_name, "local")
             } else if (it == false) {
                 fabAdd.setOnClickListener {
                     openFullScreen(false)
                 }
+                noteCreationView.transitionName = null
+                fabAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
             }
         })
     }
@@ -274,7 +281,8 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     .apply {
                         sharedElementEnterTransition = TransitionSet()
                                 .apply {
-                                    addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
+                                    //addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
+                                    addTransition(FabTransition())
                                     duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).toLong()
                                     interpolator = LinearOutSlowInInterpolator()
                                 }
@@ -284,6 +292,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                 setReorderingAllowed(true)
                 if (!fromBottomSheet) {
                     setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    addSharedElement(fabAdd, fabAdd.transitionName)
                 } else {
                     setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                     noteCreationView.getSharedViews()
