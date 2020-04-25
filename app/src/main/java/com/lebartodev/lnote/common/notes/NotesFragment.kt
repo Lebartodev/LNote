@@ -2,9 +2,8 @@ package com.lebartodev.lnote.common.notes
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -12,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.SharedElementCallback
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -19,6 +19,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Explode
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.google.android.material.bottomappbar.BottomAppBar
@@ -38,7 +39,6 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
-import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.*
 import javax.inject.Inject
 
@@ -54,12 +54,9 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private val adapter = NotesAdapter { note, sharedViews ->
         note.id?.run {
             val nextFragment = ShowNoteFragment.initMe(this@run)
-            val transitionSet = TransitionSet()
-            transitionSet.addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-            transitionSet.addTransition(CardExpandTransition())
-            transitionSet.interpolator = LinearOutSlowInInterpolator()
-            nextFragment.sharedElementEnterTransition = transitionSet
-
+            val transition = CardExpandTransition()
+            transition.interpolator = LinearOutSlowInInterpolator()
+            nextFragment.sharedElementEnterTransition = transition
 
             fragmentManager?.beginTransaction()?.run {
                 setReorderingAllowed(true)
@@ -281,8 +278,10 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     .apply {
                         sharedElementEnterTransition = TransitionSet()
                                 .apply {
-                                    //addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
-                                    addTransition(FabTransition())
+                                    if (fromBottomSheet)
+                                        addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
+                                    else
+                                        addTransition(FabTransition())
                                     duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).toLong()
                                     interpolator = LinearOutSlowInInterpolator()
                                 }

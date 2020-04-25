@@ -10,20 +10,24 @@ import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.view.ViewGroup
 import androidx.cardview.widget.CardView
-import androidx.transition.ChangeBounds
-import androidx.transition.TransitionValues
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.lebartodev.lnote.R
+import androidx.transition.*
 
 
-private const val PROPERTY_CORNER_RADIUS = "PROPERTY_CORNER_RADIUS"
-private const val PROPERTY_ELEVATION = "PROPERTY_ELEVATION"
-private const val PROPERTY_COLOR = "PROPERTY_COLOR"
+private const val PROPERTY_CORNER_RADIUS = "lnote:cardExpand:radius"
+private const val PROPERTY_ELEVATION = "lnote:cardExpand:elevation"
+private const val PROPERTY_COLOR = "lnote:cardExpand:color"
 
 
-class CardExpandTransition : ChangeBounds {
+class CardExpandTransition : TransitionSet {
     constructor() : super()
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+
+    init {
+        addTransition(ChangeBounds())
+        addTransition(ChangeTransform())
+        addTransition(ChangeImageTransform())
+        addTransition(ChangeClipBounds())
+    }
 
     override fun getTransitionProperties(): Array<String> {
         return arrayOf(PROPERTY_CORNER_RADIUS, PROPERTY_ELEVATION)
@@ -54,8 +58,6 @@ class CardExpandTransition : ChangeBounds {
     private fun captureCornerRadius(transitionValues: TransitionValues) {
         if (transitionValues.view is CardView) {
             transitionValues.values[PROPERTY_CORNER_RADIUS] = (transitionValues.view as CardView).radius
-        } else if (transitionValues.view is FloatingActionButton) {
-            transitionValues.values[PROPERTY_CORNER_RADIUS] = transitionValues.view.height / 2f
         } else {
             transitionValues.values[PROPERTY_CORNER_RADIUS] = 0f
         }
@@ -68,13 +70,11 @@ class CardExpandTransition : ChangeBounds {
                 transitionValues.values[PROPERTY_COLOR] = background.color
             if (background is NoteTransitionDrawable)
                 transitionValues.values[PROPERTY_COLOR] = background.getColor()
-        } else if (transitionValues.view is FloatingActionButton) {
-            transitionValues.values[PROPERTY_COLOR] = (transitionValues.view as FloatingActionButton).backgroundTintList?.defaultColor
         }
     }
 
     override fun createAnimator(sceneRoot: ViewGroup, startValues: TransitionValues?, endValues: TransitionValues?): Animator? {
-        val changeBounds = super.createAnimator(sceneRoot, startValues, endValues)
+        val move = super.createAnimator(sceneRoot, startValues, endValues)
         if (startValues == null || endValues == null)
             return null
 
@@ -102,8 +102,7 @@ class CardExpandTransition : ChangeBounds {
         val elevation = ObjectAnimator.ofFloat(endValues.view, "elevation", endElevation)
 
         val transition = AnimatorSet()
-        transition.playTogether(changeBounds, elevation, color, radius)
-        transition.duration = sceneRoot.resources.getInteger(R.integer.animation_duration).toLong()
+        transition.playTogether(move, elevation, color, radius)
 
         transition.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {

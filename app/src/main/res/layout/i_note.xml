@@ -54,6 +54,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@id/note_description"
                 app:layout_constraintTop_toBottomOf="@id/note_description"
+                app:rippleColor="@null"
                 tools:text="cp, 10 окт. 2018" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

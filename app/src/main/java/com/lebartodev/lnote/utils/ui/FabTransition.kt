@@ -5,20 +5,15 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.graphics.Color
-import android.graphics.Outline
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.view.View.MeasureSpec.makeMeasureSpec
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
-import androidx.core.content.ContextCompat
 import androidx.transition.Transition
 import androidx.transition.TransitionValues
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.lebartodev.lnote.R
-import kotlin.math.hypot
 
 
 private const val PROPERTY_COLOR = "lnote:fabTransform:color"
@@ -73,101 +68,65 @@ class FabTransition : Transition {
         if (startBounds == null || endBounds == null) return null
 
         val fromFab = endBounds.width() > startBounds.width()
-        val processView = endValues.view
-        processView.isClickable = false
-
-        val processViewTranslationY = processView.translationY
-        val endTranslationY: Float
+        var processView = endValues.view
+        val processViewTranslationY = endValues.view.translationY
 
         if (!fromFab) {
-            endTranslationY = (endBounds.centerY() - startBounds.centerY()).toFloat() + processViewTranslationY
+            val layout = processView.parent as ViewGroup
+            val placeholderView = View(sceneRoot.context)
+            placeholderView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            layout.addView(placeholderView)
+            processView = placeholderView
 
             processView.measure(makeMeasureSpec(startBounds.width(), View.MeasureSpec.EXACTLY),
                     makeMeasureSpec(startBounds.height(), View.MeasureSpec.EXACTLY))
             processView.layout(startBounds.left, startBounds.top, startBounds.right, startBounds.bottom)
-        } else {
-            endTranslationY = processViewTranslationY
-
-            processView.translationY = (startBounds.centerY() - endBounds.centerY()).toFloat() + processViewTranslationY
         }
 
-        val translate: Animator = ObjectAnimator.ofFloat(processView, View.TRANSLATION_Y, endTranslationY)
+        val overlayAnimation = createOverlayAnimation(processView, startColor, endColor)
+        val circularReveal = createCircularRevealAnimation(processView, fromFab, startBounds, endBounds, processViewTranslationY)
 
-        val circularReveal: Animator
-        if (fromFab) {
-            circularReveal = ViewAnimationUtils.createCircularReveal(processView,
-                    processView.width / 2,
-                    processView.height / 2,
-                    startBounds.width() / 2f,
-                    hypot(endBounds.width() / 2f, endBounds.height() / 2f))
-        } else {
-            circularReveal = ViewAnimationUtils.createCircularReveal(processView,
-                    processView.width / 2,
-                    processView.height / 2,
-                    hypot(startBounds.width() / 2f, startBounds.height() / 2f),
-                    endBounds.width() / 2f)
-
-            //Persist the end clip i.e. stay at FAB size after the reveal has run
-            circularReveal.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    processView.outlineProvider = object : ViewOutlineProvider() {
-                        override fun getOutline(view: View, outline: Outline) {
-                            val left: Int = (view.width - endBounds.width()) / 2
-                            val top: Int = (view.height - endBounds.height()) / 2
-                            outline.setOval(left, top, left + endBounds.width(), top + endBounds.height())
-                            view.clipToOutline = true
-                        }
-                    }
-                }
-            })
-        }
-
-
-        val fabColor = ColorDrawable(startColor)
-        fabColor.setBounds(0, 0, processView.width, processView.height)
-        processView.overlay.add(fabColor)
-
-
-        val fabIcon = ContextCompat.getDrawable(sceneRoot.context, R.drawable.ic_add_24)?.mutate()!!
-        val iconLeft = (processView.width - fabIcon.intrinsicWidth) / 2
-        val iconTop = (processView.height - fabIcon.intrinsicHeight) / 2
-        if (!fromFab) fabIcon.alpha = 0
-
-        fabIcon.setBounds(iconLeft, iconTop,
-                iconLeft + fabIcon.intrinsicWidth,
-                iconTop + fabIcon.intrinsicHeight)
-
-        processView.overlay.add(fabIcon)
-
-
-        val colorTransition = ObjectAnimator.ofArgb(fabColor, "color", endColor)
-        colorTransition.duration = duration / 2
-
-
-        val alphaOverlay = ObjectAnimator.ofInt(fabColor, "alpha", 255, 0)
-        alphaOverlay.startDelay = duration / 2
-        alphaOverlay.duration = duration / 2
-
-
-        val iconAlpha = ObjectAnimator.ofInt(fabIcon, "alpha", if (fromFab) 0 else 255)
-        iconAlpha.duration = duration / 2
-        iconAlpha.startDelay = duration / 2
 
         val transition = AnimatorSet()
-        transition.playTogether(circularReveal, translate, colorTransition, alphaOverlay, iconAlpha)
+        transition.playTogether(overlayAnimation, circularReveal)
 
         transition.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 processView.translationY = processViewTranslationY
-                processView.measure(makeMeasureSpec(endBounds.width(), View.MeasureSpec.EXACTLY),
-                        makeMeasureSpec(endBounds.height(), View.MeasureSpec.EXACTLY))
-                processView.layout(endBounds.left, endBounds.top, endBounds.right, endBounds.bottom)
-                processView.overlay.clear()
-                processView.isClickable = true
             }
         })
 
         return transition
     }
 
+    private fun createOverlayAnimation(processView: View, startColor: Int, endColor: Int): Animator {
+        val fabColor = ColorDrawable(startColor)
+        fabColor.setBounds(0, 0, processView.width, processView.height)
+        processView.background = fabColor
+        return ObjectAnimator.ofArgb(fabColor, "color", endColor).setDuration(duration / 2)
+    }
+
+    private fun createCircularRevealAnimation(processView: View, fromFab: Boolean, startBounds: Rect, endBounds: Rect, processViewTranslationY: Float): Animator {
+        val circularReveal: Animator
+        if (fromFab) {
+            circularReveal = ViewAnimationUtils.createCircularReveal(processView,
+                    startBounds.centerX(),
+                    startBounds.centerY(),
+                    startBounds.height() / 2f,
+                    endBounds.height().toFloat().coerceAtLeast(endBounds.width().toFloat()))
+        } else {
+            circularReveal = ViewAnimationUtils.createCircularReveal(processView,
+                    endBounds.centerX(),
+                    endBounds.centerY() + processViewTranslationY.toInt(),
+                    startBounds.height().toFloat(),
+                    0f)
+
+            circularReveal.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    (processView.parent as ViewGroup).removeView(processView)
+                }
+            })
+        }
+        return circularReveal
+    }
 }
