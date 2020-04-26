@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.view.View
 import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.R
+import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -17,6 +18,15 @@ class DateChip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             visibility = View.VISIBLE
         } else {
             visibility = View.GONE
+        }
+    }
+
+    fun setDateAnimated(date: Long?) {
+        if (date != null && date != 0L) {
+            text = formatter.format(date)
+            animateSlideBottomVisibility(true)
+        } else {
+            animateSlideBottomVisibility(false)
         }
     }
 }

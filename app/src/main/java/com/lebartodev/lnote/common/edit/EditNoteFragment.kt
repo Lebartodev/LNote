@@ -24,7 +24,10 @@ import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
+import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.formattedHint
+import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
@@ -67,7 +70,10 @@ class EditNoteFragment : BaseFragment() {
         if (descriptionTextView.text.toString() != description) {
             descriptionTextView.text = description
         }
-        dateChip.setDate(time)
+        if (isSharedAnimationEnd)
+            dateChip.setDateAnimated(time)
+        else
+            dateChip.setDate(time)
         if (scroll != null && !noteData.text.isNullOrEmpty()) {
             noteContent.post {
                 noteContent.scrollTo(0, scroll ?: 0)
@@ -122,6 +128,31 @@ class EditNoteFragment : BaseFragment() {
                     .build()
                     .inject(this@EditNoteFragment)
         }
+    }
+
+    override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
+        super.onStartSharedAnimation(sharedElementNames)
+        if (sharedElementNames.contains(dateChip.transitionName)) {
+            dateChip.visibility = View.VISIBLE
+        }
+        listOf(saveNoteButton, deleteButton, calendarButton)
+                .filter { !sharedElementNames.contains(it.transitionName) }
+                .forEach {
+                    when (it.transitionName) {
+                        saveNoteButton.transitionName -> {
+                            it.onLayout {
+                                it.visibility = View.GONE
+                                it.animateSlideBottomVisibility(true)
+                            }
+                        }
+                        calendarButton.transitionName, deleteButton.transitionName -> {
+                            it.onLayout {
+                                it.visibility = View.GONE
+                                it.animateSlideTopVisibility(true)
+                            }
+                        }
+                    }
+                }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

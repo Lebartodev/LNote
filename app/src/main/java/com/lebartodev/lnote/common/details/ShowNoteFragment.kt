@@ -124,6 +124,7 @@ class ShowNoteFragment : BaseFragment() {
                 fragmentManager
                         ?.beginTransaction()
                         ?.setReorderingAllowed(true)
+                        ?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                         ?.replace(R.id.notes_layout_container, nextFragment)
                         ?.addSharedElement(noteContent, noteContent.transitionName)
                         ?.addSharedElement(dateChip, dateChip.transitionName)
