@@ -17,8 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionInflater
-import androidx.transition.TransitionSet
+import androidx.transition.*
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -51,13 +50,20 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private val adapter = NotesAdapter { note, sharedViews ->
         note.id?.run {
             val nextFragment = ShowNoteFragment.initMe(this@run)
-            val transition = CardExpandTransition()
+            val transition = TransitionSet()
+            transition.addTransition(ChangeTransform())
+            transition.addTransition(ChangeImageTransform())
+            transition.addTransition(ChangeBounds())
+            transition.addTransition(ChangeClipBounds())
+            transition.addTransition(CardExpandTransition())
             transition.interpolator = LinearOutSlowInInterpolator()
+            transition.duration = resources.getInteger(R.integer.animation_duration).toLong()
             nextFragment.sharedElementEnterTransition = transition
+
 
             fragmentManager?.beginTransaction()?.run {
                 setReorderingAllowed(true)
-                setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
                 sharedViews.forEach { addSharedElement(it, it.transitionName) }
                 replace(R.id.notes_layout_container, nextFragment)
                 addToBackStack(ShowNoteFragment.BACK_STACK_TAG)

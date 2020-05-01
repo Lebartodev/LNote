@@ -117,7 +117,6 @@ class ShowNoteFragment : BaseFragment() {
                 nextFragment.sharedElementEnterTransition = TransitionSet()
                         .apply {
                             addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-                            startDelay = 0
                             duration = resources.getInteger(R.integer.animation_duration).toLong()
                         }
 

@@ -18,19 +18,12 @@ private const val PROPERTY_ELEVATION = "lnote:cardExpand:elevation"
 private const val PROPERTY_COLOR = "lnote:cardExpand:color"
 
 
-class CardExpandTransition : TransitionSet {
+class CardExpandTransition : ChangeBounds {
     constructor() : super()
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
-    init {
-        addTransition(ChangeBounds())
-        addTransition(ChangeTransform())
-        addTransition(ChangeImageTransform())
-        addTransition(ChangeClipBounds())
-    }
-
     override fun getTransitionProperties(): Array<String> {
-        return arrayOf(PROPERTY_CORNER_RADIUS, PROPERTY_ELEVATION)
+        return arrayOf(PROPERTY_CORNER_RADIUS, PROPERTY_ELEVATION, PROPERTY_COLOR)
     }
 
     override fun captureStartValues(transitionValues: TransitionValues) {
@@ -74,9 +67,9 @@ class CardExpandTransition : TransitionSet {
     }
 
     override fun createAnimator(sceneRoot: ViewGroup, startValues: TransitionValues?, endValues: TransitionValues?): Animator? {
-        val move = super.createAnimator(sceneRoot, startValues, endValues)
+        val anim = super.createAnimator(sceneRoot, startValues, endValues)
         if (startValues == null || endValues == null)
-            return null
+            return anim
 
         val startElevation = startValues.values[PROPERTY_ELEVATION] as Float
         val endElevation = endValues.values[PROPERTY_ELEVATION] as Float
@@ -102,7 +95,7 @@ class CardExpandTransition : TransitionSet {
         val elevation = ObjectAnimator.ofFloat(endValues.view, "elevation", endElevation)
 
         val transition = AnimatorSet()
-        transition.playTogether(move, elevation, color, radius)
+        transition.playTogether(anim, elevation, color, radius)
 
         transition.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {

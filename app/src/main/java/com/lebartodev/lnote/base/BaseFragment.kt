@@ -60,15 +60,14 @@ abstract class BaseFragment : Fragment() {
             setEnterSharedElementCallback(object : SharedElementCallback() {
                 override fun onSharedElementStart(sharedElementNames: MutableList<String>?, sharedElements: MutableList<View>?, sharedElementSnapshots: MutableList<View>?) {
                     super.onSharedElementStart(sharedElementNames, sharedElements, sharedElementSnapshots)
-                    onStartSharedAnimation(sharedElementNames?: arrayListOf())
-                    setEnterSharedElementCallback(null)
+                    onStartSharedAnimation(sharedElementNames ?: arrayListOf())
                     isSharedAnimationEnd = false
                 }
 
                 override fun onSharedElementEnd(sharedElementNames: MutableList<String>?, sharedElements: MutableList<View>?, sharedElementSnapshots: MutableList<View>?) {
                     super.onSharedElementEnd(sharedElementNames, sharedElements, sharedElementSnapshots)
                     isSharedAnimationEnd = true
-
+                    setEnterSharedElementCallback(null)
                 }
 
                 override fun onMapSharedElements(names: MutableList<String>?, sharedElements: MutableMap<String, View>?) {

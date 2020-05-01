@@ -131,10 +131,6 @@ class EditNoteFragment : BaseFragment() {
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
-        super.onStartSharedAnimation(sharedElementNames)
-        if (sharedElementNames.contains(dateChip.transitionName)) {
-            dateChip.visibility = View.VISIBLE
-        }
         listOf(saveNoteButton, deleteButton, calendarButton)
                 .filter { !sharedElementNames.contains(it.transitionName) }
                 .forEach {
