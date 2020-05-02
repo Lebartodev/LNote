@@ -17,9 +17,9 @@ class LNoteViewModelFactory @Inject constructor(private val notesRepository: Not
     private val editViewModel by lazy { NoteEditViewModel(notesRepository, settingsManager, schedulersFacade, currentNoteManager) }
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when (modelClass) {
-            NotesViewModel::class.java ->  NotesViewModel(notesRepository, schedulersFacade) as T
+            NotesViewModel::class.java -> NotesViewModel(notesRepository, schedulersFacade) as T
             NoteEditViewModel::class.java -> editViewModel as T
-            ShowNoteViewModel::class.java -> ShowNoteViewModel(notesRepository, schedulersFacade) as T
+            ShowNoteViewModel::class.java -> ShowNoteViewModel(notesRepository, schedulersFacade, currentNoteManager) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

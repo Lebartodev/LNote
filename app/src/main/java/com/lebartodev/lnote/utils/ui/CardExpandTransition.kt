@@ -88,7 +88,7 @@ class CardExpandTransition : ChangeBounds {
 
         val background = NoteTransitionDrawable(startColor, startCornerRadius)
         background.setBounds(0, 0, startValues.view.width, startValues.view.height)
-        endValues.view.overlay.add(background)
+        endValues.view.background = background
 
         val color = ObjectAnimator.ofArgb(background, NoteTransitionDrawable.COLOR, endColor)
         val radius = ObjectAnimator.ofFloat(background, NoteTransitionDrawable.CORNER_RADIUS, endCornerRadius)

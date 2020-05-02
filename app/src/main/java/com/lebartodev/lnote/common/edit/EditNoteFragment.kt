@@ -130,27 +130,6 @@ class EditNoteFragment : BaseFragment() {
         }
     }
 
-    override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
-        listOf(saveNoteButton, deleteButton, calendarButton)
-                .filter { !sharedElementNames.contains(it.transitionName) }
-                .forEach {
-                    when (it.transitionName) {
-                        saveNoteButton.transitionName -> {
-                            it.onLayout {
-                                it.visibility = View.GONE
-                                it.animateSlideBottomVisibility(true)
-                            }
-                        }
-                        calendarButton.transitionName, deleteButton.transitionName -> {
-                            it.onLayout {
-                                it.visibility = View.GONE
-                                it.animateSlideTopVisibility(true)
-                            }
-                        }
-                    }
-                }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_edit_note, container, false)
@@ -194,6 +173,14 @@ class EditNoteFragment : BaseFragment() {
 
         descriptionTextView.addTextChangedListener(descriptionTextWatcher)
         titleTextView.addTextChangedListener(titleTextWatcher)
+        if (noteId != null) {
+            deleteButton.visibility = View.GONE
+        } else {
+            deleteButton.visibility = View.VISIBLE
+            deleteButton.setOnClickListener {
+                viewModel.deleteEditedNote()
+            }
+        }
         if (noteId != null || arguments?.getBoolean(EXTRA_BACK_BUTTON_VISIBLE) == true) {
             backButton.setOnClickListener {
                 hideKeyboard()
@@ -207,9 +194,6 @@ class EditNoteFragment : BaseFragment() {
             fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
         }
 
-        deleteButton.setOnClickListener {
-            viewModel.deleteEditedNote()
-        }
         saveNoteButton.setOnClickListener {
             hideKeyboard()
             viewModel.currentNote().removeObserver(noteObserver)
@@ -226,6 +210,35 @@ class EditNoteFragment : BaseFragment() {
         fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
             (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
         }
+    }
+
+    override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
+        listOf(saveNoteButton, deleteButton, calendarButton)
+                .filter { !sharedElementNames.contains(it.transitionName) }
+                .forEach {
+                    when (it.transitionName) {
+                        saveNoteButton.transitionName -> {
+                            it.onLayout {
+                                it.visibility = View.GONE
+                                it.animateSlideBottomVisibility(true)
+                            }
+                        }
+                        calendarButton.transitionName -> {
+                            it.onLayout {
+                                it.visibility = View.GONE
+                                it.animateSlideTopVisibility(true)
+                            }
+                        }
+                        deleteButton.transitionName -> {
+                            if (noteId == null) {
+                                it.onLayout {
+                                    it.visibility = View.GONE
+                                    it.animateSlideTopVisibility(true)
+                                }
+                            }
+                        }
+                    }
+                }
     }
 
     private fun setupEditViewModel() {

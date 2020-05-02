@@ -2,7 +2,9 @@ package com.lebartodev.lnote.common.notes
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -10,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.SharedElementCallback
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -47,6 +50,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
     private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
+    private var canScrollNotes = true
     private val adapter = NotesAdapter { note, sharedViews ->
         note.id?.run {
             val nextFragment = ShowNoteFragment.initMe(this@run)
@@ -60,6 +64,18 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
             transition.duration = resources.getInteger(R.integer.animation_duration).toLong()
             nextFragment.sharedElementEnterTransition = transition
 
+            transition.addListener(object : TransitionListenerAdapter() {
+                override fun onTransitionStart(transition: Transition) {
+                    super.onTransitionStart(transition)
+                    canScrollNotes = false
+                }
+
+                override fun onTransitionEnd(transition: Transition) {
+                    super.onTransitionEnd(transition)
+                    canScrollNotes = true
+                }
+            })
+            sharedElementReturnTransition = transition
 
             fragmentManager?.beginTransaction()?.run {
                 setReorderingAllowed(true)
@@ -108,7 +124,11 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
         noteCreationView = view.findViewById(R.id.bottom_sheet_add)
         bottomAddSheetBehavior = BottomSheetBehavior.from(noteCreationView)
         settingsSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_settings))
-        notesList.layoutManager = LinearLayoutManager(context)
+        notesList.layoutManager = object : LinearLayoutManager(context) {
+            override fun canScrollVertically(): Boolean {
+                return canScrollNotes
+            }
+        }
         notesList.adapter = adapter
         notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
                 8f.toPx(resources),

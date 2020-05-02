@@ -13,7 +13,6 @@ import com.lebartodev.lnote.utils.extensions.formattedHint
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
-import io.reactivex.functions.Action
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 import java.util.*
@@ -128,21 +127,8 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
     }
 
     fun deleteEditedNote() {
-        if (currentNoteLiveData.value?.id == null) {
-            deleteResultLiveData.value = ViewModelObject.success(true)
-            currentNoteManager.deleteCurrentNote()
-        } else {
-            currentNoteLiveData.value?.id?.run {
-                deleteNoteDisposable.dispose()
-                deleteNoteDisposable = notesRepository.deleteNote(this)
-                        .subscribeOn(schedulersFacade.io())
-                        .observeOn(schedulersFacade.ui())
-                        .subscribe(Action {
-                            deleteResultLiveData.value = ViewModelObject.success(true)
-                            currentNoteManager.deleteCurrentNote()
-                        }, Functions.emptyConsumer())
-            }
-        }
+        deleteResultLiveData.value = ViewModelObject.success(true)
+        currentNoteManager.deleteCurrentNote()
     }
 
     fun undoDeleteCurrentNote() {
