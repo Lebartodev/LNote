@@ -281,9 +281,10 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     .apply {
                         sharedElementEnterTransition = TransitionSet()
                                 .apply {
-                                    if (fromBottomSheet)
+                                    if (fromBottomSheet) {
                                         addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
-                                    else
+                                        addTransition(CardExpandTransition())
+                                    } else
                                         addTransition(FabTransition())
                                     duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).toLong()
                                     interpolator = LinearOutSlowInInterpolator()
@@ -296,7 +297,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                     setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                     addSharedElement(fabAdd, fabAdd.transitionName)
                 } else {
-                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
                     noteCreationView.getSharedViews()
                             .forEach { addSharedElement(it, it.transitionName) }
                 }
