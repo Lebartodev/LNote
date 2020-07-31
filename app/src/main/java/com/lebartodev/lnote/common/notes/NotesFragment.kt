@@ -261,6 +261,9 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                         override fun onDismissed(transientBottomBar: Snackbar?,
                                                  event: Int) {
                             super.onDismissed(transientBottomBar, event)
+                            if (context == null) {
+                                return
+                            }
                             if (event == DISMISS_EVENT_SWIPE) {
                                 editNoteViewModel.clearAll()
                             }

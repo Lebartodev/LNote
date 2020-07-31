@@ -18,8 +18,10 @@ open class LNoteApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appComponent = DaggerAppComponent.builder()
-                .applicationContext(this)
-                .build()
+        appComponent = createAppComponent()
     }
+
+    open fun createAppComponent() = DaggerAppComponent.builder()
+            .applicationContext(this)
+            .build()
 }

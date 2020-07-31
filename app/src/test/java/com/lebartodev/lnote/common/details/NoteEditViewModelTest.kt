@@ -5,11 +5,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
 import com.lebartodev.lnote.data.entity.ViewModelObject
-import com.lebartodev.lnote.di.app.AppModuleMock
-import com.lebartodev.lnote.di.app.DaggerAppComponentMock
-import com.lebartodev.lnote.di.notes.NotesModuleMock
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.SchedulersFacadeImpl
+import com.lebartodev.lnote.utils.di.app.DaggerAppComponentMock
 import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -38,13 +36,13 @@ class NoteEditViewModelTest {
 
     @Before
     fun setUp() {
-        val comp = DaggerAppComponentMock.builder()
-                .appModule(AppModuleMock(mock()))
-                .build()
-        comp.inject(mock())
-        comp.plus(NotesModuleMock()).inject(this)
+//        val comp = DaggerAppComponentMock.builder()
+//                .appModule(AppModuleMock(mock()))
+//                .build()
+//        comp.inject(mock())
+//        comp.plus(NotesModuleMock()).inject(this)
 
-        editViewModel = NoteEditViewModel(notesRepository, schedulersFacade)
+    //    editViewModel = NoteEditViewModel(notesRepository, schedulersFacade)
 
         whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
     }

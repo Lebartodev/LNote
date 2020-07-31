@@ -4,10 +4,8 @@ import android.app.Application
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.dao.NotesDAO
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.di.app.AppModuleMock
-import com.lebartodev.lnote.di.app.DaggerAppComponentMock
-import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.SchedulersFacadeImpl
+import com.lebartodev.lnote.utils.di.app.DaggerAppComponentMock
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -35,9 +33,9 @@ class NotesRepositoryTest {
         val notesDao: NotesDAO = mock() {
             on { getAll() } doReturn Flowable.just(notesTest)
         }
-        val comp = DaggerAppComponentMock.builder().appModule(AppModuleMock(mock())).build()
-        comp.inject(mock<Application>())
-        comp.plus(NotesModuleMock()).inject(this)
+//        val comp = DaggerAppComponentMock.builder()
+//        comp.inject(mock<Application>())
+//        comp.plus(NotesModuleMock()).inject(this)
 
         whenever(schedulersFacade.io()).thenReturn(Schedulers.trampoline())
         whenever(database.notesDao()).thenReturn(notesDao)
@@ -54,9 +52,9 @@ class NotesRepositoryTest {
     }
 
 
-    private class NotesModuleMock : NotesModule() {
-        @Named("Real")
-        override fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacadeImpl): NotesRepository =
-                NotesRepository(database, schedulersFacade)
-    }
+//    private class NotesModuleMock : NotesModule() {
+//        @Named("Real")
+//        override fun provideNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacadeImpl): NotesRepository =
+//                NotesRepository(database, schedulersFacade)
+//    }
 }

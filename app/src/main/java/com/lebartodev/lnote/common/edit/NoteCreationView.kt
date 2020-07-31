@@ -22,6 +22,7 @@ import com.lebartodev.lnote.R
 import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.ui.DateChip
+import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable
 import java.util.*
 
 
@@ -91,7 +92,7 @@ class NoteCreationView : ConstraintLayout {
         dateChip = findViewById(R.id.date_chip)
         noteContent = findViewById(R.id.note_content)
 
-        background = ContextCompat.getDrawable(context, R.drawable.bottom_card_bg)
+        background = NoteTransitionDrawable(ContextCompat.getColor(context, R.color.white), 0f)
 
 
         transitionName = resources.getString(R.string.note_container_transition_name, "local")

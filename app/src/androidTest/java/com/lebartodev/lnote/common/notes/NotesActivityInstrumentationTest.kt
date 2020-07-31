@@ -14,11 +14,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.di.notes.NotesModule
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.ViewActionUtil
 import com.lebartodev.lnote.utils.actions.ClickCloseIconAction
-import com.lebartodev.lnote.utils.di.app.NotesComponentTest
+import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
@@ -43,21 +43,18 @@ class NotesActivityInstrumentationTest {
 
     @Before
     fun setUp() {
-        (getApp().component() as NotesComponentTest)
-                .plus(NotesModule())
-                .inject(this)
-
         rule.launchActivity(null)
+
+        DaggerNotesComponentTest.builder()
+                .appComponent(getApp().appComponent as AppComponentTest)
+                .context(rule.activity)
+                .build()
+                .inject(this)
     }
 
     private fun getApp(): LNoteApplicationMock {
         return InstrumentationRegistry.getInstrumentation()
                 .targetContext.applicationContext as LNoteApplicationMock
-    }
-
-    @Test
-    fun onCreate() {
-        onView(withId(R.id.notes_list)).check(matches(isDisplayed()))
     }
 
     @Test
@@ -125,7 +122,7 @@ class NotesActivityInstrumentationTest {
         onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
                 PickerActions.setDate(2019, 5, 5))
         onView(withId(android.R.id.button1)).perform(click())
-        onView(withId(R.id.note_date_chip)).check(matches(withText("Sun, 05 May 2019")))
+        onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))
 
         onView(withId(R.id.save_button)).perform(click())
         onView(withId(R.id.notes_list)).check(matches(hasMinimumChildCount(1)))
@@ -215,6 +212,7 @@ class NotesActivityInstrumentationTest {
         onView(withId(android.R.id.button1)).perform(click())
         onView(withId(R.id.delete_button)).perform(click())
         onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.note_deleted)))
+        onView(withId(com.google.android.material.R.id.snackbar_text)).perform(swipeRight())
         onView(withId(R.id.text_title)).check(matches(withText("")))
         onView(withId(R.id.text_description)).check(matches(withText("")))
         onView(withId(R.id.date_chip)).check(matches(not(isDisplayed())))
@@ -243,7 +241,6 @@ class NotesActivityInstrumentationTest {
         onView(withId(android.R.id.button1)).perform(click())
         onView(withId(R.id.delete_button)).perform(click())
         onView((withId(com.google.android.material.R.id.snackbar_action))).perform(click());
-        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
         onView(withId(R.id.text_title)).check(matches(withText("Title")))
         onView(withId(R.id.text_description)).check(matches(withText("Description")))
         onView(withId(R.id.date_chip)).check(matches(withText("Sun, 05 May 2019")))

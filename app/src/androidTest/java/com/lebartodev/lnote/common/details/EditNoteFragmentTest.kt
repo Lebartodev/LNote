@@ -14,9 +14,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.common.notes.NotesActivity
-import com.lebartodev.lnote.di.notes.NotesModule
+import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.RecyclerViewMatcher
-import com.lebartodev.lnote.utils.di.app.NotesComponentTest
+import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
 import com.lebartodev.lnote.utils.rule.RepeatRule
@@ -38,12 +39,14 @@ class EditNoteFragmentTest {
 
     @Before
     fun setUp() {
-        (getApp().component() as NotesComponentTest)
-                .plus(NotesModule())
-                .inject(this)
-
         rule.launchActivity(null)
         rule.activity.supportFragmentManager.beginTransaction()
+
+        DaggerNotesComponentTest.builder()
+                .appComponent(getApp().appComponent as AppComponentTest)
+                .context(rule.activity)
+                .build()
+                .inject(this)
 
     }
 
@@ -110,26 +113,6 @@ class EditNoteFragmentTest {
     }
 
     @Test
-    fun deleteDraftedNote() {
-        onView(withId(R.id.fab_add)).perform(click())
-        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
-        onView(withId(R.id.text_title)).check(matches(isCompletelyDisplayed()))
-        onView(withId(R.id.text_title)).perform(click(), clearText(), typeText("Title"))
-        onView(withId(R.id.text_description)).check(matches(isCompletelyDisplayed()))
-        onView(withId(R.id.text_description)).perform(click(), clearText(), typeText("Description"))
-        onView(withId(R.id.fab_more)).perform(click())
-        onView(withId(R.id.calendar_button)).perform(click())
-        onView(withClassName(Matchers.equalTo(DatePicker::class.java.name))).perform(
-                PickerActions.setDate(2019, 5, 5))
-        onView(withId(android.R.id.button1)).perform(click())
-        onView(withId(R.id.full_screen_button)).perform(click())
-        onView(withId(R.id.delete_button)).perform(click())
-        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.note_deleted)))
-        onView(withId(R.id.text_title)).check(matches(withText("")))
-        onView(withId(R.id.text_description)).check(matches(withText("")))
-    }
-
-    @Test
     fun restoreDraftedNote() {
         onView(withId(R.id.fab_add)).perform(click())
         onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
@@ -145,7 +128,6 @@ class EditNoteFragmentTest {
         onView(withId(R.id.full_screen_button)).perform(click())
         onView(withId(R.id.delete_button)).perform(click())
         onView((withId(com.google.android.material.R.id.snackbar_action))).perform(click());
-        onView(withId(R.id.bottom_sheet_add)).perform(swipeUp())
         onView(withId(R.id.text_title)).check(matches(withText("Title")))
         onView(withId(R.id.text_description)).check(matches(withText("Description")))
     }

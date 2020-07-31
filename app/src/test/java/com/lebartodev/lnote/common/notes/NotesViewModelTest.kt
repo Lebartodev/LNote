@@ -4,9 +4,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.data.entity.ViewModelObject
-import com.lebartodev.lnote.di.app.AppModuleMock
-import com.lebartodev.lnote.di.app.DaggerAppComponentMock
-import com.lebartodev.lnote.di.notes.NotesModuleMock
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.SchedulersFacadeImpl
 import com.nhaarman.mockitokotlin2.anyOrNull
@@ -37,11 +34,11 @@ class NotesViewModelTest {
 
     @Before
     fun setUp() {
-        val comp = DaggerAppComponentMock.builder()
-                .appModule(AppModuleMock(mock()))
-                .build()
-        comp.inject(mock())
-        comp.plus(NotesModuleMock()).inject(this)
+//        val comp = DaggerAppComponentMock.builder()
+//                .appModule(AppModuleMock(mock()))
+//                .build()
+//        comp.inject(mock())
+//        comp.plus(NotesModuleMock()).inject(this)
 
 
         whenever(notesRepository.getNotes()).thenReturn(Flowable.just(arrayListOf()))
@@ -53,9 +50,9 @@ class NotesViewModelTest {
     @Test
     fun loadNotes() {
         val loadNotesObserver: Observer<ViewModelObject<List<Note>>> = mock()
-        notesViewModel.getNotes().observeForever(loadNotesObserver)
+     //   notesViewModel.getNotes().observeForever(loadNotesObserver)
         verify(loadNotesObserver).onChanged(ViewModelObject.success(arrayListOf()))
-        notesViewModel.getNotes().removeObserver(loadNotesObserver)
+    //    notesViewModel.getNotes().removeObserver(loadNotesObserver)
 
     }
 
@@ -64,7 +61,7 @@ class NotesViewModelTest {
         val exception = NullPointerException()
         val loadNotesObserver: Observer<ViewModelObject<List<Note>>> = mock()
         whenever(notesRepository.getNotes()).thenReturn(Flowable.error(exception))
-        notesViewModel.getNotes().observeForever(loadNotesObserver)
+    //    notesViewModel.getNotes().observeForever(loadNotesObserver)
         notesViewModel.fetchNotes()
         verify(loadNotesObserver).onChanged(ViewModelObject.error(exception, arrayListOf()))
     }

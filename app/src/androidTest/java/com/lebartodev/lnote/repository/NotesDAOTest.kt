@@ -4,7 +4,7 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.utils.di.app.NotesComponentTest
+import com.lebartodev.lnote.utils.di.app.AppComponentTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import io.reactivex.Completable
 import org.junit.Assert.assertEquals
@@ -22,7 +22,7 @@ class NotesDAOTest {
     fun setUp() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val app = instrumentation.targetContext.applicationContext as LNoteApplicationMock
-        val component = app.component() as NotesComponentTest
+        val component = app.appComponent as AppComponentTest
         component.inject(this)
         database.clearAllTables()
     }
