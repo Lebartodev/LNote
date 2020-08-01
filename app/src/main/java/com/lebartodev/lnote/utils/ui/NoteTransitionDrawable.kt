@@ -40,7 +40,7 @@ class NoteTransitionDrawable(color: Int, cornerRadius: Float) : Drawable() {
         invalidateSelf()
     }
 
-    override fun setColorFilter(cf: ColorFilter) {
+    override fun setColorFilter(cf: ColorFilter?) {
         paint.colorFilter = cf
         invalidateSelf()
     }

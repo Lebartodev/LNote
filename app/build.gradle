@@ -9,12 +9,12 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-allopen'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         applicationId "com.lebartodev.lnote"
         minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 1
+        targetSdkVersion 29
+        versionCode 2
         versionName "1.0"
         testInstrumentationRunner "com.lebartodev.lnote.utils.mocks.MockTestRunner"
         kapt {
@@ -41,6 +41,10 @@ allOpen {
 
 android.sourceSets {
     test.java.srcDirs += [file("$buildDir/generated/source/kapt/debugUnitTest")]
+}
+
+kapt {
+    correctErrorTypes true
 }
 
 dependencies {
