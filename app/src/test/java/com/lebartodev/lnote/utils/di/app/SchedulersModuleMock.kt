@@ -9,5 +9,5 @@ import javax.inject.Singleton
 interface SchedulersModuleMock {
     @Binds
     @Singleton
-    fun provideSchedulersFacade(applicationContext: SchedulersFacadeMock1): SchedulersFacade
+    fun provideSchedulersFacade(applicationContext: SchedulersFacadeMock): SchedulersFacade
 }

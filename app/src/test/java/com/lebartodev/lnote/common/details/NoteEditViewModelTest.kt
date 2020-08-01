@@ -4,10 +4,17 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
+import com.lebartodev.lnote.data.CurrentNoteManager
+import com.lebartodev.lnote.data.Manager
+import com.lebartodev.lnote.data.SettingsManager
 import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
+import com.lebartodev.lnote.repository.Repository
+import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SchedulersFacadeImpl
 import com.lebartodev.lnote.utils.di.app.DaggerAppComponentMock
+import com.lebartodev.lnote.utils.di.app.SchedulersFacadeMock
+import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentMock
 import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -20,29 +27,35 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 import java.util.*
 import javax.inject.Inject
 
+@RunWith(JUnit4::class)
 class NoteEditViewModelTest {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
     @Inject
-    lateinit var schedulersFacade: SchedulersFacadeImpl
+    lateinit var schedulersFacade: SchedulersFacade
     @Inject
-    lateinit var notesRepository: NotesRepository
+    lateinit var notesRepository: Repository.Notes
+    @Inject
+    lateinit var settingsManager: Manager.Settings
+    @Inject
+    lateinit var currentNoteManager: Manager.CurrentNote
+
     lateinit var editViewModel: NoteEditViewModel
 
     private val calendarObserver: Observer<Long?> = mock()
 
     @Before
     fun setUp() {
-//        val comp = DaggerAppComponentMock.builder()
-//                .appModule(AppModuleMock(mock()))
-//                .build()
-//        comp.inject(mock())
-//        comp.plus(NotesModuleMock()).inject(this)
-
-    //    editViewModel = NoteEditViewModel(notesRepository, schedulersFacade)
+        val comp = DaggerAppComponentMock.builder()
+                .applicationContext(mock())
+                .build()
+        DaggerNotesComponentMock.builder().appComponent(comp).context(mock()).build().inject(this)
+        editViewModel = NoteEditViewModel(notesRepository, settingsManager, schedulersFacade, currentNoteManager)
 
         whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
     }

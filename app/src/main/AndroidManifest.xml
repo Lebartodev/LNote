@@ -9,13 +9,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:name=".common.LNoteApplication"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/LNote"
         >
         <activity
             android:name="com.lebartodev.lnote.common.notes.NotesActivity"
-            android:label="Notes"
+            android:label="@string/app_name"
             android:windowSoftInputMode="adjustResize"
             >
             <intent-filter>

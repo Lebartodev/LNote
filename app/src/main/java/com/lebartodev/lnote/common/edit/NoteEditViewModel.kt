@@ -37,12 +37,12 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
 
     init {
         bottomPanelEnabledDisposable = settingsManager.bottomPanelEnabled()
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer { bottomPanelEnabledLiveData.value = it },
                         Functions.emptyConsumer())
 
         pendingDeleteDisposable = currentNoteManager.pendingDelete()
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer { pendingDeleteLiveData.value = it },
                         Functions.emptyConsumer())
 

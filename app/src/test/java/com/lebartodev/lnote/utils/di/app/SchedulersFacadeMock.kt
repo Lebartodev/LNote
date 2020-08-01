@@ -6,7 +6,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-class SchedulersFacadeMock1 @Inject constructor() : SchedulersFacade {
+class SchedulersFacadeMock @Inject constructor() : SchedulersFacade {
     override fun io(): Scheduler = Schedulers.trampoline()
 
     override fun computation(): Scheduler = Schedulers.trampoline()
