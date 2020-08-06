@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.lebartodev.lnote.di.app.AppComponent
 import com.lebartodev.lnote.di.app.DaggerAppComponent
+import com.lebartodev.lnote.di.notes.NotesComponent
 
 
 open class LNoteApplication : Application() {
@@ -15,6 +16,7 @@ open class LNoteApplication : Application() {
 
     lateinit var appComponent: AppComponent
         private set
+    var notesComponent: NotesComponent? = null
 
     override fun onCreate() {
         super.onCreate()

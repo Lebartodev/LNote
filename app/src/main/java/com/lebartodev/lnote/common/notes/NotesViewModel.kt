@@ -3,16 +3,21 @@ package com.lebartodev.lnote.common.notes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.lebartodev.lnote.base.BaseViewModel
+import com.lebartodev.lnote.common.details.ShowNoteViewModel
 import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.lnote.data.entity.ViewModelObject
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.repository.Repository
 import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.lnote.utils.SingleLiveEvent
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 
-class NotesViewModel constructor(var notesRepository: Repository.Notes, val schedulersFacade: SchedulersFacade) : ViewModel() {
+class NotesViewModel constructor(var notesRepository: Repository.Notes, val schedulersFacade: SchedulersFacade) : BaseViewModel() {
     private var notesDisposable = Disposables.empty()
+
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
 
     fun getNotes(): LiveData<List<Note>> = notesLiveData

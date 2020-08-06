@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8a7b77a20ac5abd0c6fa65130105293a",
+    "identityHash": "be0e44eef3c5d5c40912dee322f752e6",
     "entities": [
       {
         "tableName": "Note",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT, `date` INTEGER, `created` INTEGER, `text` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT, `date` INTEGER, `created` INTEGER, `text` TEXT NOT NULL, `deletedDate` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -37,6 +37,12 @@
             "columnName": "text",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "deletedDate",
+            "columnName": "deletedDate",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -49,9 +55,10 @@
         "foreignKeys": []
       }
     ],
+    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"8a7b77a20ac5abd0c6fa65130105293a\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'be0e44eef3c5d5c40912dee322f752e6')"
     ]
   }
 }

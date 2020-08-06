@@ -10,16 +10,10 @@ interface Manager {
     }
 
     interface CurrentNote {
-        fun getTempNote(): NoteData?
         fun currentNote(): Observable<NoteData>
         fun setCurrentNote(note: Note)
         fun setTitle(value: String): Unit?
         fun setText(value: String): Unit?
         fun setDate(value: Long?): Unit?
-        fun clearAll()
-        fun deleteCurrentNote()
-        fun undoDeletingNote()
-        fun pendingDelete(): Observable<Boolean>
-        fun clearCurrentNote()
     }
 }

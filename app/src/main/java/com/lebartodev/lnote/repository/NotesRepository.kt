@@ -5,6 +5,7 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -16,7 +17,7 @@ class NotesRepository @Inject constructor(private val database: AppDatabase, pri
     override fun getNote(id: Long): Flowable<Note> = database.notesDao().getById(id)
             .subscribeOn(schedulersFacade.io())
 
-    override fun deleteNote(id: Long): Completable = Completable.fromCallable { database.notesDao().deleteById(id) }
+    override fun deleteNote(id: Long): Completable = database.notesDao().markAsDeleted(id, System.currentTimeMillis())
             .subscribeOn(schedulersFacade.io())
 
     override fun createNote(title: String?, text: String?, date: Long?): Single<Long> {
@@ -28,6 +29,17 @@ class NotesRepository @Inject constructor(private val database: AppDatabase, pri
                         .subscribeOn(schedulersFacade.io())
             }
 
+        }
+    }
+
+    override fun deleteDraftedNote(title: String?, text: String?, date: Long?): Completable {
+        return Completable.defer {
+            if (text.isNullOrBlank()) {
+                Completable.error(NullPointerException())
+            } else {
+                Completable.fromCallable { database.notesDao().insert(Note(null, title, date, null, text, System.currentTimeMillis())) }
+                        .subscribeOn(schedulersFacade.io())
+            }
         }
     }
 
@@ -51,17 +63,12 @@ class NotesRepository @Inject constructor(private val database: AppDatabase, pri
         }
     }
 
-    override fun restoreNote(id: Long?, title: String?, text: String?, date: Long?, createdDate: Long?): Single<Long> {
-        return Single.defer {
-            if (text.isNullOrBlank()) {
-                Single.error(NullPointerException())
-            } else {
-                Single.fromCallable { database.notesDao().insert(Note(id, title, date, createdDate, text)) }
-                        .subscribeOn(schedulersFacade.io())
-            }
-
-        }
+    override fun restoreLastNote(): Maybe<Note> {
+        return database.notesDao().lastDeleted()
+                .flatMap {
+                    database.notesDao().restoreNote(it)
+                            .andThen(database.notesDao().getById(it).firstElement())
+                }
     }
-
 
 }

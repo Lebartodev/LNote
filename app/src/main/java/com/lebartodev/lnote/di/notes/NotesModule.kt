@@ -1,6 +1,7 @@
 package com.lebartodev.lnote.di.notes
 
 import androidx.lifecycle.ViewModelProvider
+import com.lebartodev.lnote.di.utils.NotesScope
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.repository.Repository
 import com.lebartodev.lnote.repository.SettingsRepository

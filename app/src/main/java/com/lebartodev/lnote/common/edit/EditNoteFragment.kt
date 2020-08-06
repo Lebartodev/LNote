@@ -122,11 +122,13 @@ class EditNoteFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
         postponeEnterTransition()
         context?.run {
-            DaggerNotesComponent.builder()
-                    .appComponent(LNoteApplication[this].appComponent)
-                    .context(this)
-                    .build()
-                    .inject(this@EditNoteFragment)
+            if ((activity?.application as LNoteApplication).notesComponent == null) {
+                (activity?.application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
+                        .appComponent(LNoteApplication[this].appComponent)
+                        .context(this)
+                        .build()
+            }
+            (activity?.application as LNoteApplication).notesComponent?.inject(this@EditNoteFragment)
         }
     }
 
@@ -243,31 +245,25 @@ class EditNoteFragment : BaseFragment() {
 
     private fun setupEditViewModel() {
         viewModel = ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java]
-        viewModel.saveResult().observe(viewLifecycleOwner, Observer { obj ->
-            if (obj != null) {
-                if (obj.status == Status.ERROR) {
-                    Toast.makeText(context, getString(R.string.error_note_create), Toast.LENGTH_SHORT).show()
-                } else if (obj.status == Status.SUCCESS) {
-                    (activity as EditorEventContainer).saveNote()
-                    titleTextView.clearFocus()
-                    descriptionTextView.clearFocus()
-                    sharedElementReturnTransition = null
-                    fragmentManager?.popBackStack()
-                }
+        viewModel.saveResult().observe(viewLifecycleOwner, Observer {
+            if (it == true) {
+                (activity as EditorEventContainer).saveNote()
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+                sharedElementReturnTransition = null
+                fragmentManager?.popBackStack()
             }
         })
-        viewModel.deleteResult().observe(viewLifecycleOwner, Observer { obj ->
-            if (obj != null) {
-                if (obj.status == Status.SUCCESS) {
-                    (activity as EditorEventContainer).deleteNote()
-                    titleTextView.clearFocus()
-                    descriptionTextView.clearFocus()
-                    sharedElementReturnTransition = null
-                    if (noteId == null) {
-                        fragmentManager?.popBackStack()
-                    } else {
-                        fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                    }
+        viewModel.deleteResult().observe(viewLifecycleOwner, Observer {
+            if (it == true) {
+                (activity as EditorEventContainer).deleteNote()
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+                sharedElementReturnTransition = null
+                if (noteId == null) {
+                    fragmentManager?.popBackStack()
+                } else {
+                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 }
             }
         })

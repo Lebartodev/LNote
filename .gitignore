@@ -18,3 +18,6 @@ gradle/wrapper/gradle-wrapper.jar
 .idea/gradle.xml
 .idea/encodings.xml
 .idea/
+/keystore
+/app/release/app-release.apk
+/app/release/output.json

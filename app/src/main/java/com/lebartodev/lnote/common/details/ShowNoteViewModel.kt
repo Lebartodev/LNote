@@ -8,6 +8,8 @@ import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
+import com.lebartodev.lnote.utils.exception.DeleteNoteException
+import com.lebartodev.lnote.utils.exception.LoadNoteException
 import io.reactivex.disposables.Disposables
 
 class ShowNoteViewModel constructor(private val notesRepository: NotesRepository,
@@ -26,10 +28,6 @@ class ShowNoteViewModel constructor(private val notesRepository: NotesRepository
     }
 
     fun delete() {
-        currentNote.value?.run {
-            currentNoteManager.setCurrentNote(this)
-            currentNoteManager.deleteCurrentNote()
-        }
         currentNote.value?.id?.run {
             deleteDisposable.dispose()
             deleteDisposable = notesRepository.deleteNote(this)
@@ -52,7 +50,4 @@ class ShowNoteViewModel constructor(private val notesRepository: NotesRepository
         disposable.dispose()
         deleteDisposable.dispose()
     }
-
-    class LoadNoteException(val source: Throwable) : Throwable()
-    class DeleteNoteException(val source: Throwable) : Throwable()
 }
