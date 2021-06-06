@@ -1,7 +1,8 @@
 package com.lebartodev.lnote.di.app
 
 import android.app.Application
-import com.lebartodev.lnote.data.AppDatabase
+import com.lebartodev.core.db.AppDatabase
+import com.lebartodev.core.di.DatabaseModule
 import com.lebartodev.lnote.data.Manager
 import com.lebartodev.lnote.utils.SchedulersFacade
 import dagger.BindsInstance
@@ -19,6 +20,7 @@ interface AppComponent {
     @Component.Builder
     interface Builder {
         fun build(): AppComponent
+
         @BindsInstance
         fun applicationContext(application: Application): Builder
     }

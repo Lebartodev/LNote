@@ -1,8 +1,8 @@
-package com.lebartodev.lnote.di.app
+package com.lebartodev.core.di
 
 import android.app.Application
 import androidx.room.Room
-import com.lebartodev.lnote.data.AppDatabase
+import com.lebartodev.core.db.AppDatabase
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

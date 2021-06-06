@@ -1,7 +1,3 @@
-ext {
-    archComponentVersion = "2.1.0"
-    mockitoVersion = "2.19.0"
-}
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -49,31 +45,31 @@ kapt {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':core')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    implementation "com.google.android.material:material:$materialVersion"
 
-    implementation 'com.google.dagger:dagger:2.28.3'
-    kapt 'com.google.dagger:dagger-compiler:2.28.3'
+    implementation "com.google.dagger:dagger:$daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
 
-    implementation "androidx.room:room-runtime:2.2.2"
-    implementation "androidx.room:room-rxjava2:2.2.2"
-    kapt "androidx.room:room-compiler:2.2.2"
+    implementation "androidx.room:room-runtime:$roomRuntimeVersion"
+    implementation "androidx.room:room-rxjava2:$roomRuntimeVersion"
+    kapt "androidx.room:room-compiler:$roomRuntimeVersion"
 
-    implementation "androidx.lifecycle:lifecycle-extensions:$archComponentVersion"
     implementation "androidx.lifecycle:lifecycle-reactivestreams:$archComponentVersion"
-    kapt "androidx.lifecycle:lifecycle-compiler:2.1.0"
+    kapt "androidx.lifecycle:lifecycle-compiler:$archComponentVersion"
 
     //Unit test
     testImplementation 'junit:junit:4.12'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "android.arch.core:core-testing:1.1.1"
 
-    kaptTest "com.google.dagger:dagger-compiler:2.28.3"
+    kaptTest "com.google.dagger:dagger-compiler:$daggerVersion"
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0'
 
     //Android test

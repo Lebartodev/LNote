@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.common.notes
+package com.lebartodev.lnote.common.archive
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,7 +10,7 @@ import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 
-class NotesViewModel constructor(var notesRepository: Repository.Notes, val schedulersFacade: SchedulersFacade) : BaseViewModel() {
+class ArchiveViewModel constructor(var notesRepository: Repository.Notes, val schedulersFacade: SchedulersFacade) : BaseViewModel() {
     private var notesDisposable = Disposables.empty()
 
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
@@ -23,7 +23,7 @@ class NotesViewModel constructor(var notesRepository: Repository.Notes, val sche
 
     fun fetchNotes() {
         notesDisposable.dispose()
-        notesDisposable = notesRepository.getNotes()
+        notesDisposable = notesRepository.getArchive()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(Consumer { notesLiveData.value = it },

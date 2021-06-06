@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.data.entity
+package com.lebartodev.core.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

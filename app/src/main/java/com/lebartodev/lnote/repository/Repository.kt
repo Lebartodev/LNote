@@ -1,6 +1,6 @@
 package com.lebartodev.lnote.repository
 
-import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.core.db.entity.Note
 import io.reactivex.*
 
 interface Repository {
@@ -12,6 +12,7 @@ interface Repository {
         fun deleteNote(id: Long): Completable
         fun editNote(id: Long, title: String?, text: String?, date: Long?): Completable
         fun restoreLastNote(): Maybe<Note>
+        fun getArchive(): Flowable<List<Note>>
     }
 
     interface Settings {

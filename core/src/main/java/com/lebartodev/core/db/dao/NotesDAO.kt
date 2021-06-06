@@ -1,7 +1,7 @@
-package com.lebartodev.lnote.data.dao
+package com.lebartodev.core.db.dao
 
 import androidx.room.*
-import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.core.db.entity.Note
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -11,6 +11,9 @@ import io.reactivex.Maybe
 interface NotesDAO {
     @Query("SELECT * FROM note WHERE deletedDate is null and created not null ORDER BY created DESC")
     fun getAll(): Flowable<List<Note>>
+
+    @Query("SELECT * FROM note WHERE deletedDate is not null and created not null ORDER BY created DESC")
+    fun getArchivedNotes(): Flowable<List<Note>>
 
     @Query("SELECT * FROM note WHERE id = :id")
     fun getById(id: Long): Flowable<Note>

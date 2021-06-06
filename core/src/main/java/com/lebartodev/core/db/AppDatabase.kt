@@ -1,9 +1,9 @@
-package com.lebartodev.lnote.data
+package com.lebartodev.core.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.lebartodev.lnote.data.dao.NotesDAO
-import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.core.db.dao.NotesDAO
+import com.lebartodev.core.db.entity.Note
 
 
 @Database(entities = [Note::class], version = 1)

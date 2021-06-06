@@ -1,7 +1,7 @@
 package com.lebartodev.lnote.repository
 
-import com.lebartodev.lnote.data.AppDatabase
-import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.core.db.AppDatabase
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -70,5 +70,8 @@ class NotesRepository @Inject constructor(private val database: AppDatabase, pri
                             .andThen(database.notesDao().getById(it).firstElement())
                 }
     }
+
+    override fun getArchive(): Flowable<List<Note>> = database.notesDao().getArchivedNotes()
+            .subscribeOn(schedulersFacade.io())
 
 }

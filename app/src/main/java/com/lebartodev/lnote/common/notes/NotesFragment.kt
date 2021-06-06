@@ -2,9 +2,7 @@ package com.lebartodev.lnote.common.notes
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -12,12 +10,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.SharedElementCallback
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,20 +24,21 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.lnote.common.EditorEvent
 import com.lebartodev.lnote.common.EditorEventCallback
+import com.lebartodev.lnote.common.EditorEventContainer
 import com.lebartodev.lnote.common.LNoteApplication
+import com.lebartodev.lnote.common.archive.ArchiveFragment
 import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.edit.EditNoteFragment
 import com.lebartodev.lnote.common.edit.NoteCreationView
 import com.lebartodev.lnote.common.edit.NoteEditViewModel
-import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.data.entity.Status
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.exception.DeleteNoteException
-import com.lebartodev.lnote.utils.exception.RestoreNoteException
 import com.lebartodev.lnote.utils.ui.*
 import javax.inject.Inject
 
@@ -109,8 +107,8 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
             }
             (activity?.application as LNoteApplication).notesComponent?.inject(this@NotesFragment)
         }
-        notesViewModel = ViewModelProviders.of(this, viewModelFactory)[NotesViewModel::class.java]
-        editNoteViewModel = ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java]
+        notesViewModel = ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java]
+        editNoteViewModel = ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -223,6 +221,17 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
             when (item.itemId) {
                 R.id.app_bar_settings -> {
                     openSettings()
+                    true
+                }
+                R.id.app_bar_archive -> {
+                    fragmentManager?.beginTransaction()?.run {
+                        setReorderingAllowed(true)
+                        setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
+                        replace(R.id.notes_layout_container, ArchiveFragment())
+                        addToBackStack(null)
+                        commit()
+                    }
+
                     true
                 }
                 else -> false
@@ -359,6 +368,20 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
                 adapter.updateData(notes)
                 startPostponedEnterTransition()
             }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activity?.run {
+            if (this is EditorEventContainer) {
+                when (this.popEditorEvent()) {
+                    EditorEvent.SAVE -> onNoteSaved()
+                    EditorEvent.DELETE -> onNoteDeleted()
+                    else -> {
+                    }
+                }
+            }
+        }
     }
 
     override fun onNoteDeleted() {

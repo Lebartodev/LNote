@@ -6,7 +6,7 @@ import android.widget.Switch
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.di.settings.DaggerSettingsComponent
@@ -19,9 +19,9 @@ class SettingsBottomView : ConstraintLayout {
     private val bottomPanelSwitch: Switch
 
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     init {
         inflate(context, R.layout.view_settings, this)
@@ -36,7 +36,7 @@ class SettingsBottomView : ConstraintLayout {
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
 
-        notesViewModel = ViewModelProviders.of(context as FragmentActivity, viewModelFactory)[SettingsViewModel::class.java]
+        notesViewModel = ViewModelProvider(context as FragmentActivity, viewModelFactory)[SettingsViewModel::class.java]
 
         notesViewModel.bottomPanelEnabled().observe(context as FragmentActivity, Observer { bottomPanelSwitch.isChecked = it })
 

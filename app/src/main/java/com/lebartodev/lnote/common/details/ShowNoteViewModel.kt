@@ -2,9 +2,9 @@ package com.lebartodev.lnote.common.details
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.base.BaseViewModel
 import com.lebartodev.lnote.data.Manager
-import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.repository.NotesRepository
 import com.lebartodev.lnote.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent

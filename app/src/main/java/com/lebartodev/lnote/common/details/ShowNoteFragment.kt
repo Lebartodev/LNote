@@ -2,7 +2,6 @@ package com.lebartodev.lnote.common.details
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -11,15 +10,15 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
 import com.lebartodev.lnote.common.EditorEventContainer
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.edit.EditNoteFragment
-import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
@@ -43,6 +42,7 @@ class ShowNoteFragment : BaseFragment() {
     private lateinit var viewModel: ShowNoteViewModel
     private lateinit var actionBarTitleTextView: TextView
     private lateinit var backButton: View
+
     @Inject
     lateinit var viewModelFactory: LNoteViewModelFactory
 
@@ -111,7 +111,7 @@ class ShowNoteFragment : BaseFragment() {
         }
 
 
-        viewModel = ViewModelProviders.of(this, viewModelFactory)[ShowNoteViewModel::class.java]
+        viewModel = ViewModelProvider(this, viewModelFactory)[ShowNoteViewModel::class.java]
 
         viewModel.note().observe(this, Observer { note ->
             note.run {
@@ -184,11 +184,13 @@ class ShowNoteFragment : BaseFragment() {
     companion object {
         const val BACK_STACK_TAG = "ShowNote.BACK_STACK_TAG"
         private const val EXTRA_ID = "EXTRA_ID"
+        private const val EXTRA_FROM_ARCHIVE = "EXTRA_FROM_ARCHIVE"
 
-        fun initMe(id: Long): ShowNoteFragment {
+        fun initMe(id: Long, fromArchive: Boolean = false): ShowNoteFragment {
             val fragment = ShowNoteFragment()
             val args = Bundle()
             args.putLong(EXTRA_ID, id)
+            args.putBoolean(EXTRA_FROM_ARCHIVE, fromArchive)
             fragment.arguments = args
             return fragment
         }

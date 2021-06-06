@@ -3,7 +3,6 @@ package com.lebartodev.lnote.utils.di.app
 import android.app.Application
 import androidx.room.Room
 import com.lebartodev.lnote.data.AppDatabase
-import com.lebartodev.lnote.di.app.DatabaseModule
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

@@ -5,8 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.utils.ui.DateChip
 
 

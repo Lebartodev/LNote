@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.base.BaseFragment
@@ -244,7 +244,7 @@ class EditNoteFragment : BaseFragment() {
     }
 
     private fun setupEditViewModel() {
-        viewModel = ViewModelProviders.of(this, viewModelFactory)[NoteEditViewModel::class.java]
+        viewModel = ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java]
         viewModel.saveResult().observe(viewLifecycleOwner, Observer {
             if (it == true) {
                 (activity as EditorEventContainer).saveNote()

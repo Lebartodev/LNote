@@ -1,6 +1,7 @@
 package com.lebartodev.lnote.di.notes
 
 import android.content.Context
+import com.lebartodev.lnote.common.archive.ArchiveFragment
 import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.edit.EditNoteFragment
 import com.lebartodev.lnote.common.notes.NotesFragment
@@ -13,6 +14,7 @@ import dagger.Component
 @Component(dependencies = [AppComponent::class], modules = [NotesModule::class])
 interface NotesComponent {
     fun inject(notesFragment: NotesFragment)
+    fun inject(archiveFragment: ArchiveFragment)
     fun inject(editNoteFragment: EditNoteFragment)
     fun inject(showNoteFragment: ShowNoteFragment)
 

@@ -1,12 +1,9 @@
 package com.lebartodev.lnote.data
 
-import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.utils.SchedulersFacade
-import io.reactivex.Completable
 import io.reactivex.Observable
-import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.BehaviorSubject
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CurrentNoteManager @Inject constructor(private val schedulersFacade: SchedulersFacade) : Manager.CurrentNote {

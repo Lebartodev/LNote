@@ -1,6 +1,6 @@
 package com.lebartodev.lnote.data
 
-import com.lebartodev.lnote.data.entity.Note
+import com.lebartodev.core.db.entity.Note
 import io.reactivex.Observable
 
 interface Manager {
