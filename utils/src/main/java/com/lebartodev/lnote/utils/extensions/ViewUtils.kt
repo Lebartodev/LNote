@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.animation.AccelerateInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
-import com.lebartodev.lnote.R
+import com.lebartodev.lnote.utils.R
 
 
 fun View.onLayout(listener: (() -> Unit)) {

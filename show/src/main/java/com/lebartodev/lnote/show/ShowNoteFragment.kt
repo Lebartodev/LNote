@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.common.details
+package com.lebartodev.lnote.show
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,9 +13,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
-import com.lebartodev.core.db.entity.Note
-import com.lebartodev.lnote.R
 import com.lebartodev.core.base.BaseFragment
+import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.common.EditorEventContainer
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.edit.EditNoteFragment
@@ -127,9 +126,6 @@ class ShowNoteFragment : BaseFragment() {
             }
         })
         viewModel.error().observe(this, Observer { error ->
-//            when(error){
-//                is ShowNoteViewModel.LoadNoteException ->
-//            }
         })
         viewModel.deleteResult().observe(this, Observer { status ->
             if (status == true) {

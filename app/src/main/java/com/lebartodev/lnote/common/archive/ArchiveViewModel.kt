@@ -3,7 +3,7 @@ package com.lebartodev.lnote.common.archive
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.lnote.base.BaseViewModel
+import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.lnote.repository.Repository
 import com.lebartodev.lnote.utils.SchedulersFacade
 import io.reactivex.disposables.Disposables

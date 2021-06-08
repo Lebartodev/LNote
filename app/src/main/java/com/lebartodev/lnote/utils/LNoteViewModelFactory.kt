@@ -13,6 +13,7 @@ import javax.inject.Inject
 
 @NotesScope
 class LNoteViewModelFactory @Inject constructor(private val notesRepository: NotesRepository,
+
                                                 private val settingsManager: Manager.Settings,
                                                 private val schedulersFacade: SchedulersFacade,
                                                 private val currentNoteManager: Manager.CurrentNote) : ViewModelProvider.Factory {

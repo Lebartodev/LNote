@@ -1,30 +1,26 @@
-package com.lebartodev.lnote.common.details
+package com.lebartodev.lnote.show
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.base.BaseViewModel
-import com.lebartodev.lnote.data.Manager
-import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.core.db.entity.Note
+import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.exception.DeleteNoteException
 import com.lebartodev.lnote.utils.exception.LoadNoteException
 import io.reactivex.disposables.Disposables
 
-class ShowNoteViewModel constructor(private val notesRepository: NotesRepository,
-                                    private val schedulersFacade: SchedulersFacade,
-                                    private val currentNoteManager: Manager.CurrentNote) : BaseViewModel() {
+class ShowNoteViewModel constructor(private val schedulersFacade: SchedulersFacade) : BaseViewModel() {
     private var disposable = Disposables.empty()
     private var deleteDisposable = Disposables.empty()
     private val currentNote = MutableLiveData<Note>()
-    private val deleteResultLiveData = com.lebartodev.lnote.utils.SingleLiveEvent<Boolean>()
+    private val deleteResultLiveData = SingleLiveEvent<Boolean>()
 
     fun loadNote(id: Long) {
         disposable = notesRepository.getNote(id)
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .subscribe({ currentNote.value = it }, { postError(com.lebartodev.lnote.utils.exception.LoadNoteException(it)) })
+                .subscribe({ currentNote.value = it }, { postError(LoadNoteException(it)) })
     }
 
     fun delete() {
@@ -33,7 +29,7 @@ class ShowNoteViewModel constructor(private val notesRepository: NotesRepository
             deleteDisposable = notesRepository.deleteNote(this)
                     .subscribeOn(schedulersFacade.io())
                     .observeOn(schedulersFacade.ui())
-                    .subscribe({ deleteResultLiveData.value = true }, { postError(com.lebartodev.lnote.utils.exception.DeleteNoteException(it)) })
+                    .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) })
         }
     }
 

@@ -34,8 +34,10 @@ android {
 }
 
 dependencies {
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
+    implementation "com.google.android.material:material:$materialVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
 
     implementation "com.google.dagger:dagger:$daggerVersion"
@@ -47,5 +49,4 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomRuntimeVersion"
     implementation "androidx.room:room-rxjava2:$roomRuntimeVersion"
     kapt "androidx.room:room-compiler:$roomRuntimeVersion"
-
 }

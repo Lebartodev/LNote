@@ -26,7 +26,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.lnote.common.EditorEvent
 import com.lebartodev.lnote.common.EditorEventCallback
 import com.lebartodev.lnote.common.EditorEventContainer
@@ -255,7 +255,7 @@ class NotesFragment : BaseFragment(), EditorEventCallback {
 
         editNoteViewModel.error().observe(viewLifecycleOwner, Observer {
             val text = when (it) {
-                is DeleteNoteException -> R.string.error_note_create
+                is com.lebartodev.lnote.utils.exception.DeleteNoteException -> R.string.error_note_create
                 else -> R.string.error_common
             }
             context?.run { Toast.makeText(this, getString(text), Toast.LENGTH_SHORT).show() }

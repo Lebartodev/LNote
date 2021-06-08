@@ -2,7 +2,7 @@ package com.lebartodev.lnote.common.edit
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.lebartodev.lnote.base.BaseViewModel
+import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.lnote.data.Manager
 import com.lebartodev.lnote.data.NoteData
 import com.lebartodev.lnote.repository.Repository
@@ -23,12 +23,12 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                                     private val schedulersFacade: SchedulersFacade) : BaseViewModel() {
     private val disposables = CompositeDisposable()
 
-    private val saveResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
-    private val deleteResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
+    private val saveResultLiveData: com.lebartodev.lnote.utils.SingleLiveEvent<Boolean> = com.lebartodev.lnote.utils.SingleLiveEvent()
+    private val deleteResultLiveData: com.lebartodev.lnote.utils.SingleLiveEvent<Boolean> = com.lebartodev.lnote.utils.SingleLiveEvent()
     private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
     private val currentNoteLiveData = MutableLiveData<NoteData>(NoteData())
 
-    private val forceEditCurrentNoteSignal = SingleLiveEvent<Boolean>()
+    private val forceEditCurrentNoteSignal = com.lebartodev.lnote.utils.SingleLiveEvent<Boolean>()
 
     init {
         disposables.add(settingsManager.bottomPanelEnabled()
@@ -114,7 +114,7 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                         currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text, it.created)
                         forceEditCurrentNoteSignal.value = true
                     }
-                }, { postError(RestoreNoteException(it)) }))
+                }, { postError(com.lebartodev.lnote.utils.exception.RestoreNoteException(it)) }))
     }
 
     fun deleteEditedNote() {
@@ -137,7 +137,7 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
         disposables.add(notesRepository.deleteNote(id)
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) }))
+                .subscribe({ deleteResultLiveData.value = true }, { postError(com.lebartodev.lnote.utils.exception.DeleteNoteException(it)) }))
     }
 
     override fun onCleared() {

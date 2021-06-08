@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.*
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.details.ShowNoteFragment
 import com.lebartodev.lnote.common.notes.NotesAdapter

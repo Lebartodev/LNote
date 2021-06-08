@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import com.google.android.material.chip.Chip
-import com.lebartodev.lnote.R
+import com.lebartodev.lnote.utils.R
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import java.text.SimpleDateFormat
 import java.util.*

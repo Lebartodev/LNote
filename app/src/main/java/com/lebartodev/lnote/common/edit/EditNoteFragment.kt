@@ -16,7 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
 import com.lebartodev.lnote.R
-import com.lebartodev.lnote.base.BaseFragment
+import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.lnote.common.EditorEventContainer
 import com.lebartodev.lnote.common.LNoteApplication
 import com.lebartodev.lnote.common.details.ShowNoteFragment
