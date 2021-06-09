@@ -2,24 +2,15 @@
     <string name="app_name">LNote</string>
     <string name="settings">Settings</string>
     <string name="archive">Archive</string>
-    <string name="enter_note_hint">Enter note</string>
-    <string name="title_hint">Title</string>
+
     <string name="save_button_text">Save</string>
     <string name="category_hint">Category</string>
     <string name="date_hint">Date</string>
 
     <string name="undo">UNDO</string>
     <string name="note_deleted">Note deleted</string>
-    <string name="settings_tag">Settings</string>
     <string name="settings_title">Settings</string>
     <string name="settings_bottom_panel">Enable bottom panel</string>
 
     <string name="archive_options_title">Options</string>
-
-    <string name="note_container_transition_name">note_container_%1$s</string>
-    <string name="note_content_transition_name">note_content_%1$s</string>
-    <string name="note_title_transition_name">note_title_%1$s</string>
-    <string name="note_description_transition_name">note_description_%1$s</string>
-    <string name="note_date_transition_name">note_date_%1$s</string>
-
 </resources>

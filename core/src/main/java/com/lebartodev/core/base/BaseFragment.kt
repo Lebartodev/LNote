@@ -77,7 +77,7 @@ abstract class BaseFragment : Fragment() {
             })
     }
 
-    internal open fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
+    open fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
 
     }
 }

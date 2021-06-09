@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.common.edit
+package com.lebartodev.lnote.edit
 
 
 import android.annotation.SuppressLint
@@ -18,8 +18,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.lebartodev.lnote.R
-import com.lebartodev.lnote.data.NoteData
+import com.lebartodev.core.data.NoteData
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable

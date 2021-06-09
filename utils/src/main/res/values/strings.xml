@@ -1,3 +1,9 @@
 <resources>
     <string name="date_pattern">EEE, dd MMM yyyy</string>
+
+    <string name="note_container_transition_name">note_container_%1$s</string>
+    <string name="note_content_transition_name">note_content_%1$s</string>
+    <string name="note_title_transition_name">note_title_%1$s</string>
+    <string name="note_description_transition_name">note_description_%1$s</string>
+    <string name="note_date_transition_name">note_date_%1$s</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.data
+package com.lebartodev.core.data
 
 data class NoteData(var id: Long? = null,
                     var title: String? = null,

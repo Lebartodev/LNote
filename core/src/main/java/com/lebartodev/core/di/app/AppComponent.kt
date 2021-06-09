@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.di.app
+package com.lebartodev.core.di.app
 
 import android.app.Application
 import com.lebartodev.core.data.Manager
@@ -10,8 +10,8 @@ import com.lebartodev.core.utils.SchedulersFacade
 import dagger.BindsInstance
 import dagger.Component
 
-@Singleton
-@Component(modules = [DatabaseModule::class, SchedulersModule::class, ManagersModule::class, PreferencesModule::class])
+@AppScope
+@Component(modules = [AppModule::class])
 interface AppComponent {
     fun appDatabase(): AppDatabase
     fun schedulersFacade(): SchedulersFacade

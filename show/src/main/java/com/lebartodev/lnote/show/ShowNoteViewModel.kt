@@ -6,8 +6,6 @@ import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
-import com.lebartodev.lnote.utils.exception.DeleteNoteException
-import com.lebartodev.lnote.utils.exception.LoadNoteException
 import io.reactivex.disposables.Disposables
 
 class ShowNoteViewModel constructor(private val schedulersFacade: SchedulersFacade) : BaseViewModel() {
@@ -17,20 +15,20 @@ class ShowNoteViewModel constructor(private val schedulersFacade: SchedulersFaca
     private val deleteResultLiveData = SingleLiveEvent<Boolean>()
 
     fun loadNote(id: Long) {
-        disposable = notesRepository.getNote(id)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({ currentNote.value = it }, { postError(LoadNoteException(it)) })
+//        disposable = notesRepository.getNote(id)
+//                .subscribeOn(schedulersFacade.io())
+//                .observeOn(schedulersFacade.ui())
+//                .subscribe({ currentNote.value = it }, { postError(LoadNoteException(it)) })
     }
 
     fun delete() {
-        currentNote.value?.id?.run {
-            deleteDisposable.dispose()
-            deleteDisposable = notesRepository.deleteNote(this)
-                    .subscribeOn(schedulersFacade.io())
-                    .observeOn(schedulersFacade.ui())
-                    .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) })
-        }
+//        currentNote.value?.id?.run {
+//            deleteDisposable.dispose()
+//            deleteDisposable = notesRepository.deleteNote(this)
+//                    .subscribeOn(schedulersFacade.io())
+//                    .observeOn(schedulersFacade.ui())
+//                    .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) })
+//        }
     }
 
     fun note(): LiveData<Note> {

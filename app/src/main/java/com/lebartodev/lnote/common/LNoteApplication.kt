@@ -1,22 +1,13 @@
 package com.lebartodev.lnote.common
 
 import android.app.Application
-import android.content.Context
-import com.lebartodev.lnote.di.app.AppComponent
-import com.lebartodev.lnote.di.app.DaggerAppComponent
-import com.lebartodev.lnote.di.notes.NotesComponent
+import com.lebartodev.core.di.app.AppComponent
+import com.lebartodev.core.di.app.DaggerAppComponent
+import com.lebartodev.core.di.utils.AppComponentProvider
 
+open class LNoteApplication : Application(), AppComponentProvider {
 
-open class LNoteApplication : Application() {
-    companion object {
-        operator fun get(context: Context): LNoteApplication {
-            return context.applicationContext as LNoteApplication
-        }
-    }
-
-    lateinit var appComponent: AppComponent
-        private set
-    var notesComponent: NotesComponent? = null
+    var appComponent: AppComponent? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -26,4 +17,11 @@ open class LNoteApplication : Application() {
     open fun createAppComponent() = DaggerAppComponent.builder()
             .applicationContext(this)
             .build()
+
+    override fun onTerminate() {
+        super.onTerminate()
+        appComponent = null
+    }
+
+    override fun provideAppComponent(): AppComponent = appComponent!!
 }

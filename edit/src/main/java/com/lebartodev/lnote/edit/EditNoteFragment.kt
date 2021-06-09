@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.common.edit
+package com.lebartodev.lnote.edit
 
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -9,21 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.widget.NestedScrollView
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
-import com.lebartodev.lnote.R
 import com.lebartodev.core.base.BaseFragment
-import com.lebartodev.lnote.common.EditorEventContainer
-import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.common.details.ShowNoteFragment
-import com.lebartodev.lnote.data.NoteData
-import com.lebartodev.lnote.data.entity.Status
-import com.lebartodev.lnote.di.notes.DaggerNotesComponent
-import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.core.data.NoteData
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.formattedHint
@@ -31,9 +22,8 @@ import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
-
 
 class EditNoteFragment : BaseFragment() {
     private lateinit var descriptionTextView: TextView
@@ -92,7 +82,7 @@ class EditNoteFragment : BaseFragment() {
     }
 
     @Inject
-    lateinit var viewModelFactory: LNoteViewModelFactory
+    lateinit var viewModelFactory: EditNoteViewModelFactory
     private lateinit var viewModel: NoteEditViewModel
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -122,18 +112,20 @@ class EditNoteFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
         postponeEnterTransition()
         context?.run {
-            if ((activity?.application as LNoteApplication).notesComponent == null) {
-                (activity?.application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
-                        .appComponent(LNoteApplication[this].appComponent)
-                        .context(this)
-                        .build()
-            }
-            (activity?.application as LNoteApplication).notesComponent?.inject(this@EditNoteFragment)
+//            if ((activity?.application as LNoteApplication).notesComponent == null) {
+//                (activity?.application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
+//                        .appComponent(LNoteApplication[this].appComponent)
+//                        .context(this)
+//                        .build()
+//            }
+//            (activity?.application as LNoteApplication).notesComponent?.inject(this@EditNoteFragment)
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_edit_note, container, false)
     }
 
@@ -216,56 +208,56 @@ class EditNoteFragment : BaseFragment() {
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
         listOf(saveNoteButton, deleteButton, calendarButton)
-                .filter { !sharedElementNames.contains(it.transitionName) }
-                .forEach {
-                    when (it.transitionName) {
-                        saveNoteButton.transitionName -> {
-                            it.onLayout {
-                                it.visibility = View.GONE
-                                it.animateSlideBottomVisibility(true)
-                            }
+            .filter { !sharedElementNames.contains(it.transitionName) }
+            .forEach {
+                when (it.transitionName) {
+                    saveNoteButton.transitionName -> {
+                        it.onLayout {
+                            it.visibility = View.GONE
+                            it.animateSlideBottomVisibility(true)
                         }
-                        calendarButton.transitionName -> {
+                    }
+                    calendarButton.transitionName -> {
+                        it.onLayout {
+                            it.visibility = View.GONE
+                            it.animateSlideTopVisibility(true)
+                        }
+                    }
+                    deleteButton.transitionName -> {
+                        if (noteId == null) {
                             it.onLayout {
                                 it.visibility = View.GONE
                                 it.animateSlideTopVisibility(true)
                             }
                         }
-                        deleteButton.transitionName -> {
-                            if (noteId == null) {
-                                it.onLayout {
-                                    it.visibility = View.GONE
-                                    it.animateSlideTopVisibility(true)
-                                }
-                            }
-                        }
                     }
                 }
+            }
     }
 
     private fun setupEditViewModel() {
         viewModel = ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java]
         viewModel.saveResult().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                (activity as EditorEventContainer).saveNote()
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
-                sharedElementReturnTransition = null
-                fragmentManager?.popBackStack()
-            }
+//            if (it == true) {
+//                (activity as EditorEventContainer).saveNote()
+//                titleTextView.clearFocus()
+//                descriptionTextView.clearFocus()
+//                sharedElementReturnTransition = null
+//                fragmentManager?.popBackStack()
+//            }
         })
         viewModel.deleteResult().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                (activity as EditorEventContainer).deleteNote()
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
-                sharedElementReturnTransition = null
-                if (noteId == null) {
-                    fragmentManager?.popBackStack()
-                } else {
-                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                }
-            }
+//            if (it == true) {
+//                (activity as EditorEventContainer).deleteNote()
+//                titleTextView.clearFocus()
+//                descriptionTextView.clearFocus()
+//                sharedElementReturnTransition = null
+//                if (noteId == null) {
+//                    fragmentManager?.popBackStack()
+//                } else {
+//                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+//                }
+//            }
         })
         viewModel.currentNote().observe(viewLifecycleOwner, noteObserver)
     }
@@ -278,7 +270,6 @@ class EditNoteFragment : BaseFragment() {
             dialog.show(this, TAG_CALENDAR_DIAlOG)
         }
     }
-
 
     companion object {
         private const val EXTRA_ID = "EXTRA_ID"

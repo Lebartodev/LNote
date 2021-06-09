@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_tag">Settings</string>
+    <string name="title_hint">Title</string>
+    <string name="enter_note_hint">Enter note</string>
+    <string name="error_common">Unknown error</string>
+    <string name="error_note_create">Error when creating note</string>
+</resources>

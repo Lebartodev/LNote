@@ -1,15 +1,12 @@
-package com.lebartodev.lnote.common.edit
+package com.lebartodev.lnote.edit
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.lebartodev.core.base.BaseViewModel
-import com.lebartodev.lnote.data.Manager
-import com.lebartodev.lnote.data.NoteData
-import com.lebartodev.lnote.repository.Repository
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.core.data.NoteData
+import com.lebartodev.core.data.repository.Repository
+import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
-import com.lebartodev.lnote.utils.exception.DeleteNoteException
-import com.lebartodev.lnote.utils.exception.RestoreNoteException
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
@@ -18,9 +15,10 @@ import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 import java.util.*
 
-class NoteEditViewModel constructor(private val notesRepository: Repository.Notes,
-                                    settingsManager: Manager.Settings,
-                                    private val schedulersFacade: SchedulersFacade) : BaseViewModel() {
+class NoteEditViewModel constructor(
+        private val notesRepository: Repository.Notes,
+        private val schedulersFacade: SchedulersFacade
+) : BaseViewModel() {
     private val disposables = CompositeDisposable()
 
     private val saveResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
@@ -31,10 +29,10 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
     private val forceEditCurrentNoteSignal = SingleLiveEvent<Boolean>()
 
     init {
-        disposables.add(settingsManager.bottomPanelEnabled()
-                .observeOn(schedulersFacade.ui())
-                .subscribe(Consumer { bottomPanelEnabledLiveData.value = it },
-                        Functions.emptyConsumer()))
+//        disposables.add(settingsManager.bottomPanelEnabled()
+//                .observeOn(schedulersFacade.ui())
+//                .subscribe(Consumer { bottomPanelEnabledLiveData.value = it },
+//                        Functions.emptyConsumer()))
     }
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
@@ -48,13 +46,15 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
     fun forceEditCurrentNote(): LiveData<Boolean?> = forceEditCurrentNoteSignal
 
     fun loadNote(id: Long) {
-        disposables.add(notesRepository.getNote(id)
-                .firstOrError()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe(Consumer { note ->
-                    currentNoteLiveData.value = NoteData(note.id, note.title, note.date, note.text, note.created)
-                }, Functions.emptyConsumer()))
+        disposables.add(
+                notesRepository.getNote(id)
+                        .firstOrError()
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe(Consumer { note ->
+                            currentNoteLiveData.value = NoteData(note.id, note.title, note.date, note.text, note.created)
+                        }, Functions.emptyConsumer())
+        )
     }
 
     fun setDescription(value: String) {
@@ -102,19 +102,22 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
                     currentNoteLiveData.value = NoteData()
                 }, {
                     postError(it)
-                }))
+                })
+        )
     }
 
     fun restoreLastNote() {
-        disposables.add(notesRepository.restoreLastNote()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({
-                    if (it.created == null) {
-                        currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text, it.created)
-                        forceEditCurrentNoteSignal.value = true
-                    }
-                }, { postError(com.lebartodev.lnote.utils.exception.RestoreNoteException(it)) }))
+        disposables.add(
+                notesRepository.restoreLastNote()
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe({
+                            if (it.created == null) {
+                                currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text, it.created)
+                                forceEditCurrentNoteSignal.value = true
+                            }
+                        }, { postError(com.lebartodev.lnote.utils.exception.RestoreNoteException(it)) })
+        )
     }
 
     fun deleteEditedNote() {
@@ -124,20 +127,24 @@ class NoteEditViewModel constructor(private val notesRepository: Repository.Note
         else
             note?.title
 
-        disposables.add(notesRepository.deleteDraftedNote(title, note?.text, note?.date)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe(Action {
-                    currentNoteLiveData.value = NoteData()
-                    deleteResultLiveData.value = true
-                }, Functions.emptyConsumer()))
+        disposables.add(
+                notesRepository.deleteDraftedNote(title, note?.text, note?.date)
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe(Action {
+                            currentNoteLiveData.value = NoteData()
+                            deleteResultLiveData.value = true
+                        }, Functions.emptyConsumer())
+        )
     }
 
     fun deleteNote(id: Long) {
-        disposables.add(notesRepository.deleteNote(id)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({ deleteResultLiveData.value = true }, { postError(com.lebartodev.lnote.utils.exception.DeleteNoteException(it)) }))
+        disposables.add(
+                notesRepository.deleteNote(id)
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe({ deleteResultLiveData.value = true }, { postError(com.lebartodev.lnote.utils.exception.DeleteNoteException(it)) })
+        )
     }
 
     override fun onCleared() {

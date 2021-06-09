@@ -12,11 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.*
 import com.lebartodev.core.base.BaseFragment
-import com.lebartodev.lnote.common.LNoteApplication
-import com.lebartodev.lnote.common.details.ShowNoteFragment
-import com.lebartodev.lnote.common.notes.NotesAdapter
-import com.lebartodev.lnote.di.notes.DaggerNotesComponent
-import com.lebartodev.lnote.utils.LNoteViewModelFactory
+import com.lebartodev.lnote.utils.ui.NotesAdapter
+import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
 import javax.inject.Inject
 
@@ -54,13 +51,13 @@ class ArchiveFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activity?.run {
-            if ((application as LNoteApplication).notesComponent == null) {
-                (application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
-                        .appComponent(LNoteApplication[this].appComponent)
-                        .context(this)
-                        .build()
-            }
-            (activity?.application as LNoteApplication).notesComponent?.inject(this@ArchiveFragment)
+//            if ((application as LNoteApplication).notesComponent == null) {
+//                (application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
+//                        .appComponent(LNoteApplication[this].appComponent)
+//                        .context(this)
+//                        .build()
+//            }
+//            (activity?.application as LNoteApplication).notesComponent?.inject(this@ArchiveFragment)
         }
         archiveViewModel = ViewModelProvider(this, viewModelFactory)[ArchiveViewModel::class.java]
     }

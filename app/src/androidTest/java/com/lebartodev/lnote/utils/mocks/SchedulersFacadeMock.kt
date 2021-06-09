@@ -1,6 +1,6 @@
 package com.lebartodev.lnote.utils.mocks
 
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.core.utils.SchedulersFacade
 import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers

@@ -1,7 +1,7 @@
-package com.lebartodev.lnote.data
+package com.lebartodev.core.data
 
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.core.utils.SchedulersFacade
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import javax.inject.Inject

@@ -9,7 +9,6 @@ import com.lebartodev.lnote.utils.ViewModelObject
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.di.app.DaggerAppComponentMock
-import com.lebartodev.lnote.utils.di.app.SchedulersFacadeMock
 import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentMock
 import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.mock
@@ -41,7 +40,7 @@ class NoteEditViewModelTest {
     @Inject
     lateinit var currentNoteManager: Manager.CurrentNote
 
-    lateinit var editViewModel: NoteEditViewModel
+    lateinit var editViewModel: com.lebartodev.lnote.edit.NoteEditViewModel
 
     private val calendarObserver: Observer<Long?> = mock()
 
@@ -51,7 +50,7 @@ class NoteEditViewModelTest {
                 .applicationContext(mock())
                 .build()
         DaggerNotesComponentMock.builder().appComponent(comp).context(mock()).build().inject(this)
-        editViewModel = NoteEditViewModel(notesRepository, settingsManager, schedulersFacade, currentNoteManager)
+        editViewModel = com.lebartodev.lnote.edit.NoteEditViewModel(notesRepository, settingsManager, schedulersFacade, currentNoteManager)
 
         whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
     }

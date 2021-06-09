@@ -1,8 +1,8 @@
-package com.lebartodev.lnote.repository
+package com.lebartodev.core.data.repository
 
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.core.utils.SchedulersFacade
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe

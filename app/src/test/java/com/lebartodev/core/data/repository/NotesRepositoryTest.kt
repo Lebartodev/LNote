@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.repository
+package com.lebartodev.core.data.repository
 
 import com.lebartodev.lnote.data.AppDatabase
 import com.lebartodev.lnote.data.dao.NotesDAO

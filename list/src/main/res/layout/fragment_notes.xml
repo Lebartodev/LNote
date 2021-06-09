@@ -33,7 +33,7 @@
             app:elevation="0dp"
             app:layout_anchor="@id/bottom_app_bar" />
 
-    <com.lebartodev.lnote.common.edit.NoteCreationView
+    <com.lebartodev.lnote.edit.NoteCreationView
             android:id="@+id/bottom_sheet_add"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

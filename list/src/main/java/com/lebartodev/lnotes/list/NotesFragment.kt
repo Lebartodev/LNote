@@ -35,7 +35,7 @@ class NotesFragment : BaseFragment() {
     private lateinit var fabAdd: FloatingActionButton
     private lateinit var bottomAppBar: BottomAppBar
     private lateinit var notesList: RecyclerView
-    private lateinit var noteCreationView: NoteCreationView
+    private lateinit var noteCreationView: com.lebartodev.lnote.edit.NoteCreationView
 
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
@@ -81,27 +81,29 @@ class NotesFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ListNotesViewModelFactory
     private lateinit var notesViewModel: NotesViewModel
-    private lateinit var editNoteViewModel: NoteEditViewModel
+    private lateinit var editNoteViewModel: com.lebartodev.lnote.edit.NoteEditViewModel
 
     private var isSnackBarVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activity?.run {
-            if ((application as LNoteApplication).notesComponent == null) {
-                (application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
-                        .appComponent(LNoteApplication[this].appComponent)
-                        .context(this)
-                        .build()
-            }
-            (activity?.application as LNoteApplication).notesComponent?.inject(this@NotesFragment)
+//            if ((application as LNoteApplication).notesComponent == null) {
+//                (application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
+//                    .appComponent(LNoteApplication[this].appComponent)
+//                    .context(this)
+//                    .build()
+//            }
+//            (activity?.application as LNoteApplication).notesComponent?.inject(this@NotesFragment)
         }
         notesViewModel = ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java]
-        editNoteViewModel = ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java]
+        editNoteViewModel = ViewModelProvider(this, viewModelFactory)[com.lebartodev.lnote.edit.NoteEditViewModel::class.java]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View? {
         postponeEnterTransition()
         return inflater.inflate(R.layout.fragment_notes, container, false)
     }
@@ -121,10 +123,14 @@ class NotesFragment : BaseFragment() {
             }
         }
         notesList.adapter = adapter
-        notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
-                8f.toPx(resources),
-                16f.toPx(resources),
-                16f.toPx(resources)))
+        notesList.addItemDecoration(
+                NotesItemDecoration(
+                        8f.toPx(resources),
+                        8f.toPx(resources),
+                        16f.toPx(resources),
+                        16f.toPx(resources)
+                )
+        )
 
         val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)) {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -281,8 +287,10 @@ class NotesFragment : BaseFragment() {
     private fun openFullScreen(fromBottomSheet: Boolean) {
         hideKeyboardListener(noteCreationView.findFocus()) {
 
-            val nextFragment = EditNoteFragment.initMe(forceBackButtonVisible = !fromBottomSheet,
-                    scrollY = noteCreationView.getContentScroll())
+            val nextFragment = com.lebartodev.lnote.edit.EditNoteFragment.initMe(
+                    forceBackButtonVisible = !fromBottomSheet,
+                    scrollY = noteCreationView.getContentScroll()
+            )
                     .apply {
                         sharedElementEnterTransition = TransitionSet()
                                 .apply {
@@ -413,7 +421,6 @@ class NotesFragment : BaseFragment() {
 //    override fun onNoteSaved() {
 //        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 //    }
-
 
     companion object {
         const val TAG = "NotesFragment"

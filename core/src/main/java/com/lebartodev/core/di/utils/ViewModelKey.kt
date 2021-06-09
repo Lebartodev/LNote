@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.utils
+package com.lebartodev.core.di.utils
 
 import androidx.lifecycle.ViewModel
 import dagger.MapKey

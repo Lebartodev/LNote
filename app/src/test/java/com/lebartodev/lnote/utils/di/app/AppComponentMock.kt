@@ -2,8 +2,8 @@ package com.lebartodev.lnote.utils.di.app
 
 import android.app.Application
 import android.content.SharedPreferences
-import com.lebartodev.lnote.di.app.*
-import com.lebartodev.lnote.utils.SchedulersFacade
+import com.lebartodev.core.di.app.AppComponent
+import com.lebartodev.core.di.app.ManagersModule
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton

@@ -9,7 +9,7 @@ import com.lebartodev.lnote.utils.di.app.AppComponentMock
 import dagger.BindsInstance
 import dagger.Component
 
-@NotesScope
+@ShowNoteScope
 @Component(dependencies = [AppComponentMock::class], modules = [NotesModuleMock::class])
 interface NotesComponentMock {
     fun inject(noteEditViewModelTest: NoteEditViewModelTest)
