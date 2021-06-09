@@ -1,9 +1,9 @@
 package com.lebartodev.lnote.utils.di.notes
 
 import androidx.lifecycle.ViewModelProvider
-import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.repository.Repository
-import com.lebartodev.lnote.repository.SettingsRepository
+import com.lebartodev.core.data.repository.NotesRepository
+import com.lebartodev.core.data.repository.Repository
+import com.lebartodev.core.data.repository.SettingsRepository
 import com.lebartodev.lnote.utils.LNoteViewModelFactory
 import dagger.Binds
 import dagger.Module

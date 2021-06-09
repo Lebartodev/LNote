@@ -1,8 +1,8 @@
 package com.lebartodev.lnote.utils.di.app
 
-import com.lebartodev.lnote.data.CurrentNoteManager
-import com.lebartodev.lnote.data.Manager
-import com.lebartodev.lnote.data.SettingsManager
+import com.lebartodev.core.data.CurrentNoteManager
+import com.lebartodev.core.data.Manager
+import com.lebartodev.lnote.settings.SettingsManager
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
@@ -15,5 +15,5 @@ interface ManagersModuleTest {
 
     @Binds
     @Singleton
-    fun provideSettingsManager(settingsManager: SettingsManager): Manager.Settings
+    fun provideSettingsManager(settingsManager: com.lebartodev.lnote.settings.SettingsManager): Manager.Settings
 }

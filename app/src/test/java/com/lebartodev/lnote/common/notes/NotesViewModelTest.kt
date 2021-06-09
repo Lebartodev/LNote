@@ -3,11 +3,8 @@ package com.lebartodev.lnote.common.notes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.lebartodev.lnote.data.entity.Note
-import com.lebartodev.lnote.data.entity.ViewModelObject
-import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.repository.Repository
-import com.lebartodev.lnote.utils.SchedulersFacade
-import com.lebartodev.lnote.utils.SchedulersFacadeImpl
+import com.lebartodev.core.data.repository.Repository
+import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.di.app.DaggerAppComponentMock
 import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentMock
 import com.nhaarman.mockitokotlin2.anyOrNull
@@ -34,7 +31,7 @@ class NotesViewModelTest {
     lateinit var schedulersFacade: SchedulersFacade
     @Inject
     lateinit var notesRepository: Repository.Notes
-    lateinit var notesViewModel: NotesViewModel
+    lateinit var notesViewModel: com.lebartodev.lnotes.list.NotesViewModel
 
     @Before
     fun setUp() {
@@ -46,7 +43,7 @@ class NotesViewModelTest {
 
         whenever(notesRepository.getNotes()).thenReturn(Flowable.just(arrayListOf()))
         whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
-        notesViewModel = NotesViewModel(notesRepository, schedulersFacade)
+        notesViewModel = com.lebartodev.lnotes.list.NotesViewModel(notesRepository, schedulersFacade)
     }
 
     @Test

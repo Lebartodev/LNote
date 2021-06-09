@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:name=".common.LNoteApplication"
         android:supportsRtl="true"
-        android:theme="@style/LNote"
+        android:theme="@style/LNote.App"
         >
         <activity
             android:name="com.lebartodev.lnote.common.notes.NotesActivity"

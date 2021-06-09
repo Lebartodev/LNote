@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="LNote" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="LNote.App" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -8,52 +8,6 @@
         <item name="android:textColor">@color/textColorPrimary</item>
         <item name="colorControlActivated">@color/colorPrimary</item>
         <item name="android:textColorHint">@color/black_40</item>
-    </style>
-
-    <style name="LNote.Text.Title">
-        <item name="android:textSize">24sp</item>
-    </style>
-
-    <style name="LNote.Text.Description">
-        <item name="android:textSize">16sp</item>
-    </style>
-
-    <style name="LNote.Text" />
-
-    <style name="LNote.Divider">
-        <item name="android:layout_height">0.5dp</item>
-        <item name="android:background">@color/black_12</item>
-    </style>
-
-    <style name="NoteCreation" />
-
-    <style name="NoteCreation.Title" parent="LNote.Text.Title">
-        <item name="android:layout_marginStart">24dp</item>
-        <item name="android:imeOptions">flagNoFullscreen</item>
-        <item name="android:layout_marginTop">20dp</item>
-        <item name="android:layout_marginEnd">24dp</item>
-        <item name="android:background">@null</item>
-        <item name="android:hint">@string/title_hint</item>
-        <item name="android:inputType">textCapSentences|textAutoComplete|textNoSuggestions</item>
-    </style>
-
-    <style name="NoteCreation.Divider" parent="LNote.Divider">
-        <item name="android:layout_marginStart">16dp</item>
-        <item name="android:layout_marginEnd">16dp</item>
-        <item name="android:transitionName">Divider</item>
-    </style>
-
-    <style name="NoteCreation.Description" parent="LNote.Text.Description">
-        <item name="android:layout_marginStart">24dp</item>
-        <item name="android:layout_marginTop">12dp</item>
-        <item name="android:layout_marginEnd">24dp</item>
-        <item name="android:background">@null</item>
-        <item name="android:hint">@string/enter_note_hint</item>
-        <item name="android:inputType">
-            textCapSentences|textAutoComplete|textMultiLine|textNoSuggestions
-        </item>
-        <item name="android:imeOptions">flagNoFullscreen</item>
-        <item name="android:textSize">16sp</item>
     </style>
 
     <style name="NoteCreation.FullScreenButton">

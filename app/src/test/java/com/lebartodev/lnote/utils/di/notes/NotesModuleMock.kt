@@ -2,14 +2,10 @@ package com.lebartodev.lnote.utils.di.notes
 
 import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.lnote.data.AppDatabase
-import com.lebartodev.lnote.repository.NotesRepository
-import com.lebartodev.lnote.repository.Repository
-import com.lebartodev.lnote.repository.SettingsRepository
-import com.lebartodev.lnote.utils.LNoteViewModelFactory
-import com.lebartodev.lnote.utils.SchedulersFacade
-import com.lebartodev.lnote.utils.SchedulersFacadeImpl
+import com.lebartodev.core.data.repository.NotesRepository
+import com.lebartodev.core.data.repository.Repository
+import com.lebartodev.core.utils.SchedulersFacade
 import com.nhaarman.mockitokotlin2.mock
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import javax.inject.Named
