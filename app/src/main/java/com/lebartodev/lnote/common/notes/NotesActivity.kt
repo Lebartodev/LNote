@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.common.EditorEvent
 import com.lebartodev.lnote.common.EditorEventContainer
+import com.lebartodev.lnotes.list.NotesFragment
 
 
 class NotesActivity : AppCompatActivity(), EditorEventContainer {
@@ -12,11 +13,11 @@ class NotesActivity : AppCompatActivity(), EditorEventContainer {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val fragment = supportFragmentManager.findFragmentByTag(com.lebartodev.lnotes.list.NotesFragment.TAG)
+        val fragment = supportFragmentManager.findFragmentByTag(NotesFragment.TAG)
         if (fragment == null) {
             supportFragmentManager
                     .beginTransaction()
-                    .replace(R.id.container, com.lebartodev.lnotes.list.NotesFragment(), com.lebartodev.lnotes.list.NotesFragment.TAG)
+                    .replace(R.id.container, NotesFragment(), NotesFragment.TAG)
                     .commit()
         }
     }
