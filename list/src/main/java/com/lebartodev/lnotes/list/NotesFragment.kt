@@ -1,19 +1,16 @@
 package com.lebartodev.lnotes.list
 
 import android.annotation.SuppressLint
-import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,13 +19,13 @@ import androidx.transition.*
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
+import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.lnote.archive.ArchiveFragment
 import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
+import com.lebartodev.lnotes.list.di.DaggerListComponent
 import javax.inject.Inject
 
 class NotesFragment : BaseFragment() {
@@ -80,24 +77,21 @@ class NotesFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ListNotesViewModelFactory
-    private lateinit var notesViewModel: NotesViewModel
-    private lateinit var editNoteViewModel: com.lebartodev.lnote.edit.NoteEditViewModel
-
+    private val notesViewModel: NotesViewModel by lazy { ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java] }
     private var isSnackBarVisible = false
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        DaggerListComponent.builder()
+                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+                .context(context)
+                .build()
+                .inject(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activity?.run {
-//            if ((application as LNoteApplication).notesComponent == null) {
-//                (application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
-//                    .appComponent(LNoteApplication[this].appComponent)
-//                    .context(this)
-//                    .build()
-//            }
-//            (activity?.application as LNoteApplication).notesComponent?.inject(this@NotesFragment)
-        }
-        notesViewModel = ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java]
-        editNoteViewModel = ViewModelProvider(this, viewModelFactory)[com.lebartodev.lnote.edit.NoteEditViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -138,7 +132,7 @@ class NotesFragment : BaseFragment() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                editNoteViewModel.deleteNote(viewHolder.itemId)
+                notesViewModel.deleteNote(viewHolder.itemId)
             }
         }
         val touchHelper = ItemTouchHelper(simpleItemTouchCallback)
@@ -168,27 +162,27 @@ class NotesFragment : BaseFragment() {
         settingsSheetBehavior.setBottomSheetCallback(callback)
         bottomAddSheetBehavior.setBottomSheetCallback(callback)
 
-        noteCreationView.apply {
-            descriptionListener = { editNoteViewModel.setDescription(it) }
-            titleListener = { editNoteViewModel.setTitle(it) }
-            saveListener = {
-                editNoteViewModel.saveNote()
-                closeNoteCreation()
-            }
-            clearDateListener = { editNoteViewModel.clearDate() }
-            clearNoteListener = {
-                editNoteViewModel.deleteEditedNote()
-                closeNoteCreation()
-            }
-            fullScreenListener = { openFullScreen(true) }
-            calendarDialogListener = {
-                fragmentManager?.run {
-                    val dialog = SelectDateFragment.initMe(it)
-                    dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
-                    dialog.show(this, TAG_CALENDAR_DIAlOG)
-                }
-            }
-        }
+//        noteCreationView.apply {
+//            descriptionListener = { editNoteViewModel.setDescription(it) }
+//            titleListener = { editNoteViewModel.setTitle(it) }
+//            saveListener = {
+//                editNoteViewModel.saveNote()
+//                closeNoteCreation()
+//            }
+//            clearDateListener = { editNoteViewModel.clearDate() }
+//            clearNoteListener = {
+//                editNoteViewModel.deleteEditedNote()
+//                closeNoteCreation()
+//            }
+//            fullScreenListener = { openFullScreen(true) }
+//            calendarDialogListener = {
+//                fragmentManager?.run {
+//                    val dialog = SelectDateFragment.initMe(it)
+//                    dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
+//                    dialog.show(this, TAG_CALENDAR_DIAlOG)
+//                }
+//            }
+//        }
         notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN)
                 activeBottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
@@ -205,9 +199,9 @@ class NotesFragment : BaseFragment() {
             (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = true
             return@setOnTouchListener false
         }
-        fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
-            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
-        }
+//        fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
+//            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
+//        }
     }
 
     private fun initBottomAppBar() {
@@ -235,51 +229,46 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun setupEditViewModel() {
-        editNoteViewModel.forceEditCurrentNote().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                fabAdd.callOnClick()
-            }
-        })
-        editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
+//        editNoteViewModel.forceEditCurrentNote().observe(viewLifecycleOwner, Observer {
+//            if (it == true) {
+//                fabAdd.callOnClick()
+//            }
+//        })
+//        editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
+//
+//        editNoteViewModel.saveResult().observe(viewLifecycleOwner, Observer {
+//            if (it == true) {
+//                //onNoteSaved()
+//            }
+//        })
+//
 
-        editNoteViewModel.saveResult().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                //onNoteSaved()
-            }
-        })
+//        editNoteViewModel.bottomPanelEnabled().observe(viewLifecycleOwner, Observer {
+//            if (it == true) {
+//                fabAdd.setOnClickListener {
+//                    openNoteCreation()
+//                }
+//                fabAdd.transitionName = null
+//                noteCreationView.transitionName = resources.getString(R.string.note_container_transition_name, "local")
+//            } else if (it == false) {
+//                fabAdd.setOnClickListener {
+//                    openFullScreen(false)
+//                }
+//                noteCreationView.transitionName = null
+//                fabAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
+//            }
+//        })
+    }
 
-        editNoteViewModel.error().observe(viewLifecycleOwner, Observer {
+    private fun setupNotesViewModel() {
+        notesViewModel.error().observe(viewLifecycleOwner, {
             val text = when (it) {
                 is com.lebartodev.lnote.utils.exception.DeleteNoteException -> R.string.error_note_create
                 else -> R.string.error_common
             }
             context?.run { Toast.makeText(this, getString(text), Toast.LENGTH_SHORT).show() }
         })
-        editNoteViewModel.bottomPanelEnabled().observe(viewLifecycleOwner, Observer {
-            if (it == true) {
-                fabAdd.setOnClickListener {
-                    openNoteCreation()
-                }
-                fabAdd.transitionName = null
-                noteCreationView.transitionName = resources.getString(R.string.note_container_transition_name, "local")
-            } else if (it == false) {
-                fabAdd.setOnClickListener {
-                    openFullScreen(false)
-                }
-                noteCreationView.transitionName = null
-                fabAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
-            }
-        })
-    }
-
-    private fun setupNotesViewModel() {
-        editNoteViewModel.deleteResult().observe(viewLifecycleOwner, Observer {
-            if (it == true){
-
-            }
-               // onNoteDeleted()
-        })
-        notesViewModel.getNotes().observe(viewLifecycleOwner, Observer {
+        notesViewModel.getNotes().observe(viewLifecycleOwner, {
             onNotesLoaded(it)
         })
     }

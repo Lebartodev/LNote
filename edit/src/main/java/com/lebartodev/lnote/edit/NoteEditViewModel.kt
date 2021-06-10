@@ -138,15 +138,6 @@ class NoteEditViewModel constructor(
         )
     }
 
-    fun deleteNote(id: Long) {
-        disposables.add(
-                notesRepository.deleteNote(id)
-                        .subscribeOn(schedulersFacade.io())
-                        .observeOn(schedulersFacade.ui())
-                        .subscribe({ deleteResultLiveData.value = true }, { postError(com.lebartodev.lnote.utils.exception.DeleteNoteException(it)) })
-        )
-    }
-
     override fun onCleared() {
         super.onCleared()
         disposables.clear()
