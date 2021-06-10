@@ -16,28 +16,26 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.*
-import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.lnote.archive.ArchiveFragment
 import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
+import com.lebartodev.lnotes.list.databinding.FragmentNotesBinding
 import com.lebartodev.lnotes.list.di.DaggerListComponent
 import javax.inject.Inject
 
 class NotesFragment : BaseFragment() {
-    private lateinit var fabAdd: FloatingActionButton
-    private lateinit var bottomAppBar: BottomAppBar
-    private lateinit var notesList: RecyclerView
-    private lateinit var noteCreationView: com.lebartodev.lnote.edit.NoteCreationView
+    private var _binding: FragmentNotesBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
     private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var canScrollNotes = true
+
     private val adapter = NotesAdapter { note, sharedViews ->
         note.id?.run {
             val nextFragment = ShowNoteFragment.initMe(this@run)
@@ -64,7 +62,7 @@ class NotesFragment : BaseFragment() {
             })
             sharedElementReturnTransition = transition
 
-            fragmentManager?.beginTransaction()?.run {
+            parentFragmentManager.beginTransaction().run {
                 setReorderingAllowed(true)
                 setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
                 sharedViews.forEach { addSharedElement(it, it.transitionName) }
@@ -95,29 +93,27 @@ class NotesFragment : BaseFragment() {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
+            inflater: LayoutInflater,
+            container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         postponeEnterTransition()
-        return inflater.inflate(R.layout.fragment_notes, container, false)
+        _binding = FragmentNotesBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        fabAdd = view.findViewById(R.id.fab_add)
-        bottomAppBar = view.findViewById(R.id.bottom_app_bar)
-        notesList = view.findViewById(R.id.notes_list)
-        noteCreationView = view.findViewById(R.id.bottom_sheet_add)
-        bottomAddSheetBehavior = BottomSheetBehavior.from(noteCreationView)
-        settingsSheetBehavior = BottomSheetBehavior.from(view.findViewById(R.id.bottom_sheet_settings))
-        notesList.layoutManager = object : LinearLayoutManager(context) {
+        bottomAddSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetAdd)
+        settingsSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetSettings)
+        binding.notesList.layoutManager = object : LinearLayoutManager(context) {
             override fun canScrollVertically(): Boolean {
                 return canScrollNotes
             }
         }
-        notesList.adapter = adapter
-        notesList.addItemDecoration(
+        binding.notesList.adapter = adapter
+        binding.notesList.addItemDecoration(
                 NotesItemDecoration(
                         8f.toPx(resources),
                         8f.toPx(resources),
@@ -136,7 +132,7 @@ class NotesFragment : BaseFragment() {
             }
         }
         val touchHelper = ItemTouchHelper(simpleItemTouchCallback)
-        touchHelper.attachToRecyclerView(notesList)
+        touchHelper.attachToRecyclerView(binding.notesList)
 
         setupEditViewModel()
         setupNotesViewModel()
@@ -162,34 +158,19 @@ class NotesFragment : BaseFragment() {
         settingsSheetBehavior.setBottomSheetCallback(callback)
         bottomAddSheetBehavior.setBottomSheetCallback(callback)
 
-//        noteCreationView.apply {
-//            descriptionListener = { editNoteViewModel.setDescription(it) }
-//            titleListener = { editNoteViewModel.setTitle(it) }
-//            saveListener = {
-//                editNoteViewModel.saveNote()
-//                closeNoteCreation()
-//            }
-//            clearDateListener = { editNoteViewModel.clearDate() }
-//            clearNoteListener = {
-//                editNoteViewModel.deleteEditedNote()
-//                closeNoteCreation()
-//            }
-//            fullScreenListener = { openFullScreen(true) }
-//            calendarDialogListener = {
-//                fragmentManager?.run {
-//                    val dialog = SelectDateFragment.initMe(it)
-//                    dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
-//                    dialog.show(this, TAG_CALENDAR_DIAlOG)
-//                }
-//            }
-//        }
-        notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
+        binding.bottomSheetAdd.apply {
+            saveListener = {
+                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            }
+            fullScreenListener = { openFullScreen(true) }
+        }
+        binding.notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN)
                 activeBottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
             false
         }
 
-        val noteContent = noteCreationView.findViewById<NestedScrollView>(R.id.note_content)
+        val noteContent = binding.bottomSheetAdd.findViewById<NestedScrollView>(R.id.note_content)
         noteContent.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_MOVE) {
                 if (noteContent.scrollY != 0) {
@@ -199,21 +180,18 @@ class NotesFragment : BaseFragment() {
             (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = true
             return@setOnTouchListener false
         }
-//        fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
-//            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> editNoteViewModel.setDate(y, m, d) }
-//        }
     }
 
     private fun initBottomAppBar() {
-        bottomAppBar.replaceMenu(R.menu.settings_menu)
-        bottomAppBar.setOnMenuItemClickListener { item ->
+        binding.bottomAppBar.replaceMenu(R.menu.settings_menu)
+        binding.bottomAppBar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.app_bar_settings -> {
                     openSettings()
                     true
                 }
                 R.id.app_bar_archive -> {
-                    fragmentManager?.beginTransaction()?.run {
+                    parentFragmentManager.beginTransaction().run {
                         setReorderingAllowed(true)
                         setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
                         replace(R.id.container, ArchiveFragment())
@@ -235,12 +213,6 @@ class NotesFragment : BaseFragment() {
 //            }
 //        })
 //        editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
-//
-//        editNoteViewModel.saveResult().observe(viewLifecycleOwner, Observer {
-//            if (it == true) {
-//                //onNoteSaved()
-//            }
-//        })
 //
 
 //        editNoteViewModel.bottomPanelEnabled().observe(viewLifecycleOwner, Observer {
@@ -274,11 +246,11 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun openFullScreen(fromBottomSheet: Boolean) {
-        hideKeyboardListener(noteCreationView.findFocus()) {
+        hideKeyboardListener(binding.bottomSheetAdd.findFocus()) {
 
             val nextFragment = com.lebartodev.lnote.edit.EditNoteFragment.initMe(
                     forceBackButtonVisible = !fromBottomSheet,
-                    scrollY = noteCreationView.getContentScroll()
+                    scrollY = binding.bottomSheetAdd.getContentScroll()
             )
                     .apply {
                         sharedElementEnterTransition = TransitionSet()
@@ -293,15 +265,14 @@ class NotesFragment : BaseFragment() {
                                 }
                     }
 
-            fragmentManager?.beginTransaction()?.run {
+            parentFragmentManager.beginTransaction().run {
                 setReorderingAllowed(true)
                 if (!fromBottomSheet) {
                     setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    addSharedElement(fabAdd, fabAdd.transitionName)
+                    addSharedElement(binding.fabAdd, binding.fabAdd.transitionName)
                 } else {
-                    setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
-                    noteCreationView.getSharedViews()
-                            .forEach { addSharedElement(it, it.transitionName) }
+                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    binding.bottomSheetAdd.getSharedViews().forEach { addSharedElement(it, it.transitionName) }
                 }
                 replace(R.id.container, nextFragment)
                 addToBackStack(null)
@@ -312,10 +283,6 @@ class NotesFragment : BaseFragment() {
 
     private fun openNoteCreation() {
         bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-    }
-
-    private fun closeNoteCreation() {
-        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
     private fun openSettings() {
@@ -333,17 +300,17 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun setBottomAppBarVisibility(visible: Boolean, withAnimation: Boolean = true) {
-        val translationY = if (visible) 0f else bottomAppBar.height.toFloat()
-        bottomAppBar.animate().cancel()
-        bottomAppBar.animate()
+        val translationY = if (visible) 0f else binding.bottomAppBar.height.toFloat()
+        binding.bottomAppBar.animate().cancel()
+        binding.bottomAppBar.animate()
                 .setInterpolator(LinearOutSlowInInterpolator())
                 .translationY(translationY)
                 .setDuration(if (withAnimation) resources.getInteger(R.integer.animation_duration).toLong() / 2 else 0)
                 .start()
         if (visible) {
-            fabAdd.show()
+            binding.fabAdd.show()
         } else {
-            fabAdd.hide()
+            binding.fabAdd.hide()
         }
     }
 
@@ -352,7 +319,7 @@ class NotesFragment : BaseFragment() {
             adapter.updateData(notes)
             startPostponedEnterTransition()
         } else
-            notesList.post {
+            binding.notesList.post {
                 adapter.updateData(notes)
                 startPostponedEnterTransition()
             }
@@ -407,9 +374,10 @@ class NotesFragment : BaseFragment() {
 //        }
 //    }
 
-//    override fun onNoteSaved() {
-//        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-//    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     companion object {
         const val TAG = "NotesFragment"
