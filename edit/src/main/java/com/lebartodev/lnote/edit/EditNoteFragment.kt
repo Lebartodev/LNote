@@ -1,6 +1,7 @@
 package com.lebartodev.lnote.edit
 
 import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,6 +16,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
+import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.formattedHint
@@ -83,7 +86,7 @@ class EditNoteFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: EditNoteViewModelFactory
-    private lateinit var viewModel: NoteEditViewModel
+    private val viewModel: NoteEditViewModel by lazy { ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java] }
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             viewModel.setDescription(s?.toString() ?: "")
@@ -111,15 +114,15 @@ class EditNoteFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         postponeEnterTransition()
-        context?.run {
-//            if ((activity?.application as LNoteApplication).notesComponent == null) {
-//                (activity?.application as LNoteApplication).notesComponent = DaggerNotesComponent.builder()
-//                        .appComponent(LNoteApplication[this].appComponent)
-//                        .context(this)
-//                        .build()
-//            }
-//            (activity?.application as LNoteApplication).notesComponent?.inject(this@EditNoteFragment)
-        }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        DaggerEditNoteComponent.builder()
+            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+            .context(context)
+            .build()
+            .inject(this)
     }
 
     override fun onCreateView(
@@ -148,8 +151,6 @@ class EditNoteFragment : BaseFragment() {
         actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
         noteContent = view.findViewById(R.id.note_content)
 
-        view.transitionName = resources.getString(R.string.note_container_transition_name, noteId?.toString() ?: "local")
-        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, noteId?.toString() ?: "local")
         titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, noteId?.toString() ?: "local")
         descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, noteId?.toString() ?: "local")
         dateChip.transitionName = resources.getString(R.string.note_date_transition_name, noteId?.toString() ?: "local")
@@ -236,7 +237,6 @@ class EditNoteFragment : BaseFragment() {
     }
 
     private fun setupEditViewModel() {
-        viewModel = ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java]
         viewModel.saveResult().observe(viewLifecycleOwner, Observer {
 //            if (it == true) {
 //                (activity as EditorEventContainer).saveNote()

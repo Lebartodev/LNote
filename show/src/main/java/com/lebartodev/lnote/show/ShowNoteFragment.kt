@@ -1,6 +1,7 @@
 package com.lebartodev.lnote.show
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -12,6 +13,8 @@ import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
+import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.show.di.DaggerShowNoteComponent
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.DateChip
@@ -29,12 +32,23 @@ class ShowNoteFragment : BaseFragment() {
     private lateinit var dateChip: DateChip
     private lateinit var divider: View
     private lateinit var noteContent: NestedScrollView
-    private lateinit var viewModel: ShowNoteViewModel
+
     private lateinit var actionBarTitleTextView: TextView
     private lateinit var backButton: View
 
     @Inject
     lateinit var viewModelFactory: ShowNoteViewModelFactory
+
+    private val viewModel: ShowNoteViewModel by lazy { ViewModelProvider(this, viewModelFactory)[ShowNoteViewModel::class.java] }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        DaggerShowNoteComponent.builder()
+            .context(context)
+            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+            .build()
+            .inject(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,8 +89,8 @@ class ShowNoteFragment : BaseFragment() {
             editButton.callOnClick()
         }
 
-        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
-        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
+//        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
+//        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
         titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, id?.toString() ?: "local")
         descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, id?.toString() ?: "local")
         dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id?.toString() ?: "local")
@@ -93,9 +107,6 @@ class ShowNoteFragment : BaseFragment() {
                 actionBarTitleTextView.animate().alpha(0f).start()
             }
         }
-
-
-        viewModel = ViewModelProvider(this, viewModelFactory)[ShowNoteViewModel::class.java]
 
         viewModel.note().observe(viewLifecycleOwner, { note ->
             note.run {
