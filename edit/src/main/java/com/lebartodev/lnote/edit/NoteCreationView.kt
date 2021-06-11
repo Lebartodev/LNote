@@ -1,7 +1,7 @@
 package com.lebartodev.lnote.edit
 
-
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
@@ -15,15 +15,21 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.core.data.NoteData
+import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable
-import java.util.*
-
+import com.lebartodev.lnote.utils.ui.SelectDateFragment
+import java.util.Calendar
+import javax.inject.Inject
 
 @SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
@@ -37,39 +43,35 @@ class NoteCreationView : ConstraintLayout {
     private val dateChip: DateChip
     private val noteContent: NestedScrollView
 
-    var descriptionListener: ((String) -> Unit)? = null
-    var titleListener: ((String) -> Unit)? = null
     var saveListener: (() -> Unit)? = null
-    var clearDateListener: (() -> Unit)? = null
-    var clearNoteListener: (() -> Unit)? = null
     var fullScreenListener: (() -> Unit)? = null
-    var calendarDialogListener: ((Calendar) -> Unit)? = null
 
     private var isMoreOpen = false
 
+    @Inject
+    lateinit var viewModelFactory: EditNoteViewModelFactory
+    private val viewModel: NoteEditViewModel by lazy { ViewModelProvider(context as ViewModelStoreOwner, viewModelFactory)[NoteEditViewModel::class.java] }
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            descriptionListener?.invoke(s?.toString() ?: "")
+            viewModel.setDescription(s?.toString() ?: "")
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
         }
     }
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            titleListener?.invoke(s?.toString() ?: "")
+            viewModel.setTitle(s?.toString() ?: "")
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
         }
     }
 
@@ -79,6 +81,12 @@ class NoteCreationView : ConstraintLayout {
 
     init {
         inflate(context, R.layout.view_note_creation, this)
+
+        DaggerEditNoteComponent.builder()
+            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+            .context(context)
+            .build()
+            .inject(this)
         isSaveEnabled = true
 
         calendarButton = findViewById(R.id.calendar_button)
@@ -101,22 +109,23 @@ class NoteCreationView : ConstraintLayout {
         dateChip.transitionName = resources.getString(R.string.note_date_transition_name, "local")
 
         saveNoteButton.setOnClickListener {
-            saveListener?.invoke()
+            viewModel.saveNote()
+            // closeNoteCreation()
         }
         deleteButton.setOnClickListener {
-            clearNoteListener?.invoke()
+            viewModel.deleteEditedNote()
+            // TODO:closeNoteCreation()
         }
-        dateChip.setOnCloseIconClickListener { clearDateListener?.invoke() }
+        dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
         calendarButton.setOnClickListener { openCalendarDialog(null) }
         descriptionText.addTextChangedListener(descriptionTextWatcher)
         titleText.addTextChangedListener(titleTextWatcher)
 
         fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
         fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
-
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
+    override fun onSaveInstanceState(): Parcelable {
         val savedState = SavedState(super.onSaveInstanceState())
         savedState.isMoreOpen = isMoreOpen
         return savedState
@@ -137,8 +146,12 @@ class NoteCreationView : ConstraintLayout {
         selectedDateInMillis?.let {
             selectedDate.timeInMillis = it
         }
-        selectedDate?.let {
-            calendarDialogListener?.invoke(it)
+        selectedDate.let {
+            (context as FragmentActivity).supportFragmentManager.run {
+                val dialog = SelectDateFragment.initMe(it)
+                dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
+                dialog.show(this, TAG_CALENDAR_DIAlOG)
+            }
         }
     }
 
@@ -147,7 +160,6 @@ class NoteCreationView : ConstraintLayout {
         titleText.removeTextChangedListener(titleTextWatcher)
         super.onDetachedFromWindow()
     }
-
 
     fun updateNoteData(noteData: NoteData) {
         val description = noteData.text ?: ""
@@ -232,5 +244,7 @@ class NoteCreationView : ConstraintLayout {
             }
         }
     }
-
+    companion object {
+        private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
+    }
 }

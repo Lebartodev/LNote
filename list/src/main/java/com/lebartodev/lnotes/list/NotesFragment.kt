@@ -78,7 +78,6 @@ class NotesFragment : BaseFragment() {
     private val notesViewModel: NotesViewModel by lazy { ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java] }
     private var isSnackBarVisible = false
 
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerListComponent.builder()
@@ -86,10 +85,6 @@ class NotesFragment : BaseFragment() {
                 .context(context)
                 .build()
                 .inject(this)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -214,22 +209,6 @@ class NotesFragment : BaseFragment() {
 //        })
 //        editNoteViewModel.currentNote().observe(viewLifecycleOwner, Observer { noteCreationView.updateNoteData(it) })
 //
-
-//        editNoteViewModel.bottomPanelEnabled().observe(viewLifecycleOwner, Observer {
-//            if (it == true) {
-//                fabAdd.setOnClickListener {
-//                    openNoteCreation()
-//                }
-//                fabAdd.transitionName = null
-//                noteCreationView.transitionName = resources.getString(R.string.note_container_transition_name, "local")
-//            } else if (it == false) {
-//                fabAdd.setOnClickListener {
-//                    openFullScreen(false)
-//                }
-//                noteCreationView.transitionName = null
-//                fabAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
-//            }
-//        })
     }
 
     private fun setupNotesViewModel() {
@@ -242,6 +221,21 @@ class NotesFragment : BaseFragment() {
         })
         notesViewModel.getNotes().observe(viewLifecycleOwner, {
             onNotesLoaded(it)
+        })
+        notesViewModel.bottomPanelEnabled().observe(viewLifecycleOwner, {
+            if (it == true) {
+                binding.fabAdd.setOnClickListener {
+                    openNoteCreation()
+                }
+                binding.fabAdd.transitionName = null
+                binding.bottomSheetAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
+            } else if (it == false) {
+                binding.fabAdd.setOnClickListener {
+                    openFullScreen(false)
+                }
+                binding.bottomSheetAdd.transitionName = null
+                binding.fabAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
+            }
         })
     }
 

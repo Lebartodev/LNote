@@ -10,24 +10,43 @@ import com.lebartodev.lnote.utils.exception.DeleteNoteException
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
 
-class NotesViewModel constructor(var notesRepository: Repository.Notes, val schedulersFacade: SchedulersFacade) : BaseViewModel() {
+class NotesViewModel constructor(
+    private val settingsRepository: Repository.Settings,
+    private val notesRepository: Repository.Notes,
+    private val schedulersFacade: SchedulersFacade
+) :
+    BaseViewModel() {
     private var notesDisposable = CompositeDisposable()
 
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
+    private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
 
     fun getNotes(): LiveData<List<Note>> = notesLiveData
+    fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     init {
+        notesDisposable.add(
+            settingsRepository.bottomPanelEnabled()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(
+                    { bottomPanelEnabledLiveData.value = it },
+                    Functions.emptyConsumer()
+                )
+        )
         fetchNotes()
     }
 
     fun fetchNotes() {
-        notesDisposable.dispose()
-        notesDisposable.add(notesRepository.getNotes()
+        notesDisposable.add(
+            notesRepository.getNotes()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .subscribe({ notesLiveData.value = it },
-                        Functions.emptyConsumer()))
+                .subscribe(
+                    { notesLiveData.value = it },
+                    Functions.emptyConsumer()
+                )
+        )
     }
 
     override fun onCleared() {
@@ -37,14 +56,12 @@ class NotesViewModel constructor(var notesRepository: Repository.Notes, val sche
 
     fun deleteNote(id: Long) {
         notesDisposable.add(
-                notesRepository.deleteNote(id)
-                        .subscribeOn(schedulersFacade.io())
-                        .observeOn(schedulersFacade.ui())
-                        .subscribe({
-                            //TODO:  deleteResultLiveData.value = true
-                        }, { postError(DeleteNoteException(it)) })
+            notesRepository.deleteNote(id)
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe({
+                    //TODO:  deleteResultLiveData.value = true
+                }, { postError(DeleteNoteException(it)) })
         )
     }
-
-
 }

@@ -1,16 +1,15 @@
 package com.lebartodev.lnote.show
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.utils.SchedulersFacade
 import javax.inject.Inject
 
-
-class ShowNoteViewModelFactory @Inject constructor(private val schedulersFacade: SchedulersFacade) : ViewModelProvider.Factory {
+class ShowNoteViewModelFactory @Inject constructor(private val repository: Repository.Notes, private val schedulersFacade: SchedulersFacade) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when (modelClass) {
-            ShowNoteViewModel::class.java -> ShowNoteViewModel(schedulersFacade) as T
+            ShowNoteViewModel::class.java -> ShowNoteViewModel(repository, schedulersFacade) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
