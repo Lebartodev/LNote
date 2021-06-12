@@ -2,4 +2,6 @@
 <resources>
     <string name="settings">Settings</string>
     <string name="archive">Archive</string>
+    <string name="undo">UNDO</string>
+    <string name="note_deleted">Note deleted</string>
 </resources>

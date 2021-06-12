@@ -4,8 +4,7 @@
     <string name="category_hint">Category</string>
     <string name="date_hint">Date</string>
 
-    <string name="undo">UNDO</string>
-    <string name="note_deleted">Note deleted</string>
+
     <string name="settings_title">Settings</string>
     <string name="settings_bottom_panel">Enable bottom panel</string>
 

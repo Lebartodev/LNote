@@ -7,6 +7,7 @@ import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
+import com.lebartodev.lnote.utils.exception.DeleteNoteException
 import com.lebartodev.lnote.utils.exception.LoadNoteException
 import io.reactivex.disposables.Disposables
 
@@ -24,13 +25,13 @@ class ShowNoteViewModel constructor(private val notesRepository: Repository.Note
     }
 
     fun delete() {
-//        currentNote.value?.id?.run {
-//            deleteDisposable.dispose()
-//            deleteDisposable = notesRepository.deleteNote(this)
-//                    .subscribeOn(schedulersFacade.io())
-//                    .observeOn(schedulersFacade.ui())
-//                    .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) })
-//        }
+        currentNote.value?.id?.run {
+            deleteDisposable.dispose()
+            deleteDisposable = notesRepository.deleteNote(this)
+                    .subscribeOn(schedulersFacade.io())
+                    .observeOn(schedulersFacade.ui())
+                    .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) })
+        }
     }
 
     fun note(): LiveData<Note> {

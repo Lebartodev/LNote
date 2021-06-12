@@ -10,10 +10,15 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
+import androidx.transition.TransitionInflater
+import androidx.transition.TransitionSet
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.edit.EditNoteFragment
+import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.di.DaggerShowNoteComponent
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.onLayout
@@ -124,37 +129,36 @@ class ShowNoteFragment : BaseFragment() {
         viewModel.error().observe(viewLifecycleOwner, { error ->
         })
         viewModel.deleteResult().observe(viewLifecycleOwner, { status ->
-//            if (status == true) {
-//                (activity as EditorEventContainer).deleteNote()
-//                sharedElementReturnTransition = null
-//                fragmentManager?.popBackStack()
-//            }
+            if (status == true) {
+                setFragmentResult(EditUtils.DELETE_NOTE_REQUEST_KEY, Bundle())
+                sharedElementReturnTransition = null
+                parentFragmentManager.popBackStack()
+            }
         })
         id?.run { viewModel.loadNote(this) }
     }
 
     private fun setupEditButton(note: Note) {
-//        editButton.setOnClickListener {
-//            note.id?.run {
-//                val nextFragment = EditNoteFragment.initMe(this, scrollY = noteContent.scrollY)
-//
-//                nextFragment.sharedElementEnterTransition = TransitionSet()
-//                        .apply {
-//                            addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-//                            duration = resources.getInteger(R.integer.animation_duration).toLong()
-//                        }
-//
-//                fragmentManager
-//                        ?.beginTransaction()
-//                        ?.setReorderingAllowed(true)
-//                        ?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-//                        ?.replace(R.id.notes_layout_container, nextFragment)
-//                        ?.addSharedElement(noteContent, noteContent.transitionName)
-//                        ?.addSharedElement(dateChip, dateChip.transitionName)
-//                        ?.addToBackStack(null)
-//                        ?.commit()
-//            }
-//        }
+        editButton.setOnClickListener {
+            note.id?.run {
+                val nextFragment = EditNoteFragment.initMe(this, scrollY = noteContent.scrollY)
+
+                nextFragment.sharedElementEnterTransition = TransitionSet()
+                    .apply {
+                        addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                        duration = resources.getInteger(R.integer.animation_duration).toLong()
+                    }
+
+                parentFragmentManager
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    .replace(R.id.container, nextFragment)
+                    .addSharedElement(dateChip, dateChip.transitionName)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {

@@ -3,10 +3,13 @@ package com.lebartodev.lnotes.list
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.lebartodev.core.base.BaseViewModel
+import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.utils.SchedulersFacade
+import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.exception.DeleteNoteException
+import com.lebartodev.lnote.utils.exception.RestoreNoteException
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
 
@@ -20,8 +23,12 @@ class NotesViewModel constructor(
 
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
     private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
+    private val deletedNoteEvent = SingleLiveEvent<Boolean>()
+    private val restoredNoteEvent = SingleLiveEvent<NoteData>()
 
     fun getNotes(): LiveData<List<Note>> = notesLiveData
+    fun getRestoredNoteEvent(): SingleLiveEvent<NoteData> = restoredNoteEvent
+    fun getDeletedNoteEvent(): SingleLiveEvent<Boolean> = deletedNoteEvent
     fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     init {
@@ -60,8 +67,21 @@ class NotesViewModel constructor(
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe({
-                    //TODO:  deleteResultLiveData.value = true
+                    deletedNoteEvent.value = true
                 }, { postError(DeleteNoteException(it)) })
+        )
+    }
+
+    fun restoreLastNote() {
+        notesDisposable.add(
+            notesRepository.restoreLastNote()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe({
+                    if (it.created == null) {
+                        restoredNoteEvent.value = NoteData(it.id, it.title, it.date, it.text, it.created)
+                    }
+                }, { postError(RestoreNoteException(it)) })
         )
     }
 }
