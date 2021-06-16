@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.button.MaterialButton
@@ -18,6 +19,7 @@ import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
+import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.formattedHint
@@ -25,7 +27,7 @@ import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
-import java.util.Calendar
+import java.util.*
 import javax.inject.Inject
 
 class EditNoteFragment : BaseFragment() {
@@ -119,15 +121,15 @@ class EditNoteFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerEditNoteComponent.builder()
-            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
-            .context(context)
-            .build()
-            .inject(this)
+                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+                .context(context)
+                .build()
+                .inject(this)
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_edit_note, container, false)
     }
@@ -209,55 +211,55 @@ class EditNoteFragment : BaseFragment() {
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
         listOf(saveNoteButton, deleteButton, calendarButton)
-            .filter { !sharedElementNames.contains(it.transitionName) }
-            .forEach {
-                when (it.transitionName) {
-                    saveNoteButton.transitionName -> {
-                        it.onLayout {
-                            it.visibility = View.GONE
-                            it.animateSlideBottomVisibility(true)
+                .filter { !sharedElementNames.contains(it.transitionName) }
+                .forEach {
+                    when (it.transitionName) {
+                        saveNoteButton.transitionName -> {
+                            it.onLayout {
+                                it.visibility = View.GONE
+                                it.animateSlideBottomVisibility(true)
+                            }
                         }
-                    }
-                    calendarButton.transitionName -> {
-                        it.onLayout {
-                            it.visibility = View.GONE
-                            it.animateSlideTopVisibility(true)
-                        }
-                    }
-                    deleteButton.transitionName -> {
-                        if (noteId == null) {
+                        calendarButton.transitionName -> {
                             it.onLayout {
                                 it.visibility = View.GONE
                                 it.animateSlideTopVisibility(true)
                             }
                         }
+                        deleteButton.transitionName -> {
+                            if (noteId == null) {
+                                it.onLayout {
+                                    it.visibility = View.GONE
+                                    it.animateSlideTopVisibility(true)
+                                }
+                            }
+                        }
                     }
                 }
-            }
     }
 
     private fun setupEditViewModel() {
-        viewModel.saveResult().observe(viewLifecycleOwner, Observer {
-//            if (it == true) {
-//                (activity as EditorEventContainer).saveNote()
-//                titleTextView.clearFocus()
-//                descriptionTextView.clearFocus()
-//                sharedElementReturnTransition = null
-//                fragmentManager?.popBackStack()
-//            }
+        viewModel.saveResult().observe(viewLifecycleOwner, {
+            if (it == true) {
+                setFragmentResult(EditUtils.SAVE_NOTE_REQUEST_KEY, Bundle())
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+                sharedElementReturnTransition = null
+                parentFragmentManager.popBackStack()
+            }
         })
-        viewModel.deleteResult().observe(viewLifecycleOwner, Observer {
-//            if (it == true) {
-//                (activity as EditorEventContainer).deleteNote()
-//                titleTextView.clearFocus()
-//                descriptionTextView.clearFocus()
-//                sharedElementReturnTransition = null
-//                if (noteId == null) {
-//                    fragmentManager?.popBackStack()
-//                } else {
-//                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-//                }
-//            }
+        viewModel.deleteResult().observe(viewLifecycleOwner, {
+            if (it == true) {
+                setFragmentResult(EditUtils.DELETE_NOTE_REQUEST_KEY, Bundle())
+                titleTextView.clearFocus()
+                descriptionTextView.clearFocus()
+                sharedElementReturnTransition = null
+                if (noteId == null) {
+                    fragmentManager?.popBackStack()
+                } else {
+                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                }
+            }
         })
         viewModel.currentNote().observe(viewLifecycleOwner, noteObserver)
     }

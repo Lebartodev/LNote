@@ -7,46 +7,38 @@ import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
-import com.lebartodev.lnote.utils.exception.RestoreNoteException
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
-import java.util.Calendar
+import java.util.*
 
 class NoteEditViewModel constructor(
-    private val notesRepository: Repository.Notes,
-    private val schedulersFacade: SchedulersFacade
+        private val notesRepository: Repository.Notes,
+        private val schedulersFacade: SchedulersFacade
 ) : BaseViewModel() {
     private val disposables = CompositeDisposable()
 
     private val saveResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
     private val deleteResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
-    private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
     private val currentNoteLiveData = MutableLiveData(NoteData())
 
-    private val forceEditCurrentNoteSignal = SingleLiveEvent<Boolean>()
-
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
-
-    fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     fun saveResult(): LiveData<Boolean?> = saveResultLiveData
 
     fun deleteResult(): LiveData<Boolean?> = deleteResultLiveData
 
-    fun forceEditCurrentNote(): LiveData<Boolean?> = forceEditCurrentNoteSignal
-
     fun loadNote(id: Long) {
         disposables.add(
-            notesRepository.getNote(id)
-                .firstOrError()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe(Consumer { note ->
-                    currentNoteLiveData.value = NoteData(note.id, note.title, note.date, note.text, note.created)
-                }, Functions.emptyConsumer())
+                notesRepository.getNote(id)
+                        .firstOrError()
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe(Consumer { note ->
+                            this.currentNoteLiveData.value = NoteData(note.id, note.title, note.date, note.text, note.created)
+                        }, Functions.emptyConsumer())
         )
     }
 
@@ -60,11 +52,11 @@ class NoteEditViewModel constructor(
 
     fun setDate(year: Int, month: Int, day: Int) {
         val calendar = Calendar.getInstance()
-            .apply {
-                set(Calendar.YEAR, year)
-                set(Calendar.MONTH, month)
-                set(Calendar.DAY_OF_MONTH, day)
-            }
+                .apply {
+                    set(Calendar.YEAR, year)
+                    set(Calendar.MONTH, month)
+                    set(Calendar.DAY_OF_MONTH, day)
+                }
         currentNoteLiveData.value = currentNoteLiveData.value?.apply { date = calendar.timeInMillis }
     }
 
@@ -80,36 +72,22 @@ class NoteEditViewModel constructor(
             note?.title
 
         disposables.add(Completable
-            .defer {
-                val id = note?.id
-                if (id == null) {
-                    notesRepository.createNote(title, note?.text, note?.date).ignoreElement()
-                } else {
-                    notesRepository.editNote(id, title, note.text, note.date)
+                .defer {
+                    val id = note?.id
+                    if (id == null) {
+                        notesRepository.createNote(title, note?.text, note?.date).ignoreElement()
+                    } else {
+                        notesRepository.editNote(id, title, note.text, note.date)
+                    }
                 }
-            }
-            .subscribeOn(schedulersFacade.io())
-            .observeOn(schedulersFacade.ui())
-            .subscribe({
-                saveResultLiveData.value = true
-                currentNoteLiveData.value = NoteData()
-            }, {
-                postError(it)
-            })
-        )
-    }
-
-    fun restoreLastNote() {
-        disposables.add(
-            notesRepository.restoreLastNote()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe({
-                    if (it.created == null) {
-                        currentNoteLiveData.value = NoteData(it.id, it.title, it.date, it.text, it.created)
-                        forceEditCurrentNoteSignal.value = true
-                    }
-                }, { postError(RestoreNoteException(it)) })
+                    saveResultLiveData.value = true
+                    currentNoteLiveData.value = NoteData()
+                }, {
+                    postError(it)
+                })
         )
     }
 
@@ -121,13 +99,13 @@ class NoteEditViewModel constructor(
             note?.title
 
         disposables.add(
-            notesRepository.deleteDraftedNote(title, note?.text, note?.date)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({
-                    currentNoteLiveData.value = NoteData()
-                    deleteResultLiveData.value = true
-                }, Functions.emptyConsumer())
+                notesRepository.deleteDraftedNote(title, note?.text, note?.date)
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe({
+                            currentNoteLiveData.value = NoteData()
+                            deleteResultLiveData.value = true
+                        }, Functions.emptyConsumer())
         )
     }
 
