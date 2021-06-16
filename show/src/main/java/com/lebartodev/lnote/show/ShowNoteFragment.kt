@@ -7,8 +7,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
@@ -19,27 +17,19 @@ import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
+import com.lebartodev.lnote.show.databinding.FragmentShowNoteBinding
 import com.lebartodev.lnote.show.di.DaggerShowNoteComponent
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.onLayout
-import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.toPx
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 class ShowNoteFragment : BaseFragment() {
     private lateinit var formatter: SimpleDateFormat
-    private lateinit var descriptionTextView: TextView
-    private lateinit var titleTextView: TextView
-    private lateinit var editButton: ImageButton
-    private lateinit var deleteButton: ImageButton
-    private lateinit var dateChip: DateChip
-    private lateinit var divider: View
-    private lateinit var noteContent: NestedScrollView
-
-    private lateinit var actionBarTitleTextView: TextView
-    private lateinit var backButton: View
+    private var _binding: FragmentShowNoteBinding? = null
+    private val binding get() = _binding!!
 
     @Inject
     lateinit var viewModelFactory: ShowNoteViewModelFactory
@@ -49,10 +39,10 @@ class ShowNoteFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerShowNoteComponent.builder()
-            .context(context)
-            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
-            .build()
-            .inject(this)
+                .context(context)
+                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+                .build()
+                .inject(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,67 +51,59 @@ class ShowNoteFragment : BaseFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_show_note, container, false)
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentShowNoteBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         formatter = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US)
-        titleTextView = view.findViewById(R.id.text_title)
-        descriptionTextView = view.findViewById(R.id.text_description)
-        editButton = view.findViewById(R.id.edit_button)
-        deleteButton = view.findViewById(R.id.delete_button)
-        dateChip = view.findViewById(R.id.date_chip)
-        divider = view.findViewById(R.id.add_divider)
-        noteContent = view.findViewById(R.id.note_content)
-        actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
-        backButton = view.findViewById(R.id.back_button)
         val id = arguments?.getLong(EXTRA_ID)
 
-        descriptionTextView.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_UP && !descriptionTextView.hasSelection()) {
-                editButton.callOnClick()
+        binding.textDescription.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP && !binding.textDescription.hasSelection()) {
+                binding.editButton.callOnClick()
                 true
             } else {
                 false
             }
         }
-        titleTextView.setOnClickListener {
-            editButton.callOnClick()
+        binding.textTitle.setOnClickListener {
+            binding.editButton.callOnClick()
         }
 
 //        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
-//        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
-        titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, id?.toString() ?: "local")
-        descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, id?.toString() ?: "local")
-        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id?.toString() ?: "local")
+//        binding.noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
+        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, id?.toString() ?: "local")
+        binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, id?.toString() ?: "local")
+        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id?.toString() ?: "local")
 
-        backButton.setOnClickListener { fragmentManager?.popBackStack() }
+        binding.backButton.setOnClickListener { parentFragmentManager.popBackStack() }
 
         val visibleTitleLimit = 56f.toPx(resources)
-        noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
+        binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
             if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
-                actionBarTitleTextView.animate().cancel()
-                actionBarTitleTextView.animate().alpha(1f).start()
+                binding.textTitleActionBar.animate().cancel()
+                binding.textTitleActionBar.animate().alpha(1f).start()
             } else if (scrollY < visibleTitleLimit && oldScrollY > visibleTitleLimit) {
-                actionBarTitleTextView.animate().cancel()
-                actionBarTitleTextView.animate().alpha(0f).start()
+                binding.textTitleActionBar.animate().cancel()
+                binding.textTitleActionBar.animate().alpha(0f).start()
             }
         }
 
         viewModel.note().observe(viewLifecycleOwner, { note ->
             note.run {
-                titleTextView.text = title
-                actionBarTitleTextView.text = title
-                descriptionTextView.text = text
-                dateChip.setDate(date)
+                binding.textTitle.text = title
+                binding.textTitleActionBar.text = title
+                binding.textDescription.text = text
+                binding.dateChip.setDate(date)
                 setupEditButton(this)
                 startPostponedEnterTransition()
-                deleteButton.setOnClickListener {
+                binding.deleteButton.setOnClickListener {
                     viewModel.delete()
                 }
             }
@@ -139,42 +121,47 @@ class ShowNoteFragment : BaseFragment() {
     }
 
     private fun setupEditButton(note: Note) {
-        editButton.setOnClickListener {
+        binding.editButton.setOnClickListener {
             note.id?.run {
-                val nextFragment = EditNoteFragment.initMe(this, scrollY = noteContent.scrollY)
+                val nextFragment = EditNoteFragment.initMe(this, scrollY = binding.noteContent.scrollY)
 
                 nextFragment.sharedElementEnterTransition = TransitionSet()
-                    .apply {
-                        addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
-                        duration = resources.getInteger(R.integer.animation_duration).toLong()
-                    }
+                        .apply {
+                            addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                            duration = resources.getInteger(R.integer.animation_duration).toLong()
+                        }
 
                 parentFragmentManager
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    .replace(R.id.container, nextFragment)
-                    .addSharedElement(dateChip, dateChip.transitionName)
-                    .addToBackStack(null)
-                    .commit()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                        .replace(R.id.container, nextFragment)
+                        .addSharedElement(binding.dateChip, binding.dateChip.transitionName)
+                        .addToBackStack(null)
+                        .commit()
             }
         }
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
         super.onStartSharedAnimation(sharedElementNames)
-        deleteButton.onLayout {
-            deleteButton.visibility = View.GONE
-            deleteButton.animateSlideTopVisibility(true)
+        binding.deleteButton.onLayout {
+            binding.deleteButton.visibility = View.GONE
+            binding.deleteButton.animateSlideTopVisibility(true)
         }
-        editButton.onLayout {
-            editButton.visibility = View.GONE
-            editButton.animateSlideTopVisibility(true)
+        binding.editButton.onLayout {
+            binding.editButton.visibility = View.GONE
+            binding.editButton.animateSlideTopVisibility(true)
         }
-        backButton.onLayout {
-            backButton.visibility = View.GONE
-            backButton.animateSlideTopVisibility(true)
+        binding.backButton.onLayout {
+            binding.backButton.visibility = View.GONE
+            binding.backButton.animateSlideTopVisibility(true)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {

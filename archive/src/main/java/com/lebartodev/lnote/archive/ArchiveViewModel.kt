@@ -2,11 +2,10 @@ package com.lebartodev.lnote.archive
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.base.BaseViewModel
-import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.core.data.repository.Repository
-
+import com.lebartodev.core.db.entity.Note
+import com.lebartodev.core.utils.SchedulersFacade
 import io.reactivex.disposables.Disposables
 import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions

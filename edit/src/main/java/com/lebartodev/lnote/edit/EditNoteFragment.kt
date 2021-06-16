@@ -8,70 +8,60 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.button.MaterialButton
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.edit.databinding.FragmentEditNoteBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.extensions.onLayout
-import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.toPx
 import java.util.*
 import javax.inject.Inject
 
 class EditNoteFragment : BaseFragment() {
-    private lateinit var descriptionTextView: TextView
-    private lateinit var titleTextView: TextView
-    private lateinit var fullScreenButton: ImageButton
-    private lateinit var deleteButton: ImageButton
-    private lateinit var saveNoteButton: MaterialButton
-    private lateinit var calendarButton: ImageButton
-    private lateinit var dateChip: DateChip
-    private lateinit var backButton: ImageButton
-    private lateinit var actionBarTitleTextView: TextView
-    private lateinit var noteContent: NestedScrollView
+    private var _binding: FragmentEditNoteBinding? = null
+    private val binding get() = _binding!!
+
     private var noteId: Long? = null
     private var scroll: Int? = null
     private val noteObserver: Observer<NoteData> = Observer { noteData ->
-        titleTextView.removeTextChangedListener(titleTextWatcher)
-        descriptionTextView.removeTextChangedListener(descriptionTextWatcher)
+        binding.textTitle.removeTextChangedListener(titleTextWatcher)
+        binding.textDescription.removeTextChangedListener(descriptionTextWatcher)
 
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
 
-        if (description != titleTextView.hint) {
+        if (description != binding.textTitle.hint) {
             if (description.isNotEmpty()) {
-                titleTextView.hint = description.formattedHint()
+                binding.textTitle.hint = description.formattedHint()
             } else {
-                titleTextView.hint = context?.getString(R.string.title_hint)
+                binding.textTitle.hint = context?.getString(R.string.title_hint)
             }
         }
 
-        if (titleTextView.text.toString() != title) {
-            titleTextView.text = title
+        if (binding.textTitle.text.toString() != title) {
+            binding.textTitle.setText(title)
         }
-        if (descriptionTextView.text.toString() != description) {
-            descriptionTextView.text = description
+        if (binding.textDescription.text.toString() != description) {
+            binding.textDescription.setText(description)
         }
         if (isSharedAnimationEnd)
-            dateChip.setDateAnimated(time)
+            binding.dateChip.setDateAnimated(time)
         else
-            dateChip.setDate(time)
+            binding.dateChip.setDate(time)
         if (scroll != null && !noteData.text.isNullOrEmpty()) {
-            noteContent.post {
-                noteContent.scrollTo(0, scroll ?: 0)
+            binding.noteContent.post {
+                binding.noteContent.scrollTo(0, scroll ?: 0)
                 startPostponedEnterTransition()
                 scroll = null
             }
@@ -80,10 +70,10 @@ class EditNoteFragment : BaseFragment() {
         } else if (noteId == null) {
             startPostponedEnterTransition()
         }
-        actionBarTitleTextView.hint = titleTextView.hint
-        actionBarTitleTextView.text = titleTextView.text
-        titleTextView.addTextChangedListener(titleTextWatcher)
-        descriptionTextView.addTextChangedListener(descriptionTextWatcher)
+        binding.textTitleActionBar.hint = binding.textTitle.hint
+        binding.textTitleActionBar.text = binding.textTitle.text
+        binding.textTitle.addTextChangedListener(titleTextWatcher)
+        binding.textDescription.addTextChangedListener(descriptionTextWatcher)
     }
 
     @Inject
@@ -103,7 +93,7 @@ class EditNoteFragment : BaseFragment() {
     private val titleTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             viewModel.setTitle(s?.toString() ?: "")
-            actionBarTitleTextView.text = s?.toString() ?: ""
+            binding.textTitleActionBar.text = s?.toString() ?: ""
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -130,8 +120,9 @@ class EditNoteFragment : BaseFragment() {
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_edit_note, container, false)
+    ): View {
+        _binding = FragmentEditNoteBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -142,91 +133,81 @@ class EditNoteFragment : BaseFragment() {
                 noteId = getLong(EXTRA_ID)
         }
         super.onViewCreated(view, savedInstanceState)
-        titleTextView = view.findViewById(R.id.text_title)
-        descriptionTextView = view.findViewById(R.id.text_description)
-        fullScreenButton = view.findViewById(R.id.full_screen_button)
-        saveNoteButton = view.findViewById(R.id.save_button)
-        deleteButton = view.findViewById(R.id.delete_button)
-        dateChip = view.findViewById(R.id.date_chip)
-        calendarButton = view.findViewById(R.id.calendar_button)
-        backButton = view.findViewById(R.id.back_button)
-        actionBarTitleTextView = view.findViewById(R.id.text_title_action_bar)
-        noteContent = view.findViewById(R.id.note_content)
 
-        titleTextView.transitionName = resources.getString(R.string.note_title_transition_name, noteId?.toString() ?: "local")
-        descriptionTextView.transitionName = resources.getString(R.string.note_description_transition_name, noteId?.toString() ?: "local")
-        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, noteId?.toString() ?: "local")
+        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, noteId?.toString() ?: "local")
+        binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, noteId?.toString() ?: "local")
+        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, noteId?.toString() ?: "local")
 
         val visibleTitleLimit = 56f.toPx(resources)
-        noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
+        binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
             if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
-                actionBarTitleTextView.animate().cancel()
-                actionBarTitleTextView.animate().alpha(1f).start()
+                binding.textTitleActionBar.animate().cancel()
+                binding.textTitleActionBar.animate().alpha(1f).start()
             } else if (scrollY < visibleTitleLimit && oldScrollY > visibleTitleLimit) {
-                actionBarTitleTextView.animate().cancel()
-                actionBarTitleTextView.animate().alpha(0f).start()
+                binding.textTitleActionBar.animate().cancel()
+                binding.textTitleActionBar.animate().alpha(0f).start()
             }
         }
 
-        descriptionTextView.addTextChangedListener(descriptionTextWatcher)
-        titleTextView.addTextChangedListener(titleTextWatcher)
+        binding.textDescription.addTextChangedListener(descriptionTextWatcher)
+        binding.textTitle.addTextChangedListener(titleTextWatcher)
         if (noteId != null) {
-            deleteButton.visibility = View.GONE
+            binding.deleteButton.visibility = View.GONE
         } else {
-            deleteButton.visibility = View.VISIBLE
-            deleteButton.setOnClickListener {
+            binding.deleteButton.visibility = View.VISIBLE
+            binding.deleteButton.setOnClickListener {
                 viewModel.deleteEditedNote()
             }
         }
         if (noteId != null || arguments?.getBoolean(EXTRA_BACK_BUTTON_VISIBLE) == true) {
-            backButton.setOnClickListener {
+            binding.backButton.setOnClickListener {
                 hideKeyboard()
-                fragmentManager?.popBackStack()
+                parentFragmentManager.popBackStack()
             }
-            backButton.visibility = View.VISIBLE
-            fullScreenButton.visibility = View.GONE
+            binding.backButton.visibility = View.VISIBLE
+            binding.fullScreenButton.visibility = View.GONE
         } else {
-            backButton.visibility = View.GONE
-            fullScreenButton.visibility = View.VISIBLE
-            fullScreenButton.setOnClickListener { fragmentManager?.popBackStack() }
+            binding.backButton.visibility = View.GONE
+            binding.fullScreenButton.visibility = View.VISIBLE
+            binding.fullScreenButton.setOnClickListener { parentFragmentManager.popBackStack() }
         }
 
-        saveNoteButton.setOnClickListener {
+        binding.saveButton.setOnClickListener {
             hideKeyboard()
             viewModel.currentNote().removeObserver(noteObserver)
             viewModel.saveNote()
         }
 
-        calendarButton.setOnClickListener { openCalendarDialog() }
-        dateChip.setOnClickListener { openCalendarDialog() }
-        dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
+        binding.calendarButton.setOnClickListener { openCalendarDialog() }
+        binding.dateChip.setOnClickListener { openCalendarDialog() }
+        binding.dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
         setupEditViewModel()
         if (savedInstanceState == null)
             noteId?.run { viewModel.loadNote(this) }
 
-        fragmentManager?.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
+        parentFragmentManager.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
             (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
         }
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
-        listOf(saveNoteButton, deleteButton, calendarButton)
+        listOf(binding.saveButton, binding.deleteButton, binding.calendarButton)
                 .filter { !sharedElementNames.contains(it.transitionName) }
                 .forEach {
                     when (it.transitionName) {
-                        saveNoteButton.transitionName -> {
+                        binding.saveButton.transitionName -> {
                             it.onLayout {
                                 it.visibility = View.GONE
                                 it.animateSlideBottomVisibility(true)
                             }
                         }
-                        calendarButton.transitionName -> {
+                        binding.calendarButton.transitionName -> {
                             it.onLayout {
                                 it.visibility = View.GONE
                                 it.animateSlideTopVisibility(true)
                             }
                         }
-                        deleteButton.transitionName -> {
+                        binding.deleteButton.transitionName -> {
                             if (noteId == null) {
                                 it.onLayout {
                                     it.visibility = View.GONE
@@ -242,8 +223,8 @@ class EditNoteFragment : BaseFragment() {
         viewModel.saveResult().observe(viewLifecycleOwner, {
             if (it == true) {
                 setFragmentResult(EditUtils.SAVE_NOTE_REQUEST_KEY, Bundle())
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
+                binding.textTitle.clearFocus()
+                binding.textDescription.clearFocus()
                 sharedElementReturnTransition = null
                 parentFragmentManager.popBackStack()
             }
@@ -251,26 +232,27 @@ class EditNoteFragment : BaseFragment() {
         viewModel.deleteResult().observe(viewLifecycleOwner, {
             if (it == true) {
                 setFragmentResult(EditUtils.DELETE_NOTE_REQUEST_KEY, Bundle())
-                titleTextView.clearFocus()
-                descriptionTextView.clearFocus()
+                binding.textTitle.clearFocus()
+                binding.textDescription.clearFocus()
                 sharedElementReturnTransition = null
-                if (noteId == null) {
-                    fragmentManager?.popBackStack()
-                } else {
-                    fragmentManager?.popBackStack(ShowNoteFragment.BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                }
+                parentFragmentManager.popBackStack()
             }
         })
         viewModel.currentNote().observe(viewLifecycleOwner, noteObserver)
     }
 
     private fun openCalendarDialog() {
-        fragmentManager?.run {
+        parentFragmentManager.run {
             val calendar = Calendar.getInstance().apply { timeInMillis = viewModel.currentNote().value?.date ?: System.currentTimeMillis() }
             val dialog = SelectDateFragment.initMe(calendar)
             dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
             dialog.show(this, TAG_CALENDAR_DIAlOG)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {

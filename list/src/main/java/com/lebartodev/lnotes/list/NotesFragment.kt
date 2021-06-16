@@ -240,6 +240,9 @@ class NotesFragment : BaseFragment() {
         setFragmentResultListener(EditUtils.DELETE_NOTE_REQUEST_KEY) { _, _ ->
             onNoteDeleted()
         }
+        setFragmentResultListener(EditUtils.SAVE_NOTE_REQUEST_KEY) { _, _ ->
+            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        }
     }
 
     private fun openFullScreen(fromBottomSheet: Boolean) {
@@ -322,6 +325,7 @@ class NotesFragment : BaseFragment() {
             }
     }
 
+    @SuppressLint("ShowToast")
     private fun onNoteDeleted() {
         bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         Snackbar.make(binding.root, R.string.note_deleted, Snackbar.LENGTH_LONG)
@@ -339,8 +343,10 @@ class NotesFragment : BaseFragment() {
                 ) {
                     super.onDismissed(transientBottomBar, event)
                     isSnackBarVisible = false
-                    setBottomAppBarVisibility(true, withAnimation = true)
-                    binding.bottomAppBar.hideOnScroll = true
+                    if (isAdded) {
+                        setBottomAppBarVisibility(true, withAnimation = true)
+                        binding.bottomAppBar.hideOnScroll = true
+                    }
                 }
             })
             .setAction(R.string.undo) {

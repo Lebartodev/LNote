@@ -49,9 +49,15 @@ class NotesViewModel constructor(
             notesRepository.getNotes()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .subscribe(
-                    { notesLiveData.value = it },
-                    Functions.emptyConsumer()
+                .doFinally {
+                    println("")
+                }
+                .subscribe({
+                    notesLiveData.value = it
+                           },
+                    {
+                        println(it)
+                    }
                 )
         )
     }

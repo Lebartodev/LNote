@@ -2,6 +2,7 @@ package com.lebartodev.core.data.repository
 
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.db.entity.Note
+import com.lebartodev.core.di.utils.AppScope
 import com.lebartodev.core.utils.SchedulersFacade
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -9,6 +10,7 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
+@AppScope
 class NotesRepository @Inject constructor(private val database: AppDatabase, private val schedulersFacade: SchedulersFacade) : Repository.Notes {
 
     override fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll()
