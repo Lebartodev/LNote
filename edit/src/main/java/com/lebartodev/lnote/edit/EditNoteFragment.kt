@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.databinding.FragmentEditNoteBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.edit.utils.EditUtils
@@ -28,8 +29,7 @@ import java.util.*
 import javax.inject.Inject
 
 class EditNoteFragment : BaseFragment() {
-    private var _binding: FragmentEditNoteBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentEditNoteBinding::inflate)
 
     private var noteId: Long? = null
     private var scroll: Int? = null
@@ -121,7 +121,6 @@ class EditNoteFragment : BaseFragment() {
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentEditNoteBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -248,11 +247,6 @@ class EditNoteFragment : BaseFragment() {
             dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
             dialog.show(this, TAG_CALENDAR_DIAlOG)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {

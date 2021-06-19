@@ -15,6 +15,7 @@ import androidx.transition.TransitionSet
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.databinding.FragmentShowNoteBinding
@@ -28,8 +29,7 @@ import javax.inject.Inject
 
 class ShowNoteFragment : BaseFragment() {
     private lateinit var formatter: SimpleDateFormat
-    private var _binding: FragmentShowNoteBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentShowNoteBinding::inflate)
 
     @Inject
     lateinit var viewModelFactory: ShowNoteViewModelFactory
@@ -54,7 +54,6 @@ class ShowNoteFragment : BaseFragment() {
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentShowNoteBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -157,11 +156,6 @@ class ShowNoteFragment : BaseFragment() {
             binding.backButton.visibility = View.GONE
             binding.backButton.animateSlideTopVisibility(true)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {

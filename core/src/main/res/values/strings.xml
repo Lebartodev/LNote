@@ -5,4 +5,5 @@
     <string name="enter_note_hint">Enter note</string>
     <string name="error_common">Unknown error</string>
     <string name="error_note_create">Error when creating note</string>
+    <string name="save_button_text">Save</string>
 </resources>

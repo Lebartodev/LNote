@@ -8,42 +8,36 @@ import android.os.Parcelable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import android.widget.ImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.TransitionManager
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.edit.databinding.ViewNoteCreationBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
+import com.lebartodev.lnote.edit.di.EditNoteComponent
 import com.lebartodev.lnote.utils.extensions.formattedHint
-import com.lebartodev.lnote.utils.ui.DateChip
 import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
-import java.util.Calendar
+import java.util.*
 import javax.inject.Inject
 
 @SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
-    private val saveNoteButton: MaterialButton
-    private val titleText: EditText
-    private val descriptionText: EditText
-    private val fabMore: FloatingActionButton
-    private val fullScreenButton: ImageButton
-    private val calendarButton: ImageButton
-    private val deleteButton: ImageButton
-    private val dateChip: DateChip
-    private val noteContent: NestedScrollView
+    private var component: EditNoteComponent? = null
 
-    var saveListener: (() -> Unit)? = null
+    private var binding = ViewNoteCreationBinding.inflate(LayoutInflater.from(context), this)
+    private val noteObserver = Observer<NoteData> {
+        updateNoteData(it)
+    }
+    var closeListener: (() -> Unit)? = null
     var fullScreenListener: (() -> Unit)? = null
 
     private var isMoreOpen = false
@@ -79,50 +73,42 @@ class NoteCreationView : ConstraintLayout {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        component = DaggerEditNoteComponent.builder()
+                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+                .context(context)
+                .build().also { it.inject(this) }
+        viewModel.currentNote().observeForever(noteObserver)
+    }
+
     init {
-        inflate(context, R.layout.view_note_creation, this)
-
-        DaggerEditNoteComponent.builder()
-            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
-            .context(context)
-            .build()
-            .inject(this)
         isSaveEnabled = true
-
-        calendarButton = findViewById(R.id.calendar_button)
-        deleteButton = findViewById(R.id.delete_button)
-        saveNoteButton = findViewById(R.id.save_button)
-        titleText = findViewById(R.id.text_title)
-        descriptionText = findViewById(R.id.text_description)
-        fabMore = findViewById(R.id.fab_more)
-        fullScreenButton = findViewById(R.id.full_screen_button)
-        dateChip = findViewById(R.id.date_chip)
-        noteContent = findViewById(R.id.note_content)
 
         background = NoteTransitionDrawable(ContextCompat.getColor(context, R.color.white), 0f)
 
-
         transitionName = resources.getString(R.string.note_container_transition_name, "local")
-        noteContent.transitionName = resources.getString(R.string.note_content_transition_name, "local")
-        titleText.transitionName = resources.getString(R.string.note_title_transition_name, "local")
-        descriptionText.transitionName = resources.getString(R.string.note_description_transition_name, "local")
-        dateChip.transitionName = resources.getString(R.string.note_date_transition_name, "local")
+        binding.noteContent.transitionName = resources.getString(R.string.note_content_transition_name, "local")
+        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, "local")
+        binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, "local")
+        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, "local")
 
-        saveNoteButton.setOnClickListener {
+        binding.saveButton.setOnClickListener {
             viewModel.saveNote()
-            // closeNoteCreation()
+            closeListener?.invoke()
         }
-        deleteButton.setOnClickListener {
+        binding.deleteButton.setOnClickListener {
             viewModel.deleteEditedNote()
-            // TODO:closeNoteCreation()
+            closeListener?.invoke()
         }
-        dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
-        calendarButton.setOnClickListener { openCalendarDialog(null) }
-        descriptionText.addTextChangedListener(descriptionTextWatcher)
-        titleText.addTextChangedListener(titleTextWatcher)
 
-        fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
-        fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
+        binding.dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
+        binding.calendarButton.setOnClickListener { openCalendarDialog(null) }
+        binding.textDescription.addTextChangedListener(descriptionTextWatcher)
+        binding.textTitle.addTextChangedListener(titleTextWatcher)
+
+        binding.fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
+        binding.fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
     }
 
     override fun onSaveInstanceState(): Parcelable {
@@ -156,9 +142,11 @@ class NoteCreationView : ConstraintLayout {
     }
 
     override fun onDetachedFromWindow() {
-        descriptionText.removeTextChangedListener(descriptionTextWatcher)
-        titleText.removeTextChangedListener(titleTextWatcher)
+        binding.textDescription.removeTextChangedListener(descriptionTextWatcher)
+        binding.textTitle.removeTextChangedListener(titleTextWatcher)
+        viewModel.currentNote().removeObserver(noteObserver)
         super.onDetachedFromWindow()
+        component = null
     }
 
     fun updateNoteData(noteData: NoteData) {
@@ -166,24 +154,24 @@ class NoteCreationView : ConstraintLayout {
         val title = noteData.title
         val time = noteData.date
 
-        if (description != titleText.hint) {
+        if (description != binding.textTitle.hint) {
             if (description.isNotEmpty()) {
-                titleText.hint = description.formattedHint()
+                binding.textTitle.hint = description.formattedHint()
             } else {
-                titleText.hint = context?.getString(R.string.title_hint)
+                binding.textTitle.hint = context?.getString(R.string.title_hint)
             }
         }
-        if (titleText.text.toString() != title) {
-            titleText.setText(title)
+        if (binding.textTitle.text.toString() != title) {
+            binding.textTitle.setText(title)
         }
-        if (descriptionText.text.toString() != description) {
-            descriptionText.setText(description)
+        if (binding.textDescription.text.toString() != description) {
+            binding.textDescription.setText(description)
         }
-        dateChip.setDate(time)
-        calendarButton.setOnClickListener {
+        binding.dateChip.setDate(time)
+        binding.calendarButton.setOnClickListener {
             openCalendarDialog(time)
         }
-        dateChip.setOnClickListener {
+        binding.dateChip.setOnClickListener {
             openCalendarDialog(time)
         }
     }
@@ -194,27 +182,27 @@ class NoteCreationView : ConstraintLayout {
             TransitionManager.beginDelayedTransition(constraintLayout)
             val set = ConstraintSet()
             set.clone(constraintLayout)
-            set.setVisibility(calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            set.setVisibility(deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+            set.setVisibility(binding.calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(binding.deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            binding.fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
             set.applyTo(constraintLayout)
         } else {
-            deleteButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
-            calendarButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
-            fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+            binding.deleteButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
+            binding.calendarButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
+            binding.fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
         }
         this.isMoreOpen = isMoreOpen
     }
 
     fun getSharedViews(): List<View> {
-        val result = mutableListOf(this, noteContent, saveNoteButton, fullScreenButton, dateChip)
+        val result = mutableListOf(this, binding.noteContent, binding.saveButton, binding.fullScreenButton, binding.dateChip)
         if (isMoreOpen) {
-            result.addAll(listOf(deleteButton, calendarButton))
+            result.addAll(listOf(binding.deleteButton, binding.calendarButton))
         }
         return result
     }
 
-    fun getContentScroll(): Int = noteContent.scrollY
+    fun getContentScroll(): Int = binding.noteContent.scrollY
 
     private class SavedState : BaseSavedState {
         var isMoreOpen: Boolean = false
@@ -244,6 +232,7 @@ class NoteCreationView : ConstraintLayout {
             }
         }
     }
+
     companion object {
         private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
     }

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.*
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.databinding.FragmentArchiveBinding
 import com.lebartodev.lnote.archive.di.DaggerArchiveComponent
 import com.lebartodev.lnote.show.ShowNoteFragment
@@ -20,8 +21,7 @@ import com.lebartodev.lnote.utils.ui.*
 import javax.inject.Inject
 
 class ArchiveFragment : BaseFragment() {
-    private var _binding: FragmentArchiveBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentArchiveBinding::inflate)
 
     @Inject
     lateinit var viewModelFactory: ArchiveViewModelFactory
@@ -61,9 +61,10 @@ class ArchiveFragment : BaseFragment() {
                 .inject(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
-        _binding = FragmentArchiveBinding.inflate(inflater, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return binding.root
     }
 
@@ -80,11 +81,5 @@ class ArchiveFragment : BaseFragment() {
         archiveViewModel.getNotes().observe(viewLifecycleOwner, Observer {
             adapter.updateData(it)
         })
-
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

@@ -9,7 +9,7 @@ android androidConfiguration
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
-
+    implementation "com.google.android.material:material:$materialVersion"
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"
 

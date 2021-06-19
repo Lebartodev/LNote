@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.ArchiveFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.ShowNoteFragment
@@ -34,8 +35,7 @@ import com.lebartodev.lnotes.list.di.DaggerListComponent
 import javax.inject.Inject
 
 class NotesFragment : BaseFragment() {
-    private var _binding: FragmentNotesBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentNotesBinding::inflate)
 
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
@@ -99,7 +99,6 @@ class NotesFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         postponeEnterTransition()
-        _binding = FragmentNotesBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -157,7 +156,7 @@ class NotesFragment : BaseFragment() {
         bottomAddSheetBehavior.setBottomSheetCallback(callback)
 
         binding.bottomSheetAdd.apply {
-            saveListener = {
+            closeListener = {
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             }
             fullScreenListener = { openFullScreen(true) }
@@ -191,7 +190,7 @@ class NotesFragment : BaseFragment() {
                 R.id.app_bar_archive -> {
                     parentFragmentManager.beginTransaction().run {
                         setReorderingAllowed(true)
-                        setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
+                        setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                         replace(R.id.container, ArchiveFragment())
                         addToBackStack(null)
                         commit()
@@ -359,11 +358,6 @@ class NotesFragment : BaseFragment() {
                 textView.setTextColor(ContextCompat.getColor(binding.root.context, R.color.white))
             }
             .show()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {
