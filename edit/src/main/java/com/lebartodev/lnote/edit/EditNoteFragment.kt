@@ -79,7 +79,7 @@ class EditNoteFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: EditNoteViewModelFactory
     private val viewModel: NoteEditViewModel by lazy {
-        ViewModelProvider(requireParentFragment(), viewModelFactory)[NoteEditViewModel::class.java]
+        ViewModelProvider(parentFragment ?: this, viewModelFactory)[NoteEditViewModel::class.java]
     }
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -136,6 +136,10 @@ class EditNoteFragment : BaseFragment() {
         }
         super.onViewCreated(view, savedInstanceState)
 
+
+        view.transitionName = resources.getString(R.string.note_container_transition_name, noteId?.toString() ?: "local")
+        binding.noteContent.transitionName = resources.getString(
+            R.string.note_content_transition_name, noteId?.toString() ?: "local")
         binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
             noteId?.toString() ?: "local")
         binding.textDescription.transitionName = resources.getString(

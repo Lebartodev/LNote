@@ -75,8 +75,8 @@ class ShowNoteFragment : BaseFragment() {
             binding.editButton.callOnClick()
         }
 
-//        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
-//        binding.noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
+        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
+        binding.noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
         binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, id?.toString() ?: "local")
         binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, id?.toString() ?: "local")
         binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id?.toString() ?: "local")

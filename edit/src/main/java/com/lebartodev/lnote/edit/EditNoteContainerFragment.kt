@@ -9,6 +9,7 @@ import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.core.utils.viewBinding
+import com.lebartodev.lnote.edit.creation.NoteCreationContainerFragment
 import com.lebartodev.lnote.edit.databinding.FragmentEditNoteContainerBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.edit.di.EditNoteComponent
@@ -31,6 +32,17 @@ class EditNoteContainerFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val fragment = childFragmentManager.findFragmentByTag(NoteCreationContainerFragment.TAG)
+        if (fragment == null) {
+            childFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.edit_container, NoteCreationContainerFragment.initMe(), NoteCreationContainerFragment.TAG)
+                    .commit()
+        }
     }
 
     override fun onDetach() {

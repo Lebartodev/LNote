@@ -39,7 +39,9 @@ class NoteCreationContainerFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bottomAddSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetAdd)
-        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        binding.bottomSheetAdd.post {
+            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        }
         bottomAddSheetBehavior.setBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
@@ -105,6 +107,7 @@ class NoteCreationContainerFragment : BaseFragment() {
     }
 
     companion object {
+        const val TAG = "NoteCreationContainerFragment"
         private const val EXTRA_NOTE_DATA = "EXTRA_NOTE_DATA"
 
         fun initMe(noteData: NoteData = NoteData()): NoteCreationContainerFragment {

@@ -6,7 +6,6 @@
 
     <androidx.fragment.app.FragmentContainerView
             android:id="@+id/edit_container"
-            android:name="com.lebartodev.lnote.edit.NoteCreationContainerFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

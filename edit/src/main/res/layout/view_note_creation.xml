@@ -5,6 +5,7 @@
         android:id="@+id/note_creation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:transitionGroup="false"
         app:behavior_hideable="true"
         app:behavior_peekHeight="0dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
@@ -83,12 +84,12 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/ic_drop_down_24"
             app:backgroundTint="@color/colorPrimary"
-            app:tint="@color/white"
             app:fabSize="mini"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/date_chip"
-            app:layout_constraintVertical_bias="1" />
+            app:layout_constraintVertical_bias="1"
+            app:tint="@color/white" />
 
     <ImageButton
             android:id="@+id/delete_button"
