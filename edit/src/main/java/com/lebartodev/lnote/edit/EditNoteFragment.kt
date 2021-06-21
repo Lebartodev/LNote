@@ -78,7 +78,9 @@ class EditNoteFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: EditNoteViewModelFactory
-    private val viewModel: NoteEditViewModel by lazy { ViewModelProvider(this, viewModelFactory)[NoteEditViewModel::class.java] }
+    private val viewModel: NoteEditViewModel by lazy {
+        ViewModelProvider(requireParentFragment(), viewModelFactory)[NoteEditViewModel::class.java]
+    }
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             viewModel.setDescription(s?.toString() ?: "")
@@ -111,15 +113,16 @@ class EditNoteFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerEditNoteComponent.builder()
-                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
-                .context(context)
-                .build()
-                .inject(this)
+            .appComponent(
+                (context.applicationContext as AppComponentProvider).provideAppComponent())
+            .context(context)
+            .build()
+            .inject(this)
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         return binding.root
     }
@@ -133,9 +136,12 @@ class EditNoteFragment : BaseFragment() {
         }
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, noteId?.toString() ?: "local")
-        binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, noteId?.toString() ?: "local")
-        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, noteId?.toString() ?: "local")
+        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
+            noteId?.toString() ?: "local")
+        binding.textDescription.transitionName = resources.getString(
+            R.string.note_description_transition_name, noteId?.toString() ?: "local")
+        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name,
+            noteId?.toString() ?: "local")
 
         val visibleTitleLimit = 56f.toPx(resources)
         binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
@@ -185,37 +191,39 @@ class EditNoteFragment : BaseFragment() {
             noteId?.run { viewModel.loadNote(this) }
 
         parentFragmentManager.findFragmentByTag(TAG_CALENDAR_DIAlOG)?.run {
-            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
+            (this as SelectDateFragment).listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
+                viewModel.setDate(y, m, d)
+            }
         }
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
         listOf(binding.saveButton, binding.deleteButton, binding.calendarButton)
-                .filter { !sharedElementNames.contains(it.transitionName) }
-                .forEach {
-                    when (it.transitionName) {
-                        binding.saveButton.transitionName -> {
-                            it.onLayout {
-                                it.visibility = View.GONE
-                                it.animateSlideBottomVisibility(true)
-                            }
+            .filter { !sharedElementNames.contains(it.transitionName) }
+            .forEach {
+                when (it.transitionName) {
+                    binding.saveButton.transitionName -> {
+                        it.onLayout {
+                            it.visibility = View.GONE
+                            it.animateSlideBottomVisibility(true)
                         }
-                        binding.calendarButton.transitionName -> {
+                    }
+                    binding.calendarButton.transitionName -> {
+                        it.onLayout {
+                            it.visibility = View.GONE
+                            it.animateSlideTopVisibility(true)
+                        }
+                    }
+                    binding.deleteButton.transitionName -> {
+                        if (noteId == null) {
                             it.onLayout {
                                 it.visibility = View.GONE
                                 it.animateSlideTopVisibility(true)
                             }
                         }
-                        binding.deleteButton.transitionName -> {
-                            if (noteId == null) {
-                                it.onLayout {
-                                    it.visibility = View.GONE
-                                    it.animateSlideTopVisibility(true)
-                                }
-                            }
-                        }
                     }
                 }
+            }
     }
 
     private fun setupEditViewModel() {
@@ -242,9 +250,14 @@ class EditNoteFragment : BaseFragment() {
 
     private fun openCalendarDialog() {
         parentFragmentManager.run {
-            val calendar = Calendar.getInstance().apply { timeInMillis = viewModel.currentNote().value?.date ?: System.currentTimeMillis() }
+            val calendar = Calendar.getInstance()
+                .apply {
+                    timeInMillis = viewModel.currentNote().value?.date ?: System.currentTimeMillis()
+                }
             val dialog = SelectDateFragment.initMe(calendar)
-            dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
+            dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
+                viewModel.setDate(y, m, d)
+            }
             dialog.show(this, TAG_CALENDAR_DIAlOG)
         }
     }
@@ -256,7 +269,8 @@ class EditNoteFragment : BaseFragment() {
 
         private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
 
-        fun initMe(id: Long? = null, forceBackButtonVisible: Boolean = false, scrollY: Int? = null): EditNoteFragment {
+        fun initMe(id: Long? = null, forceBackButtonVisible: Boolean = false,
+                   scrollY: Int? = null): EditNoteFragment {
             val fragment = EditNoteFragment()
             val args = Bundle()
             id?.run { args.putLong(EXTRA_ID, this) }

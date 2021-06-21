@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.edit
+package com.lebartodev.lnote.edit.creation
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
@@ -13,13 +13,17 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.transition.TransitionManager
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.lnote.edit.EditNoteViewModelFactory
+import com.lebartodev.lnote.edit.NoteEditViewModel
+import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.ViewNoteCreationBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.edit.di.EditNoteComponent
@@ -44,7 +48,9 @@ class NoteCreationView : ConstraintLayout {
 
     @Inject
     lateinit var viewModelFactory: EditNoteViewModelFactory
-    private val viewModel: NoteEditViewModel by lazy { ViewModelProvider(context as ViewModelStoreOwner, viewModelFactory)[NoteEditViewModel::class.java] }
+    private val viewModel: NoteEditViewModel by lazy {
+        ViewModelProvider(findFragment<Fragment>().requireParentFragment(), viewModelFactory)[NoteEditViewModel::class.java]
+    }
 
     private val descriptionTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -71,16 +77,9 @@ class NoteCreationView : ConstraintLayout {
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs,
+        defStyleAttr)
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        component = DaggerEditNoteComponent.builder()
-                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
-                .context(context)
-                .build().also { it.inject(this) }
-        viewModel.currentNote().observeForever(noteObserver)
-    }
 
     init {
         isSaveEnabled = true
@@ -88,10 +87,14 @@ class NoteCreationView : ConstraintLayout {
         background = NoteTransitionDrawable(ContextCompat.getColor(context, R.color.white), 0f)
 
         transitionName = resources.getString(R.string.note_container_transition_name, "local")
-        binding.noteContent.transitionName = resources.getString(R.string.note_content_transition_name, "local")
-        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, "local")
-        binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, "local")
-        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, "local")
+        binding.noteContent.transitionName = resources.getString(
+            R.string.note_content_transition_name, "local")
+        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
+            "local")
+        binding.textDescription.transitionName = resources.getString(
+            R.string.note_description_transition_name, "local")
+        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name,
+            "local")
 
         binding.saveButton.setOnClickListener {
             viewModel.saveNote()
@@ -109,6 +112,16 @@ class NoteCreationView : ConstraintLayout {
 
         binding.fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
         binding.fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        component = DaggerEditNoteComponent.builder()
+            .appComponent(
+                (context.applicationContext as AppComponentProvider).provideAppComponent())
+            .context(context)
+            .build().also { it.inject(this) }
+        viewModel.currentNote().observeForever(noteObserver)
     }
 
     override fun onSaveInstanceState(): Parcelable {
@@ -135,7 +148,9 @@ class NoteCreationView : ConstraintLayout {
         selectedDate.let {
             (context as FragmentActivity).supportFragmentManager.run {
                 val dialog = SelectDateFragment.initMe(it)
-                dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d -> viewModel.setDate(y, m, d) }
+                dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
+                    viewModel.setDate(y, m, d)
+                }
                 dialog.show(this, TAG_CALENDAR_DIAlOG)
             }
         }
@@ -182,20 +197,25 @@ class NoteCreationView : ConstraintLayout {
             TransitionManager.beginDelayedTransition(constraintLayout)
             val set = ConstraintSet()
             set.clone(constraintLayout)
-            set.setVisibility(binding.calendarButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            set.setVisibility(binding.deleteButton.id, if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            binding.fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+            set.setVisibility(binding.calendarButton.id,
+                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(binding.deleteButton.id,
+                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            binding.fabMore.setImageResource(
+                if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
             set.applyTo(constraintLayout)
         } else {
             binding.deleteButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
             binding.calendarButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
-            binding.fabMore.setImageResource(if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+            binding.fabMore.setImageResource(
+                if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
         }
         this.isMoreOpen = isMoreOpen
     }
 
     fun getSharedViews(): List<View> {
-        val result = mutableListOf(this, binding.noteContent, binding.saveButton, binding.fullScreenButton, binding.dateChip)
+        val result = mutableListOf(this, binding.noteContent, binding.saveButton,
+            binding.fullScreenButton, binding.dateChip)
         if (isMoreOpen) {
             result.addAll(listOf(binding.deleteButton, binding.calendarButton))
         }

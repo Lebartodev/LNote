@@ -83,6 +83,7 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/ic_drop_down_24"
             app:backgroundTint="@color/colorPrimary"
+            app:tint="@color/white"
             app:fabSize="mini"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

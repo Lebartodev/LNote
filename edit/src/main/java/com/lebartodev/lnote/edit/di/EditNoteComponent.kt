@@ -2,8 +2,9 @@ package com.lebartodev.lnote.edit.di
 
 import android.content.Context
 import com.lebartodev.core.di.app.AppComponent
+import com.lebartodev.lnote.edit.EditNoteContainerFragment
 import com.lebartodev.lnote.edit.EditNoteFragment
-import com.lebartodev.lnote.edit.NoteCreationView
+import com.lebartodev.lnote.edit.creation.NoteCreationView
 import dagger.BindsInstance
 import dagger.Component
 
@@ -12,6 +13,7 @@ import dagger.Component
 interface EditNoteComponent {
     fun inject(editNoteFragment: EditNoteFragment)
     fun inject(noteCreationView: NoteCreationView)
+    fun inject(editNoteContainerFragment: EditNoteContainerFragment)
 
     @Component.Builder
     interface Builder {

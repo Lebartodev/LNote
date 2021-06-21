@@ -34,18 +34,6 @@
         app:layout_anchor="@id/bottom_app_bar"
         app:tint="@color/white" />
 
-    <com.lebartodev.lnote.edit.NoteCreationView
-        android:id="@+id/bottom_sheet_add"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:elevation="24dp"
-        android:focusable="true"
-        android:paddingTop="4dp"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="0dp"
-        app:layout_behavior="com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior" />
-
     <com.lebartodev.lnote.settings.SettingsBottomView
         android:id="@+id/bottom_sheet_settings"
         android:layout_width="match_parent"
@@ -55,5 +43,10 @@
         app:behavior_hideable="true"
         app:behavior_peekHeight="0dp"
         app:layout_behavior="com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior" />
+
+    <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/add_container_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

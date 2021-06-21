@@ -11,7 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResultListener
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.ViewModelProvider
@@ -27,6 +26,8 @@ import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.ArchiveFragment
+import com.lebartodev.lnote.edit.EditNoteContainerFragment
+import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
@@ -36,9 +37,6 @@ import javax.inject.Inject
 
 class NotesFragment : BaseFragment() {
     private val binding by viewBinding(FragmentNotesBinding::inflate)
-
-    private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
-    private var activeBottomSheetBehavior: BottomSheetBehavior<ConstraintLayout>? = null
     private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
     private var canScrollNotes = true
 
@@ -81,13 +79,16 @@ class NotesFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ListNotesViewModelFactory
-    private val notesViewModel: NotesViewModel by lazy { ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java] }
+    private val notesViewModel: NotesViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java]
+    }
     private var isSnackBarVisible = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerListComponent.builder()
-            .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+            .appComponent(
+                (context.applicationContext as AppComponentProvider).provideAppComponent())
             .context(context)
             .build()
             .inject(this)
@@ -105,7 +106,6 @@ class NotesFragment : BaseFragment() {
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bottomAddSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetAdd)
         settingsSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetSettings)
         binding.notesList.layoutManager = object : LinearLayoutManager(context) {
             override fun canScrollVertically(): Boolean = canScrollNotes
@@ -120,8 +120,10 @@ class NotesFragment : BaseFragment() {
             )
         )
 
-        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+        val simpleItemTouchCallback = object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                                target: RecyclerView.ViewHolder): Boolean {
                 return false
             }
 
@@ -141,41 +143,22 @@ class NotesFragment : BaseFragment() {
     @SuppressLint("ClickableViewAccessibility")
     private fun initBottomSheets() {
         val callback = object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) = onSlideBottomSheet(slideOffset)
+            override fun onSlide(bottomSheet: View, slideOffset: Float) = onSlideBottomSheet(
+                slideOffset)
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     hideKeyboard(bottomSheet)
                 } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                    activeBottomSheetBehavior = bottomAddSheetBehavior
                     hideKeyboard(bottomSheet)
                 }
             }
         }
         settingsSheetBehavior.setBottomSheetCallback(callback)
-        bottomAddSheetBehavior.setBottomSheetCallback(callback)
-
-        binding.bottomSheetAdd.apply {
-            closeListener = {
-                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-            }
-            fullScreenListener = { openFullScreen(true) }
-        }
         binding.notesList.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN)
-                activeBottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
+                settingsSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             false
-        }
-
-        val noteContent = binding.bottomSheetAdd.findViewById<NestedScrollView>(R.id.note_content)
-        noteContent.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_MOVE) {
-                if (noteContent.scrollY != 0) {
-                    (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = false
-                }
-            }
-            (bottomAddSheetBehavior as LockableBottomSheetBehavior).swipeEnabled = true
-            return@setOnTouchListener false
         }
     }
 
@@ -190,7 +173,8 @@ class NotesFragment : BaseFragment() {
                 R.id.app_bar_archive -> {
                     parentFragmentManager.beginTransaction().run {
                         setReorderingAllowed(true)
-                        setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                        setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
+                            R.anim.fade_out)
                         replace(R.id.container, ArchiveFragment())
                         addToBackStack(null)
                         commit()
@@ -220,17 +204,16 @@ class NotesFragment : BaseFragment() {
                     openNoteCreation()
                 }
                 binding.fabAdd.transitionName = null
-                binding.bottomSheetAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
             } else if (it == false) {
                 binding.fabAdd.setOnClickListener {
-                    openFullScreen(false)
+                    openFullScreen()
                 }
-                binding.bottomSheetAdd.transitionName = null
-                binding.fabAdd.transitionName = resources.getString(R.string.note_container_transition_name, "local")
+                binding.fabAdd.transitionName = resources.getString(
+                    R.string.note_container_transition_name, "local")
             }
         })
         notesViewModel.getRestoredNoteEvent().observe(viewLifecycleOwner, {
-            binding.bottomSheetAdd.updateNoteData(it)
+            //binding.bottomSheetAdd.updateNoteData(it)
             binding.fabAdd.callOnClick()
         })
         notesViewModel.getDeletedNoteEvent().observe(viewLifecycleOwner, {
@@ -239,49 +222,14 @@ class NotesFragment : BaseFragment() {
         setFragmentResultListener(EditUtils.DELETE_NOTE_REQUEST_KEY) { _, _ ->
             onNoteDeleted()
         }
-        setFragmentResultListener(EditUtils.SAVE_NOTE_REQUEST_KEY) { _, _ ->
-            bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        }
-    }
-
-    private fun openFullScreen(fromBottomSheet: Boolean) {
-        hideKeyboardListener(binding.bottomSheetAdd.findFocus()) {
-
-            val nextFragment = com.lebartodev.lnote.edit.EditNoteFragment.initMe(
-                forceBackButtonVisible = !fromBottomSheet,
-                scrollY = binding.bottomSheetAdd.getContentScroll()
-            )
-                .apply {
-                    sharedElementEnterTransition = TransitionSet()
-                        .apply {
-                            if (fromBottomSheet) {
-                                addTransition(TransitionInflater.from(this@NotesFragment.context).inflateTransition(android.R.transition.move))
-                                addTransition(CardExpandTransition())
-                            } else
-                                addTransition(FabTransition())
-                            duration = this@NotesFragment.resources.getInteger(R.integer.animation_duration).toLong()
-                            interpolator = LinearOutSlowInInterpolator()
-                        }
-                }
-
-            parentFragmentManager.beginTransaction().run {
-                setReorderingAllowed(true)
-                if (!fromBottomSheet) {
-                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    addSharedElement(binding.fabAdd, binding.fabAdd.transitionName)
-                } else {
-                    setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
-                    binding.bottomSheetAdd.getSharedViews().forEach { addSharedElement(it, it.transitionName) }
-                }
-                replace(R.id.container, nextFragment)
-                addToBackStack(null)
-                commit()
-            }
-        }
     }
 
     private fun openNoteCreation() {
-        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        val nextFragment = EditNoteContainerFragment.initMe()
+        childFragmentManager.beginTransaction().run {
+            replace(R.id.add_container_view, nextFragment)
+            commit()
+        }
     }
 
     private fun openSettings() {
@@ -304,7 +252,8 @@ class NotesFragment : BaseFragment() {
         binding.bottomAppBar.animate()
             .setInterpolator(LinearOutSlowInInterpolator())
             .translationY(translationY)
-            .setDuration(if (withAnimation) resources.getInteger(R.integer.animation_duration).toLong() / 2 else 0)
+            .setDuration(if (withAnimation) resources.getInteger(R.integer.animation_duration)
+                .toLong() / 2 else 0)
             .start()
         if (visible) {
             binding.fabAdd.show()
@@ -326,7 +275,6 @@ class NotesFragment : BaseFragment() {
 
     @SuppressLint("ShowToast")
     private fun onNoteDeleted() {
-        bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         Snackbar.make(binding.root, R.string.note_deleted, Snackbar.LENGTH_LONG)
             .addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
                 override fun onShown(transientBottomBar: Snackbar?) {
@@ -354,11 +302,28 @@ class NotesFragment : BaseFragment() {
             .setActionTextColor(ContextCompat.getColor(binding.root.context, R.color.colorAction))
             .apply {
                 val layout = view as Snackbar.SnackbarLayout
-                val textView = layout.findViewById(com.google.android.material.R.id.snackbar_text) as TextView
+                val textView = layout.findViewById(
+                    com.google.android.material.R.id.snackbar_text) as TextView
                 textView.setTextColor(ContextCompat.getColor(binding.root.context, R.color.white))
             }
             .show()
     }
+
+    private fun openFullScreen() {
+        val nextFragment = EditNoteFragment.initMe(
+            forceBackButtonVisible = true
+        )
+        childFragmentManager.beginTransaction().run {
+            setReorderingAllowed(true)
+            setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
+                R.anim.fade_out)
+            addSharedElement(binding.fabAdd, binding.fabAdd.transitionName)
+            replace(R.id.add_container_view, nextFragment)
+            addToBackStack(null)
+            commit()
+        }
+    }
+
 
     companion object {
         const val TAG = "NotesFragment"
