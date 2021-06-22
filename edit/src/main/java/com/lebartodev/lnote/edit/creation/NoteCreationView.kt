@@ -42,7 +42,6 @@ class NoteCreationView : ConstraintLayout {
         updateNoteData(it)
     }
     var closeListener: (() -> Unit)? = null
-    var fullScreenListener: (() -> Unit)? = null
 
     private var isMoreOpen = false
 
@@ -109,8 +108,6 @@ class NoteCreationView : ConstraintLayout {
         binding.calendarButton.setOnClickListener { openCalendarDialog(null) }
         binding.textDescription.addTextChangedListener(descriptionTextWatcher)
         binding.textTitle.addTextChangedListener(titleTextWatcher)
-
-        binding.fullScreenButton.setOnClickListener { fullScreenListener?.invoke() }
         binding.fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
     }
 
@@ -164,7 +161,7 @@ class NoteCreationView : ConstraintLayout {
         component = null
     }
 
-    fun updateNoteData(noteData: NoteData) {
+    private fun updateNoteData(noteData: NoteData) {
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
@@ -212,17 +209,6 @@ class NoteCreationView : ConstraintLayout {
         }
         this.isMoreOpen = isMoreOpen
     }
-
-    fun getSharedViews(): List<View> {
-        val result = mutableListOf(this, binding.noteContent, binding.saveButton,
-            binding.fullScreenButton, binding.dateChip)
-        if (isMoreOpen) {
-            result.addAll(listOf(binding.deleteButton, binding.calendarButton))
-        }
-        return result
-    }
-
-    fun getContentScroll(): Int = binding.noteContent.scrollY
 
     private class SavedState : BaseSavedState {
         var isMoreOpen: Boolean = false

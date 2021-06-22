@@ -26,8 +26,8 @@ import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.ArchiveFragment
-import com.lebartodev.lnote.edit.EditNoteContainerFragment
 import com.lebartodev.lnote.edit.EditNoteFragment
+import com.lebartodev.lnote.edit.creation.NoteCreationContainerFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
@@ -225,7 +225,7 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun openNoteCreation() {
-        val nextFragment = EditNoteContainerFragment.initMe()
+        val nextFragment = NoteCreationContainerFragment.initMe()
         childFragmentManager.beginTransaction().run {
             replace(R.id.add_container_view, nextFragment)
             commit()
@@ -310,9 +310,7 @@ class NotesFragment : BaseFragment() {
     }
 
     private fun openFullScreen() {
-        val nextFragment = EditNoteFragment.initMe(
-            forceBackButtonVisible = true
-        )
+        val nextFragment = EditNoteFragment.initMe()
         childFragmentManager.beginTransaction().run {
             setReorderingAllowed(true)
             setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,

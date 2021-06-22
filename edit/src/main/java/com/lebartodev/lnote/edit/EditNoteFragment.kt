@@ -137,7 +137,8 @@ class EditNoteFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        view.transitionName = resources.getString(R.string.note_container_transition_name, noteId?.toString() ?: "local")
+        view.transitionName = resources.getString(R.string.note_container_transition_name,
+            noteId?.toString() ?: "local")
         binding.noteContent.transitionName = resources.getString(
             R.string.note_content_transition_name, noteId?.toString() ?: "local")
         binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
@@ -160,25 +161,9 @@ class EditNoteFragment : BaseFragment() {
 
         binding.textDescription.addTextChangedListener(descriptionTextWatcher)
         binding.textTitle.addTextChangedListener(titleTextWatcher)
-        if (noteId != null) {
-            binding.deleteButton.visibility = View.GONE
-        } else {
-            binding.deleteButton.visibility = View.VISIBLE
-            binding.deleteButton.setOnClickListener {
-                viewModel.deleteEditedNote()
-            }
-        }
-        if (noteId != null || arguments?.getBoolean(EXTRA_BACK_BUTTON_VISIBLE) == true) {
-            binding.backButton.setOnClickListener {
-                hideKeyboard()
-                parentFragmentManager.popBackStack()
-            }
-            binding.backButton.visibility = View.VISIBLE
-            binding.fullScreenButton.visibility = View.GONE
-        } else {
-            binding.backButton.visibility = View.GONE
-            binding.fullScreenButton.visibility = View.VISIBLE
-            binding.fullScreenButton.setOnClickListener { parentFragmentManager.popBackStack() }
+        binding.backButton.setOnClickListener {
+            hideKeyboard()
+            parentFragmentManager.popBackStack()
         }
 
         binding.saveButton.setOnClickListener {
@@ -202,7 +187,7 @@ class EditNoteFragment : BaseFragment() {
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
-        listOf(binding.saveButton, binding.deleteButton, binding.calendarButton)
+        listOf(binding.saveButton, binding.calendarButton)
             .filter { !sharedElementNames.contains(it.transitionName) }
             .forEach {
                 when (it.transitionName) {
@@ -216,14 +201,6 @@ class EditNoteFragment : BaseFragment() {
                         it.onLayout {
                             it.visibility = View.GONE
                             it.animateSlideTopVisibility(true)
-                        }
-                    }
-                    binding.deleteButton.transitionName -> {
-                        if (noteId == null) {
-                            it.onLayout {
-                                it.visibility = View.GONE
-                                it.animateSlideTopVisibility(true)
-                            }
                         }
                     }
                 }
@@ -269,16 +246,13 @@ class EditNoteFragment : BaseFragment() {
     companion object {
         private const val EXTRA_ID = "EXTRA_ID"
         private const val EXTRA_SCROLL = "EXTRA_SCROLL"
-        private const val EXTRA_BACK_BUTTON_VISIBLE = "EXTRA_BACK_BUTTON_VISIBLE"
 
         private const val TAG_CALENDAR_DIAlOG = "TAG_CALENDAR_DIAlOG"
 
-        fun initMe(id: Long? = null, forceBackButtonVisible: Boolean = false,
-                   scrollY: Int? = null): EditNoteFragment {
+        fun initMe(id: Long? = null, scrollY: Int? = null): EditNoteFragment {
             val fragment = EditNoteFragment()
             val args = Bundle()
             id?.run { args.putLong(EXTRA_ID, this) }
-            args.putBoolean(EXTRA_BACK_BUTTON_VISIBLE, forceBackButtonVisible)
             scrollY?.run { if (this != 0) args.putInt(EXTRA_SCROLL, this) }
             fragment.arguments = args
             return fragment

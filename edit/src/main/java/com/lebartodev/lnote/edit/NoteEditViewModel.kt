@@ -10,14 +10,13 @@ import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.Functions
 import java.util.*
 
 class NoteEditViewModel constructor(
-	private val notesRepository: Repository.Notes,
-	private val settingsRepository: Repository.Settings,
-	private val schedulersFacade: SchedulersFacade
+    private val notesRepository: Repository.Notes,
+    private val settingsRepository: Repository.Settings,
+    private val schedulersFacade: SchedulersFacade
 ) : BaseViewModel() {
     private val disposables = CompositeDisposable()
 
@@ -36,26 +35,26 @@ class NoteEditViewModel constructor(
 
     init {
         disposables.add(
-			settingsRepository.bottomPanelEnabled()
-				.subscribeOn(schedulersFacade.io())
-				.observeOn(schedulersFacade.ui())
-				.subscribe(
-					{ bottomPanelEnabledLiveData.value = it },
-					Functions.emptyConsumer()
-				))
+            settingsRepository.bottomPanelEnabled()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(
+                    { bottomPanelEnabledLiveData.value = it },
+                    Functions.emptyConsumer()
+                ))
     }
 
     fun loadNote(id: Long) {
         disposables.add(
-			notesRepository.getNote(id)
-				.firstOrError()
-				.subscribeOn(schedulersFacade.io())
-				.observeOn(schedulersFacade.ui())
-				.subscribe(Consumer { note ->
-					this.currentNoteLiveData.value = NoteData(note.id, note.title, note.date,
-						note.text, note.created)
-				}, Functions.emptyConsumer())
-		)
+            notesRepository.getNote(id)
+                .firstOrError()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe({ note ->
+                    this.currentNoteLiveData.value = NoteData(note.id, note.title, note.date,
+                        note.text, note.created)
+                }, Functions.emptyConsumer())
+        )
     }
 
     fun setDescription(value: String) {
@@ -88,23 +87,23 @@ class NoteEditViewModel constructor(
             note?.title
 
         disposables.add(Completable
-			.defer {
-				val id = note?.id
-				if (id == null) {
-					notesRepository.createNote(title, note?.text, note?.date).ignoreElement()
-				} else {
-					notesRepository.editNote(id, title, note.text, note.date)
-				}
-			}
-			.subscribeOn(schedulersFacade.io())
-			.observeOn(schedulersFacade.ui())
-			.subscribe({
-				saveResultLiveData.value = true
-				currentNoteLiveData.value = NoteData()
-			}, {
-				postError(it)
-			})
-		)
+            .defer {
+                val id = note?.id
+                if (id == null) {
+                    notesRepository.createNote(title, note?.text, note?.date).ignoreElement()
+                } else {
+                    notesRepository.editNote(id, title, note.text, note.date)
+                }
+            }
+            .subscribeOn(schedulersFacade.io())
+            .observeOn(schedulersFacade.ui())
+            .subscribe({
+                saveResultLiveData.value = true
+                currentNoteLiveData.value = NoteData()
+            }, {
+                postError(it)
+            })
+        )
     }
 
     fun deleteEditedNote() {
@@ -115,14 +114,14 @@ class NoteEditViewModel constructor(
             note?.title
 
         disposables.add(
-			notesRepository.deleteDraftedNote(title, note?.text, note?.date)
-				.subscribeOn(schedulersFacade.io())
-				.observeOn(schedulersFacade.ui())
-				.subscribe({
-					currentNoteLiveData.value = NoteData()
-					deleteResultLiveData.value = true
-				}, Functions.emptyConsumer())
-		)
+            notesRepository.deleteDraftedNote(title, note?.text, note?.date)
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe({
+                    currentNoteLiveData.value = NoteData()
+                    deleteResultLiveData.value = true
+                }, Functions.emptyConsumer())
+        )
     }
 
     override fun onCleared() {

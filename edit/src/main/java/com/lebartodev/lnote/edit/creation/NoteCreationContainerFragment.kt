@@ -47,9 +47,9 @@ class NoteCreationContainerFragment : BaseFragment() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED||newState == BottomSheetBehavior.STATE_HIDDEN) {
                     hideKeyboard(bottomSheet)
-                    parentFragmentManager.popBackStack()
+                    parentFragment?.parentFragmentManager?.popBackStack()
                 }
             }
         })
@@ -57,7 +57,6 @@ class NoteCreationContainerFragment : BaseFragment() {
             closeListener = {
                 bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             }
-            fullScreenListener = { openFullScreen() }
         }
 
         val noteContent = binding.bottomSheetAdd.findViewById<NestedScrollView>(R.id.note_content)
@@ -72,37 +71,6 @@ class NoteCreationContainerFragment : BaseFragment() {
         }
         setFragmentResultListener(EditUtils.SAVE_NOTE_REQUEST_KEY) { _, _ ->
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        }
-    }
-
-    private fun openFullScreen() {
-        hideKeyboardListener(binding.bottomSheetAdd.findFocus()) {
-            val nextFragment = EditNoteFragment.initMe(
-                forceBackButtonVisible = false,
-                scrollY = binding.bottomSheetAdd.getContentScroll()
-            )
-                .apply {
-                    sharedElementEnterTransition = TransitionSet()
-                        .apply {
-                            addTransition(
-                                TransitionInflater.from(this@NoteCreationContainerFragment.context)
-                                    .inflateTransition(android.R.transition.move))
-                            addTransition(CardExpandTransition())
-                            duration = this@NoteCreationContainerFragment.resources.getInteger(
-                                R.integer.animation_duration).toLong()
-                            interpolator = LinearOutSlowInInterpolator()
-                        }
-                }
-
-            parentFragmentManager.beginTransaction().run {
-                setReorderingAllowed(true)
-                setCustomAnimations(0, R.anim.fade_out, 0, R.anim.fade_out)
-                binding.bottomSheetAdd.getSharedViews()
-                    .forEach { addSharedElement(it, it.transitionName) }
-                replace(R.id.edit_container, nextFragment)
-                addToBackStack(null)
-                commit()
-            }
         }
     }
 
