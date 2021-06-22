@@ -136,15 +136,6 @@ class EditNoteFragment : BaseFragment() {
         }
         super.onViewCreated(view, savedInstanceState)
 
-
-        view.transitionName = resources.getString(R.string.note_container_transition_name,
-            noteId?.toString() ?: "local")
-        binding.noteContent.transitionName = resources.getString(
-            R.string.note_content_transition_name, noteId?.toString() ?: "local")
-        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
-            noteId?.toString() ?: "local")
-        binding.textDescription.transitionName = resources.getString(
-            R.string.note_description_transition_name, noteId?.toString() ?: "local")
         binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name,
             noteId?.toString() ?: "local")
 

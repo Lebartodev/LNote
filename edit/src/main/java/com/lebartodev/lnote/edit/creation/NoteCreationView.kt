@@ -35,8 +35,6 @@ import javax.inject.Inject
 
 @SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
-    private var component: EditNoteComponent? = null
-
     private var binding = ViewNoteCreationBinding.inflate(LayoutInflater.from(context), this)
     private val noteObserver = Observer<NoteData> {
         updateNoteData(it)
@@ -48,7 +46,7 @@ class NoteCreationView : ConstraintLayout {
     @Inject
     lateinit var viewModelFactory: EditNoteViewModelFactory
     private val viewModel: NoteEditViewModel by lazy {
-        ViewModelProvider(findFragment<Fragment>().requireParentFragment(), viewModelFactory)[NoteEditViewModel::class.java]
+        ViewModelProvider(findFragment<Fragment>(), viewModelFactory)[NoteEditViewModel::class.java]
     }
 
     private val descriptionTextWatcher = object : TextWatcher {
@@ -85,7 +83,6 @@ class NoteCreationView : ConstraintLayout {
 
         background = NoteTransitionDrawable(ContextCompat.getColor(context, R.color.white), 0f)
 
-        transitionName = resources.getString(R.string.note_container_transition_name, "local")
         binding.noteContent.transitionName = resources.getString(
             R.string.note_content_transition_name, "local")
         binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
@@ -113,7 +110,7 @@ class NoteCreationView : ConstraintLayout {
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        component = DaggerEditNoteComponent.builder()
+        DaggerEditNoteComponent.builder()
             .appComponent(
                 (context.applicationContext as AppComponentProvider).provideAppComponent())
             .context(context)
@@ -158,7 +155,6 @@ class NoteCreationView : ConstraintLayout {
         binding.textTitle.removeTextChangedListener(titleTextWatcher)
         viewModel.currentNote().removeObserver(noteObserver)
         super.onDetachedFromWindow()
-        component = null
     }
 
     private fun updateNoteData(noteData: NoteData) {

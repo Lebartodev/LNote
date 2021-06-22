@@ -9,14 +9,11 @@ import javax.inject.Inject
 
 @EditScope
 class EditNoteViewModelFactory @Inject constructor(private val rep: Repository.Notes,
-                                                   private val settingsRepository: Repository.Settings,
                                                    private val schedulersFacade: SchedulersFacade) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when (modelClass) {
-            NoteEditViewModel::class.java -> NoteEditViewModel(rep,
-                settingsRepository,
-                schedulersFacade) as T
+            NoteEditViewModel::class.java -> NoteEditViewModel(rep, schedulersFacade) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

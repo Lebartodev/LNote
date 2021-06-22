@@ -15,7 +15,6 @@ import java.util.*
 
 class NoteEditViewModel constructor(
     private val notesRepository: Repository.Notes,
-    private val settingsRepository: Repository.Settings,
     private val schedulersFacade: SchedulersFacade
 ) : BaseViewModel() {
     private val disposables = CompositeDisposable()
@@ -23,26 +22,12 @@ class NoteEditViewModel constructor(
     private val saveResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
     private val deleteResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
     private val currentNoteLiveData = MutableLiveData(NoteData())
-    private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
 
     fun saveResult(): LiveData<Boolean?> = saveResultLiveData
 
     fun deleteResult(): LiveData<Boolean?> = deleteResultLiveData
-
-    fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
-
-    init {
-        disposables.add(
-            settingsRepository.bottomPanelEnabled()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe(
-                    { bottomPanelEnabledLiveData.value = it },
-                    Functions.emptyConsumer()
-                ))
-    }
 
     fun loadNote(id: Long) {
         disposables.add(

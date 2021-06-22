@@ -228,6 +228,7 @@ class NotesFragment : BaseFragment() {
         val nextFragment = NoteCreationContainerFragment.initMe()
         childFragmentManager.beginTransaction().run {
             replace(R.id.add_container_view, nextFragment)
+            addToBackStack(null)
             commit()
         }
     }

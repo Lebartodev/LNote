@@ -9,18 +9,13 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResultListener
-import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
-import androidx.transition.TransitionInflater
-import androidx.transition.TransitionSet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.utils.viewBinding
-import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.FragmentNoteCreationContainerBinding
 import com.lebartodev.lnote.edit.utils.EditUtils
-import com.lebartodev.lnote.utils.ui.CardExpandTransition
 import com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior
 import java.util.*
 
@@ -42,14 +37,19 @@ class NoteCreationContainerFragment : BaseFragment() {
         binding.bottomSheetAdd.post {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
+        binding.root.setOnTouchListener { _, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_DOWN)
+                bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            true
+        }
         bottomAddSheetBehavior.setBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED||newState == BottomSheetBehavior.STATE_HIDDEN) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED || newState == BottomSheetBehavior.STATE_HIDDEN) {
                     hideKeyboard(bottomSheet)
-                    parentFragment?.parentFragmentManager?.popBackStack()
+                    parentFragmentManager.popBackStack()
                 }
             }
         })
