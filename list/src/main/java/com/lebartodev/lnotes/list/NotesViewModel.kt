@@ -54,7 +54,7 @@ class NotesViewModel constructor(
                 }
                 .subscribe({
                     notesLiveData.value = it
-                           },
+                },
                     {
                         println(it)
                     }
@@ -64,7 +64,7 @@ class NotesViewModel constructor(
 
     override fun onCleared() {
         super.onCleared()
-        notesDisposable.dispose()
+        notesDisposable.clear()
     }
 
     fun deleteNote(id: Long) {
@@ -85,7 +85,8 @@ class NotesViewModel constructor(
                 .observeOn(schedulersFacade.ui())
                 .subscribe({
                     if (it.created == null) {
-                        restoredNoteEvent.value = NoteData(it.id, it.title, it.date, it.text, it.created)
+                        restoredNoteEvent.value = NoteData(it.id, it.title, it.date, it.text,
+                            it.created)
                     }
                 }, { postError(RestoreNoteException(it)) })
         )

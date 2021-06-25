@@ -22,7 +22,14 @@ class NotesRepository @Inject constructor(private val database: AppDatabase, pri
             .subscribeOn(schedulersFacade.io())
 
     override fun deleteNote(id: Long): Completable = database.notesDao().markAsDeleted(id, System.currentTimeMillis())
-            .subscribeOn(schedulersFacade.io())
+        .subscribeOn(schedulersFacade.io())
+
+
+    override fun completleDeleteNote(id: Long): Completable = database.notesDao().deleteById(id)
+        .subscribeOn(schedulersFacade.io())
+
+    override fun restoreNote(id: Long): Completable = database.notesDao().restoreNote(id)
+        .subscribeOn(schedulersFacade.io())
 
     override fun createNote(title: String?, text: String?, date: Long?): Single<Long> {
         return Single.defer {

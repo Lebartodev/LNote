@@ -28,7 +28,7 @@ interface NotesDAO {
     fun delete(note: Note)
 
     @Query("DELETE FROM note WHERE id = :id")
-    fun deleteById(id: Long)
+    fun deleteById(id: Long):Completable
 
     @Query("UPDATE note set deletedDate = :deletedDate WHERE id = :id")
     fun markAsDeleted(id: Long, deletedDate: Long): Completable

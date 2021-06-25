@@ -13,6 +13,8 @@ interface Repository {
         fun editNote(id: Long, title: String?, text: String?, date: Long?): Completable
         fun restoreLastNote(): Maybe<Note>
         fun getArchive(): Flowable<List<Note>>
+        fun completleDeleteNote(id: Long): Completable
+        fun restoreNote(id: Long): Completable
     }
 
     interface Settings {

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="archive_title">Archive</string>
+    <string name="archive_restore">Restore</string>
+    <string name="archive_delete">Delete</string>
 </resources>
