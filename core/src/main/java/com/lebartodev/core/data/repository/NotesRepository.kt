@@ -1,86 +1,69 @@
 package com.lebartodev.core.data.repository
 
-import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.db.entity.Note
+import com.lebartodev.core.db.entity.Photo
 import com.lebartodev.core.di.utils.AppScope
 import com.lebartodev.core.utils.SchedulersFacade
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Maybe
-import io.reactivex.Single
-import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @AppScope
-class NotesRepository @Inject constructor(private val database: AppDatabase, private val schedulersFacade: SchedulersFacade) : Repository.Notes {
+class NotesRepository @Inject constructor(private val database: AppDatabase,
+                                          private val schedulersFacade: SchedulersFacade) :
+        Repository.Notes {
 
-    override fun getNotes(): Flowable<List<Note>> = database.notesDao().getAll()
-            .subscribeOn(schedulersFacade.io())
+    override fun getNotes(): Flow<List<Note>> = database.notesDao().getAll()
 
-    override fun getNote(id: Long): Flowable<Note> = database.notesDao().getById(id)
-            .subscribeOn(schedulersFacade.io())
+    override fun getNote(id: Long): Flow<Note> = database.notesDao().getById(id)
 
-    override fun deleteNote(id: Long): Completable = database.notesDao().markAsDeleted(id, System.currentTimeMillis())
-        .subscribeOn(schedulersFacade.io())
+    override suspend fun deleteNote(id: Long) = database.notesDao()
+            .markAsDeleted(id, System.currentTimeMillis())
 
+    override suspend fun completleDeleteNote(id: Long) = database.notesDao().deleteById(id)
 
-    override fun completleDeleteNote(id: Long): Completable = database.notesDao().deleteById(id)
-        .subscribeOn(schedulersFacade.io())
+    override suspend fun restoreNote(id: Long) = database.notesDao().restoreNote(id)
 
-    override fun restoreNote(id: Long): Completable = database.notesDao().restoreNote(id)
-        .subscribeOn(schedulersFacade.io())
-
-    override fun createNote(title: String?, text: String?, date: Long?): Single<Long> {
-        return Single.defer {
-            if (text.isNullOrBlank()) {
-                Single.error(NullPointerException())
-            } else {
-                Single.fromCallable { database.notesDao().insert(Note(null, title, date, System.currentTimeMillis(), text)) }
-                        .subscribeOn(schedulersFacade.io())
-            }
-
+    override suspend fun createNote(title: String?, text: String?, date: Long?,
+                                    photos: List<Photo>): Long {
+        if (text.isNullOrBlank()) {
+            throw NullPointerException()
+        } else {
+            return database.notesDao()
+                    .insertNote(Note(null, title, date, System.currentTimeMillis(),
+                            text).apply { this.photos = photos })
         }
     }
 
-    override fun deleteDraftedNote(title: String?, text: String?, date: Long?): Completable {
-        return Completable.defer {
-            if (text.isNullOrBlank()) {
-                Completable.error(NullPointerException())
-            } else {
-                Completable.fromCallable { database.notesDao().insert(Note(null, title, date, null, text, System.currentTimeMillis())) }
-                        .subscribeOn(schedulersFacade.io())
-            }
+    override suspend fun deleteDraftedNote(title: String?, text: String?, date: Long?) {
+        if (text.isNullOrBlank()) {
+            throw NullPointerException()
+        } else {
+            database.notesDao()
+                    .insertNote(Note(null, title, date, null, text, System.currentTimeMillis()))
         }
     }
 
-    override fun editNote(id: Long, title: String?, text: String?, date: Long?): Completable {
-        return Completable.defer {
-            if (text.isNullOrBlank()) {
-                Completable.error(NullPointerException())
-            } else {
-                database.notesDao().getById(id)
-                        .firstOrError()
-                        .map {
-                            it.text = text
-                            it.date = date
-                            it.title = title
-                            it
-                        }
-                        .flatMapCompletable { Completable.fromAction { database.notesDao().update(it) } }
-                        .subscribeOn(schedulersFacade.io())
-            }
+    override suspend fun editNote(id: Long, title: String?, text: String?, date: Long?) {
+        if (text.isNullOrBlank()) {
+            throw NullPointerException()
+        } else {
+            val note = database.notesDao().getById(id)
+                    .first()
+            note.text = text
+            note.date = date
+            note.title = title
+
+            database.notesDao().insertNote(note)
         }
     }
 
-    override fun restoreLastNote(): Maybe<Note> {
-        return database.notesDao().lastDeleted()
-                .flatMap {
-                    database.notesDao().restoreNote(it)
-                            .andThen(database.notesDao().getById(it).firstElement())
-                }
+    override suspend fun restoreLastNote(): Note {
+        val lastDeletedId = database.notesDao().lastDeleted()
+        database.notesDao().restoreNote(lastDeletedId)
+        return database.notesDao().getById(lastDeletedId).first()
     }
 
-    override fun getArchive(): Flowable<List<Note>> = database.notesDao().getArchivedNotes()
-            .subscribeOn(schedulersFacade.io())
+    override fun getArchive(): Flow<List<Note>> = database.notesDao().getArchivedNotes()
 }

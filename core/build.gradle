@@ -20,6 +20,7 @@ dependencies {
 
     implementation "androidx.room:room-runtime:$roomRuntimeVersion"
     implementation "androidx.room:room-rxjava2:$roomRuntimeVersion"
+    implementation "androidx.room:room-ktx:$roomRuntimeVersion"
     kapt "androidx.room:room-compiler:$roomRuntimeVersion"
 
 }

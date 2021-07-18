@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.lebartodev.core.base.BaseFragment
@@ -20,8 +22,10 @@ import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.databinding.FragmentShowNoteBinding
 import com.lebartodev.lnote.show.di.DaggerShowNoteComponent
+import com.lebartodev.lnote.utils.NotePhotosAdapter
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
 import com.lebartodev.lnote.utils.extensions.onLayout
+import com.lebartodev.lnote.utils.ui.PaddingDecoration
 import com.lebartodev.lnote.utils.ui.toPx
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,17 +34,21 @@ import javax.inject.Inject
 class ShowNoteFragment : BaseFragment() {
     private lateinit var formatter: SimpleDateFormat
     private val binding by viewBinding(FragmentShowNoteBinding::inflate)
+    private val adapter = NotePhotosAdapter()
 
     @Inject
     lateinit var viewModelFactory: ShowNoteViewModelFactory
 
-    private val viewModel: ShowNoteViewModel by lazy { ViewModelProvider(this, viewModelFactory)[ShowNoteViewModel::class.java] }
+    private val viewModel: ShowNoteViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[ShowNoteViewModel::class.java]
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerShowNoteComponent.builder()
                 .context(context)
-                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+                .appComponent(
+                        (context.applicationContext as AppComponentProvider).provideAppComponent())
                 .build()
                 .inject(this)
     }
@@ -75,12 +83,18 @@ class ShowNoteFragment : BaseFragment() {
             binding.editButton.callOnClick()
         }
 
-        view.transitionName = resources.getString(R.string.note_container_transition_name, id?.toString() ?: "local")
-        binding.noteContent.transitionName = resources.getString(R.string.note_content_transition_name, id?.toString() ?: "local")
-        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name, id?.toString() ?: "local")
-        binding.textDescription.transitionName = resources.getString(R.string.note_description_transition_name, id?.toString() ?: "local")
-        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name, id?.toString() ?: "local")
-
+        view.transitionName = resources.getString(R.string.note_container_transition_name,
+                id?.toString() ?: "local")
+        binding.noteContent.transitionName = resources.getString(
+                R.string.note_content_transition_name, id?.toString() ?: "local")
+        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
+                id?.toString() ?: "local")
+        binding.textDescription.transitionName = resources.getString(
+                R.string.note_description_transition_name, id?.toString() ?: "local")
+        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name,
+                id?.toString() ?: "local")
+        binding.photosList.transitionName = resources.getString(R.string.note_photos_transition_name,
+                id?.toString() ?: "local")
         binding.backButton.setOnClickListener { parentFragmentManager.popBackStack() }
 
         val visibleTitleLimit = 56f.toPx(resources)
@@ -94,6 +108,17 @@ class ShowNoteFragment : BaseFragment() {
             }
         }
 
+        binding.photosList.layoutManager = GridLayoutManager(context, 1,
+                RecyclerView.HORIZONTAL, false)
+        binding.photosList.addItemDecoration(
+                PaddingDecoration(
+                        8f.toPx(resources),
+                        8f.toPx(resources),
+                        8f.toPx(resources),
+                        8f.toPx(resources)
+                ))
+        binding.photosList.adapter = adapter
+
         viewModel.note().observe(viewLifecycleOwner, { note ->
             note.run {
                 binding.textTitle.text = title
@@ -105,6 +130,8 @@ class ShowNoteFragment : BaseFragment() {
                 binding.deleteButton.setOnClickListener {
                     viewModel.delete()
                 }
+                adapter.updateData(note.photos.map { it.path })
+                binding.photosList.visibility = if (note.photos.isEmpty()) View.GONE else View.VISIBLE
             }
         })
         viewModel.error().observe(viewLifecycleOwner, { error ->
@@ -122,18 +149,21 @@ class ShowNoteFragment : BaseFragment() {
     private fun setupEditButton(note: Note) {
         binding.editButton.setOnClickListener {
             note.id?.run {
-                val nextFragment = EditNoteFragment.initMe(this, scrollY = binding.noteContent.scrollY)
+                val nextFragment = EditNoteFragment.initMe(this,
+                        scrollY = binding.noteContent.scrollY)
 
                 nextFragment.sharedElementEnterTransition = TransitionSet()
                         .apply {
-                            addTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.move))
+                            addTransition(TransitionInflater.from(context)
+                                    .inflateTransition(android.R.transition.move))
                             duration = resources.getInteger(R.integer.animation_duration).toLong()
                         }
 
                 parentFragmentManager
                         .beginTransaction()
                         .setReorderingAllowed(true)
-                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                        .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
+                                R.anim.fade_out)
                         .replace(R.id.container, nextFragment)
                         .addSharedElement(binding.dateChip, binding.dateChip.transitionName)
                         .addToBackStack(null)

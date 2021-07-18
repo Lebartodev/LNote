@@ -16,6 +16,7 @@ import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.FragmentNoteCreationContainerBinding
 import com.lebartodev.lnote.edit.utils.EditUtils
+import com.lebartodev.lnote.feature_attach.AttachPanelFragment
 import com.lebartodev.lnote.utils.ui.LockableBottomSheetBehavior
 import java.util.*
 

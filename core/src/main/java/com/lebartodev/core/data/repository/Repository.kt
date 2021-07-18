@@ -1,20 +1,24 @@
 package com.lebartodev.core.data.repository
 
 import com.lebartodev.core.db.entity.Note
-import io.reactivex.*
+import com.lebartodev.core.db.entity.Photo
+import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
 interface Repository {
     interface Notes {
-        fun getNotes(): Flowable<List<Note>>
-        fun getNote(id: Long): Flowable<Note>
-        fun createNote(title: String?, text: String?, date: Long?): Single<Long>
-        fun deleteDraftedNote(title: String?, text: String?, date: Long?): Completable
-        fun deleteNote(id: Long): Completable
-        fun editNote(id: Long, title: String?, text: String?, date: Long?): Completable
-        fun restoreLastNote(): Maybe<Note>
-        fun getArchive(): Flowable<List<Note>>
-        fun completleDeleteNote(id: Long): Completable
-        fun restoreNote(id: Long): Completable
+        fun getNotes(): Flow<List<Note>>
+        fun getNote(id: Long): Flow<Note>
+        suspend fun createNote(title: String?, text: String?, date: Long?,
+                               photos: List<Photo>): Long
+
+        suspend fun deleteDraftedNote(title: String?, text: String?, date: Long?)
+        suspend fun deleteNote(id: Long)
+        suspend fun editNote(id: Long, title: String?, text: String?, date: Long?)
+        suspend fun restoreLastNote(): Note
+        fun getArchive(): Flow<List<Note>>
+        suspend fun completleDeleteNote(id: Long)
+        suspend fun restoreNote(id: Long)
     }
 
     interface Settings {

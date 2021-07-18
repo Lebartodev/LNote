@@ -29,6 +29,7 @@ import com.lebartodev.lnote.archive.ArchiveFragment
 import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.creation.NoteCreationContainerFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
+import com.lebartodev.lnote.feature_attach.AttachPanelFragment
 import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
 import com.lebartodev.lnotes.list.databinding.FragmentNotesBinding
@@ -112,7 +113,7 @@ class NotesFragment : BaseFragment() {
         }
         binding.notesList.adapter = adapter
         binding.notesList.addItemDecoration(
-            NotesItemDecoration(
+            PaddingDecoration(
                 8f.toPx(resources),
                 8f.toPx(resources),
                 16f.toPx(resources),

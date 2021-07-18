@@ -14,7 +14,7 @@ import com.lebartodev.core.di.utils.AppComponentProvider
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.databinding.FragmentArchiveBinding
 import com.lebartodev.lnote.archive.di.DaggerArchiveComponent
-import com.lebartodev.lnote.utils.ui.NotesItemDecoration
+import com.lebartodev.lnote.utils.ui.PaddingDecoration
 import com.lebartodev.lnote.utils.ui.toPx
 import javax.inject.Inject
 
@@ -62,7 +62,7 @@ class ArchiveFragment : BaseFragment() {
 
         binding.notesList.layoutManager = LinearLayoutManager(context)
         binding.notesList.adapter = adapter
-        binding.notesList.addItemDecoration(NotesItemDecoration(8f.toPx(resources),
+        binding.notesList.addItemDecoration(PaddingDecoration(8f.toPx(resources),
             8f.toPx(resources),
             16f.toPx(resources),
             16f.toPx(resources)))

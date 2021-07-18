@@ -9,10 +9,10 @@ import com.lebartodev.lnote.archive.di.ArchiveScope
 import javax.inject.Inject
 
 @ArchiveScope
-class ArchiveViewModelFactory @Inject constructor(private val rep: Repository.Notes, private val schedulersFacade: SchedulersFacade) : ViewModelProvider.Factory {
+class ArchiveViewModelFactory @Inject constructor(private val rep: Repository.Notes) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return when (modelClass) {
-            ArchiveViewModel::class.java -> ArchiveViewModel(rep, schedulersFacade) as T
+            ArchiveViewModel::class.java -> ArchiveViewModel(rep) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")
         }
     }

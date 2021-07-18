@@ -1,140 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/note_creation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:transitionGroup="false"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="0dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/note_creation"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:transitionGroup="false"
+	app:behavior_hideable="true"
+	app:behavior_peekHeight="0dp"
+	app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+	tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
 
-    <androidx.core.widget.NestedScrollView
-            android:id="@+id/note_content"
-            style="@style/NoteCreation.Content"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@id/fab_more"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_default="wrap"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0"
-            app:layout_constraintVertical_chainStyle="packed">
+	<androidx.core.widget.NestedScrollView
+		android:id="@+id/note_content"
+		style="@style/NoteCreation.Content"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		app:layout_constraintBottom_toTopOf="@id/fab_more"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintHeight_default="wrap"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		app:layout_constraintVertical_bias="0"
+		app:layout_constraintVertical_chainStyle="packed">
 
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
 
-            <EditText
-                    android:id="@+id/text_title"
-                    style="@style/NoteCreation.Title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:saveEnabled="false" />
+			<EditText
+				android:id="@+id/text_title"
+				style="@style/NoteCreation.Title"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="12dp"
+				android:saveEnabled="false" />
 
-            <View
-                    android:id="@+id/add_divider"
-                    style="@style/NoteCreation.Divider"
-                    android:layout_width="match_parent" />
+			<View
+				android:id="@+id/add_divider"
+				style="@style/NoteCreation.Divider"
+				android:layout_width="match_parent" />
 
-            <EditText
-                    android:id="@+id/text_description"
-                    style="@style/NoteCreation.Description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="top|start"
-                    android:minLines="2"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:saveEnabled="false" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-
-    <View
-            android:id="@+id/fade_top"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/note_fade_size"
-            android:background="@drawable/note_top_gradient"
-            app:layout_constraintEnd_toEndOf="@id/note_content"
-            app:layout_constraintStart_toStartOf="@id/note_content"
-            app:layout_constraintTop_toTopOf="@id/note_content" />
-
-    <View
-            android:id="@+id/fade_bottom"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/note_fade_size"
-            android:background="@drawable/note_bottom_gradient"
-            app:layout_constraintBottom_toBottomOf="@id/note_content"
-            app:layout_constraintEnd_toEndOf="@id/note_content"
-            app:layout_constraintStart_toStartOf="@id/note_content" />
+			<EditText
+				android:id="@+id/text_description"
+				style="@style/NoteCreation.Description"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="top|start"
+				android:minLines="2"
+				android:paddingTop="8dp"
+				android:paddingBottom="8dp"
+				android:saveEnabled="false" />
+		</LinearLayout>
+	</androidx.core.widget.NestedScrollView>
 
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_drop_down_24"
-            app:backgroundTint="@color/colorPrimary"
-            app:fabSize="mini"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/date_chip"
-            app:layout_constraintVertical_bias="1"
-            app:tint="@color/white" />
+	<View
+		android:id="@+id/fade_top"
+		android:layout_width="0dp"
+		android:layout_height="@dimen/note_fade_size"
+		android:background="@drawable/note_top_gradient"
+		app:layout_constraintEnd_toEndOf="@id/note_content"
+		app:layout_constraintStart_toStartOf="@id/note_content"
+		app:layout_constraintTop_toTopOf="@id/note_content" />
 
-    <ImageButton
-            android:id="@+id/delete_button"
-            style="@style/NoteCreation.DeleteButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="4dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/fab_more"
-            app:layout_constraintStart_toEndOf="@id/calendar_button"
-            app:layout_constraintTop_toTopOf="@id/fab_more" />
+	<View
+		android:id="@+id/fade_bottom"
+		android:layout_width="0dp"
+		android:layout_height="@dimen/note_fade_size"
+		android:background="@drawable/note_bottom_gradient"
+		app:layout_constraintBottom_toBottomOf="@id/note_content"
+		app:layout_constraintEnd_toEndOf="@id/note_content"
+		app:layout_constraintStart_toStartOf="@id/note_content" />
 
-    <ImageButton
-            android:id="@+id/calendar_button"
-            style="@style/NoteCreation.CalendarButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="4dp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/fab_more"
-            app:layout_constraintEnd_toStartOf="@id/delete_button"
-            app:layout_constraintStart_toEndOf="@id/fab_more"
-            app:layout_constraintTop_toTopOf="@id/fab_more" />
 
-    <com.lebartodev.lnote.utils.ui.DateChip
-            android:id="@+id/date_chip"
-            style="@style/NoteCreation.DateChip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="8dp"
-            app:closeIconEnabled="true"
-            app:layout_constraintStart_toStartOf="@id/note_content"
-            app:layout_constraintTop_toBottomOf="@id/note_content"
-            tools:text="cp, 10 окт. 2018"
-            tools:visibility="visible" />
+	<com.google.android.material.floatingactionbutton.FloatingActionButton
+		android:id="@+id/fab_more"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="24dp"
+		android:layout_marginTop="16dp"
+		android:layout_marginBottom="16dp"
+		android:src="@drawable/ic_drop_down_24"
+		app:backgroundTint="@color/colorPrimary"
+		app:fabSize="mini"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/date_chip"
+		app:layout_constraintVertical_bias="1"
+		app:tint="@color/white" />
 
-    <com.google.android.material.button.MaterialButton
-            android:id="@+id/save_button"
-            style="@style/NoteCreation.SaveButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/date_chip" />
+	<ImageButton
+		android:id="@+id/delete_button"
+		style="@style/NoteCreation.DeleteButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginEnd="4dp"
+		android:visibility="gone"
+		app:layout_constraintBottom_toBottomOf="@id/fab_more"
+		app:layout_constraintStart_toEndOf="@id/attach_button"
+		app:layout_constraintTop_toTopOf="@id/fab_more" />
+
+	<ImageButton
+		android:id="@+id/attach_button"
+		style="@style/NoteCreation.DeleteButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="4dp"
+		android:layout_marginEnd="4dp"
+		android:src="@drawable/ic_attach_file"
+		android:visibility="gone"
+		app:layout_constraintBottom_toBottomOf="@id/fab_more"
+		app:layout_constraintEnd_toStartOf="@id/delete_button"
+		app:layout_constraintStart_toEndOf="@id/calendar_button"
+		app:layout_constraintTop_toTopOf="@id/fab_more" />
+
+	<ImageButton
+		android:id="@+id/calendar_button"
+		style="@style/NoteCreation.CalendarButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="12dp"
+		android:layout_marginEnd="4dp"
+		android:visibility="gone"
+		app:layout_constraintBottom_toBottomOf="@id/fab_more"
+		app:layout_constraintEnd_toStartOf="@id/attach_button"
+		app:layout_constraintStart_toEndOf="@id/fab_more"
+		app:layout_constraintTop_toTopOf="@id/fab_more" />
+
+	<com.lebartodev.lnote.utils.ui.DateChip
+		android:id="@+id/date_chip"
+		style="@style/NoteCreation.DateChip"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="24dp"
+		android:layout_marginTop="8dp"
+		app:closeIconEnabled="true"
+		app:layout_constraintStart_toStartOf="@id/note_content"
+		app:layout_constraintTop_toBottomOf="@id/note_content"
+		tools:text="cp, 10 окт. 2018"
+		tools:visibility="visible" />
+
+	<androidx.recyclerview.widget.RecyclerView
+		android:id="@+id/photos_list"
+		android:layout_width="0dp"
+		android:layout_height="100dp"
+		android:layout_marginTop="16dp"
+		android:layout_marginBottom="16dp"
+		android:visibility="gone"
+		android:clipToPadding="false"
+		android:paddingStart="24dp"
+		android:paddingEnd="24dp"
+		app:layout_constraintBottom_toTopOf="@id/fab_more"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/date_chip" />
+
+	<com.google.android.material.button.MaterialButton
+		android:id="@+id/save_button"
+		style="@style/NoteCreation.SaveButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintTop_toBottomOf="@id/photos_list" />
 
 </merge>

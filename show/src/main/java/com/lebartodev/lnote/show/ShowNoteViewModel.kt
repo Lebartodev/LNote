@@ -2,35 +2,44 @@ package com.lebartodev.lnote.show
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.exception.DeleteNoteException
 import com.lebartodev.lnote.utils.exception.LoadNoteException
-import io.reactivex.disposables.Disposables
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
-class ShowNoteViewModel constructor(private val notesRepository: Repository.Notes, private val schedulersFacade: SchedulersFacade) : BaseViewModel() {
-    private var disposable = Disposables.empty()
-    private var deleteDisposable = Disposables.empty()
+class ShowNoteViewModel constructor(private val notesRepository: Repository.Notes) :
+        BaseViewModel() {
     private val currentNote = MutableLiveData<Note>()
     private val deleteResultLiveData = SingleLiveEvent<Boolean>()
 
     fun loadNote(id: Long) {
-        disposable = notesRepository.getNote(id)
-            .subscribeOn(schedulersFacade.io())
-            .observeOn(schedulersFacade.ui())
-            .subscribe({ currentNote.value = it }, { postError(LoadNoteException(it)) })
+        notesRepository.getNote(id)
+                .flowOn(Dispatchers.IO)
+                .onEach { currentNote.value = it }
+                .catch { postError(LoadNoteException(it)) }
+                .launchIn(viewModelScope)
     }
 
     fun delete() {
-        currentNote.value?.id?.run {
-            deleteDisposable.dispose()
-            deleteDisposable = notesRepository.deleteNote(this)
-                    .subscribeOn(schedulersFacade.io())
-                    .observeOn(schedulersFacade.ui())
-                    .subscribe({ deleteResultLiveData.value = true }, { postError(DeleteNoteException(it)) })
+        viewModelScope.launch(Dispatchers.IO) {
+            val id = currentNote.value?.id
+            try {
+                if (id != null) {
+                    notesRepository.deleteNote(id)
+                    deleteResultLiveData.value = true
+                }
+            } catch (e: Exception) {
+                postError(DeleteNoteException(e))
+            }
         }
     }
 
@@ -40,11 +49,5 @@ class ShowNoteViewModel constructor(private val notesRepository: Repository.Note
 
     fun deleteResult(): LiveData<Boolean> {
         return deleteResultLiveData
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposable.dispose()
-        deleteDisposable.dispose()
     }
 }

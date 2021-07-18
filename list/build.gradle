@@ -13,6 +13,7 @@ dependencies {
     implementation project(':archive')
     implementation project(':show')
     implementation project(':settings')
+    implementation project(':feature-attach')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"

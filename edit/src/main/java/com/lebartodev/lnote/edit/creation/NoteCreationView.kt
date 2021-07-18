@@ -18,6 +18,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.findFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.AppComponentProvider
@@ -26,15 +28,19 @@ import com.lebartodev.lnote.edit.NoteEditViewModel
 import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.ViewNoteCreationBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
-import com.lebartodev.lnote.edit.di.EditNoteComponent
+import com.lebartodev.lnote.feature_attach.AttachPanelFragment
+import com.lebartodev.lnote.utils.NotePhotosAdapter
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable
+import com.lebartodev.lnote.utils.ui.PaddingDecoration
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
+import com.lebartodev.lnote.utils.ui.toPx
 import java.util.*
 import javax.inject.Inject
 
 @SuppressLint("ClickableViewAccessibility")
 class NoteCreationView : ConstraintLayout {
+    private val adapter = NotePhotosAdapter()
     private var binding = ViewNoteCreationBinding.inflate(LayoutInflater.from(context), this)
     private val noteObserver = Observer<NoteData> {
         updateNoteData(it)
@@ -100,12 +106,25 @@ class NoteCreationView : ConstraintLayout {
             viewModel.deleteEditedNote()
             closeListener?.invoke()
         }
+        binding.attachButton.setOnClickListener {
+            AttachPanelFragment()
+                .show(findFragment<Fragment>().childFragmentManager, AttachPanelFragment.TAG)
+        }
 
         binding.dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
         binding.calendarButton.setOnClickListener { openCalendarDialog(null) }
         binding.textDescription.addTextChangedListener(descriptionTextWatcher)
         binding.textTitle.addTextChangedListener(titleTextWatcher)
         binding.fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
+        binding.photosList.adapter = adapter
+        binding.photosList.addItemDecoration(PaddingDecoration(
+            8f.toPx(resources),
+            8f.toPx(resources),
+            8f.toPx(resources),
+            8f.toPx(resources)
+        ))
+        binding.photosList.layoutManager = GridLayoutManager(context, 1,
+            RecyclerView.HORIZONTAL, false)
     }
 
     override fun onAttachedToWindow() {
@@ -116,6 +135,13 @@ class NoteCreationView : ConstraintLayout {
             .context(context)
             .build().also { it.inject(this) }
         viewModel.currentNote().observeForever(noteObserver)
+
+        findFragment<Fragment>().childFragmentManager
+            .setFragmentResultListener(AttachPanelFragment.ATTACH_REQUEST_KEY,
+                findFragment<Fragment>().viewLifecycleOwner,
+                { _, bundle ->
+                    viewModel.addPhoto(bundle.getString(AttachPanelFragment.PHOTO_PATH) ?: "")
+                })
     }
 
     override fun onSaveInstanceState(): Parcelable {
@@ -161,6 +187,7 @@ class NoteCreationView : ConstraintLayout {
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
+        val photos = noteData.photos
 
         if (description != binding.textTitle.hint) {
             if (description.isNotEmpty()) {
@@ -182,6 +209,9 @@ class NoteCreationView : ConstraintLayout {
         binding.dateChip.setOnClickListener {
             openCalendarDialog(time)
         }
+        binding.photosList.visibility = if (photos.isEmpty()) View.GONE else View.VISIBLE
+        adapter.updateData(photos.map { it.path })
+
     }
 
     private fun setMoreOpen(isMoreOpen: Boolean, animate: Boolean = true) {
@@ -192,6 +222,8 @@ class NoteCreationView : ConstraintLayout {
             set.clone(constraintLayout)
             set.setVisibility(binding.calendarButton.id,
                 if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(binding.attachButton.id,
+                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
             set.setVisibility(binding.deleteButton.id,
                 if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
             binding.fabMore.setImageResource(
@@ -199,6 +231,7 @@ class NoteCreationView : ConstraintLayout {
             set.applyTo(constraintLayout)
         } else {
             binding.deleteButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
+            binding.attachButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
             binding.calendarButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
             binding.fabMore.setImageResource(
                 if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)

@@ -2,6 +2,7 @@ package com.lebartodev.lnotes.list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.data.repository.Repository
@@ -12,13 +13,19 @@ import com.lebartodev.lnote.utils.exception.DeleteNoteException
 import com.lebartodev.lnote.utils.exception.RestoreNoteException
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.internal.functions.Functions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NotesViewModel constructor(
-    private val settingsRepository: Repository.Settings,
-    private val notesRepository: Repository.Notes,
-    private val schedulersFacade: SchedulersFacade
-) :
-    BaseViewModel() {
+        private val settingsRepository: Repository.Settings,
+        private val notesRepository: Repository.Notes,
+        private val schedulersFacade: SchedulersFacade
+) : BaseViewModel() {
     private var notesDisposable = CompositeDisposable()
 
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
@@ -33,33 +40,23 @@ class NotesViewModel constructor(
 
     init {
         notesDisposable.add(
-            settingsRepository.bottomPanelEnabled()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe(
-                    { bottomPanelEnabledLiveData.value = it },
-                    Functions.emptyConsumer()
-                )
+                settingsRepository.bottomPanelEnabled()
+                        .subscribeOn(schedulersFacade.io())
+                        .observeOn(schedulersFacade.ui())
+                        .subscribe(
+                                { bottomPanelEnabledLiveData.value = it },
+                                Functions.emptyConsumer()
+                        )
         )
         fetchNotes()
     }
 
     fun fetchNotes() {
-        notesDisposable.add(
-            notesRepository.getNotes()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .doFinally {
-                    println("")
-                }
-                .subscribe({
-                    notesLiveData.value = it
-                },
-                    {
-                        println(it)
-                    }
-                )
-        )
+        notesRepository.getNotes()
+                .flowOn(Dispatchers.IO)
+                .onEach { notesLiveData.value = it }
+                .catch { postError(it) }
+                .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
@@ -68,27 +65,32 @@ class NotesViewModel constructor(
     }
 
     fun deleteNote(id: Long) {
-        notesDisposable.add(
-            notesRepository.deleteNote(id)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({
+        viewModelScope.launch {
+            try {
+                notesRepository.deleteNote(id)
+                withContext(Dispatchers.Main) {
                     deletedNoteEvent.value = true
-                }, { postError(DeleteNoteException(it)) })
-        )
+                }
+            } catch (e: Exception) {
+                postError(DeleteNoteException(e))
+            }
+        }
     }
 
     fun restoreLastNote() {
-        notesDisposable.add(
-            notesRepository.restoreLastNote()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({
-                    if (it.created == null) {
-                        restoredNoteEvent.value = NoteData(it.id, it.title, it.date, it.text,
-                            it.created)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val note = notesRepository.restoreLastNote()
+                if (note.created == null) {
+                    withContext(Dispatchers.Main) {
+                        restoredNoteEvent.value = NoteData(note.id, note.title, note.date,
+                                note.text,
+                                note.created)
                     }
-                }, { postError(RestoreNoteException(it)) })
-        )
+                }
+            } catch (e: Exception) {
+                postError(RestoreNoteException(e))
+            }
+        }
     }
 }

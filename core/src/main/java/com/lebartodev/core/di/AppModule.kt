@@ -23,6 +23,10 @@ class AppModule {
 
     @Provides
     @AppScope
+    fun provideApplicationContext(application: Application): Context = application.applicationContext
+
+    @Provides
+    @AppScope
     fun providePreferences(application: Application): SharedPreferences = application.getSharedPreferences(application.getString(R.string.settings_tag), Context.MODE_PRIVATE)
 
     @Provides

@@ -2,23 +2,22 @@ package com.lebartodev.lnote.edit
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.data.repository.Repository
-import com.lebartodev.core.utils.SchedulersFacade
+import com.lebartodev.core.db.entity.Photo
 import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.extensions.formattedHint
-import io.reactivex.Completable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.internal.functions.Functions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class NoteEditViewModel constructor(
-    private val notesRepository: Repository.Notes,
-    private val schedulersFacade: SchedulersFacade
+        private val notesRepository: Repository.Notes
 ) : BaseViewModel() {
-    private val disposables = CompositeDisposable()
-
     private val saveResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
     private val deleteResultLiveData: SingleLiveEvent<Boolean> = SingleLiveEvent()
     private val currentNoteLiveData = MutableLiveData(NoteData())
@@ -30,16 +29,13 @@ class NoteEditViewModel constructor(
     fun deleteResult(): LiveData<Boolean?> = deleteResultLiveData
 
     fun loadNote(id: Long) {
-        disposables.add(
-            notesRepository.getNote(id)
-                .firstOrError()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({ note ->
-                    this.currentNoteLiveData.value = NoteData(note.id, note.title, note.date,
-                        note.text, note.created)
-                }, Functions.emptyConsumer())
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            val note = notesRepository.getNote(id).first()
+            withContext(Dispatchers.Main) {
+                currentNoteLiveData.value = NoteData(note.id, note.title, note.date,
+                        note.text, note.created, note.photos)
+            }
+        }
     }
 
     fun setDescription(value: String) {
@@ -52,12 +48,20 @@ class NoteEditViewModel constructor(
 
     fun setDate(year: Int, month: Int, day: Int) {
         val calendar = Calendar.getInstance()
-            .apply {
-                set(Calendar.YEAR, year)
-                set(Calendar.MONTH, month)
-                set(Calendar.DAY_OF_MONTH, day)
-            }
+                .apply {
+                    set(Calendar.YEAR, year)
+                    set(Calendar.MONTH, month)
+                    set(Calendar.DAY_OF_MONTH, day)
+                }
         currentNoteLiveData.value = currentNoteLiveData.value?.apply { date = calendar.timeInMillis }
+    }
+
+    fun addPhoto(path: String) {
+        currentNoteLiveData.value = currentNoteLiveData.value?.apply {
+            val updatedPhotos = photos.toMutableList()
+            updatedPhotos.add(Photo(UUID.randomUUID().toString(), path, System.currentTimeMillis()))
+            photos = updatedPhotos
+        }
     }
 
     fun clearDate() {
@@ -65,52 +69,44 @@ class NoteEditViewModel constructor(
     }
 
     fun saveNote() {
-        val note = currentNoteLiveData.value
-        val title = if (note?.title.isNullOrEmpty())
-            (note?.text ?: "").formattedHint()
-        else
-            note?.title
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val note = currentNoteLiveData.value
+                val title = if (note?.title.isNullOrEmpty())
+                    (note?.text ?: "").formattedHint()
+                else
+                    note?.title
 
-        disposables.add(Completable
-            .defer {
                 val id = note?.id
                 if (id == null) {
-                    notesRepository.createNote(title, note?.text, note?.date).ignoreElement()
+                    notesRepository.createNote(title, note?.text, note?.date,
+                            note?.photos ?: arrayListOf())
                 } else {
                     notesRepository.editNote(id, title, note.text, note.date)
                 }
+                withContext(Dispatchers.Main) {
+                    saveResultLiveData.value = true
+                    currentNoteLiveData.value = NoteData()
+                }
+            } catch (e: Exception) {
+                postError(e)
             }
-            .subscribeOn(schedulersFacade.io())
-            .observeOn(schedulersFacade.ui())
-            .subscribe({
-                saveResultLiveData.value = true
-                currentNoteLiveData.value = NoteData()
-            }, {
-                postError(it)
-            })
-        )
+        }
     }
 
     fun deleteEditedNote() {
-        val note = currentNoteLiveData.value
-        val title = if (note?.title.isNullOrEmpty())
-            (note?.text ?: "").formattedHint()
-        else
-            note?.title
-
-        disposables.add(
+        viewModelScope.launch(Dispatchers.IO) {
+            val note = currentNoteLiveData.value
+            val title = if (note?.title.isNullOrEmpty())
+                (note?.text ?: "").formattedHint()
+            else
+                note?.title
             notesRepository.deleteDraftedNote(title, note?.text, note?.date)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe({
-                    currentNoteLiveData.value = NoteData()
-                    deleteResultLiveData.value = true
-                }, Functions.emptyConsumer())
-        )
-    }
 
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
+            withContext(Dispatchers.Main) {
+                currentNoteLiveData.value = NoteData()
+                deleteResultLiveData.value = true
+            }
+        }
     }
 }

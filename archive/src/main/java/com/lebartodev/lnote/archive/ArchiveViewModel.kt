@@ -2,50 +2,40 @@ package com.lebartodev.lnote.archive
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.core.utils.SchedulersFacade
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.internal.functions.Functions
-import io.reactivex.internal.functions.Functions.EMPTY_ACTION
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
-class ArchiveViewModel constructor(var notesRepository: Repository.Notes,
-                                   val schedulersFacade: SchedulersFacade) : BaseViewModel() {
-    private var notesDisposable = CompositeDisposable()
+class ArchiveViewModel constructor(var notesRepository: Repository.Notes) : BaseViewModel() {
 
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
 
     fun getNotes(): LiveData<List<Note>> = notesLiveData
 
     init {
-        notesDisposable.add(notesRepository.getArchive()
-            .subscribeOn(schedulersFacade.io())
-            .observeOn(schedulersFacade.ui())
-            .subscribe({ notesLiveData.value = it },
-                Functions.emptyConsumer()))
+        notesRepository.getArchive()
+                .flowOn(Dispatchers.IO)
+                .onEach { notesLiveData.value = it }
+                .catch { postError(it) }
+                .launchIn(viewModelScope)
     }
 
     fun deleteNote(id: Long) {
-        notesDisposable.add(notesRepository.completleDeleteNote(id)
-            .subscribeOn(schedulersFacade.io())
-            .observeOn(schedulersFacade.ui())
-            .subscribe(EMPTY_ACTION,
-                Functions.emptyConsumer()))
+        viewModelScope.launch(Dispatchers.IO) {
+            notesRepository.completleDeleteNote(id)
+        }
     }
 
     fun restoreNote(id: Long) {
-        notesDisposable.add(notesRepository.restoreNote(id)
-            .subscribeOn(schedulersFacade.io())
-            .observeOn(schedulersFacade.ui())
-            .subscribe(EMPTY_ACTION,
-                Functions.emptyConsumer()))
+        viewModelScope.launch(Dispatchers.IO) {
+            notesRepository.restoreNote(id)
+        }
     }
-
-    override fun onCleared() {
-        super.onCleared()
-        notesDisposable.dispose()
-    }
-
-
 }

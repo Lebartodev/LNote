@@ -9,6 +9,7 @@ android androidConfiguration
 dependencies {
     implementation project(':core')
     implementation project(':utils')
+    implementation project(':feature-attach')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"

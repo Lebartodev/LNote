@@ -2,43 +2,69 @@ package com.lebartodev.core.db.dao
 
 import androidx.room.*
 import com.lebartodev.core.db.entity.Note
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Maybe
+import com.lebartodev.core.db.entity.NoteEntity
+import com.lebartodev.core.db.entity.Photo
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface NotesDAO {
-    @Query("SELECT * FROM note WHERE deletedDate is null and created not null ORDER BY created DESC")
-    fun getAll(): Flowable<List<Note>>
+    @Transaction
+    @Query("SELECT * FROM noteentity WHERE deletedDate is null and created not null ORDER BY created DESC")
+    fun getAll(): Flow<List<Note>>
 
-    @Query("SELECT * FROM note WHERE deletedDate is not null and created not null ORDER BY created DESC")
-    fun getArchivedNotes(): Flowable<List<Note>>
+    @Transaction
+    @Query("SELECT * FROM noteentity WHERE deletedDate is not null and created not null ORDER BY created DESC")
+    fun getArchivedNotes(): Flow<List<Note>>
 
-    @Query("SELECT * FROM note WHERE id = :id")
-    fun getById(id: Long): Flowable<Note>
+    @Transaction
+    @Query("SELECT * FROM noteentity WHERE id = :id")
+    fun getById(id: Long): Flow<Note>
 
     @Insert
-    fun insert(note: Note): Long
+    suspend fun insertNoteEntity(note: NoteEntity): Long
 
     @Update
-    fun update(note: Note)
+    suspend fun updateNoteEntity(note: NoteEntity): Int
 
-    @Delete
-    fun delete(note: Note)
+    @Query("DELETE FROM noteentity WHERE id = :id")
+    suspend fun deleteById(id: Long)
 
-    @Query("DELETE FROM note WHERE id = :id")
-    fun deleteById(id: Long):Completable
+    @Query("UPDATE noteentity set deletedDate = :deletedDate WHERE id = :id")
+    suspend fun markAsDeleted(id: Long, deletedDate: Long)
 
-    @Query("UPDATE note set deletedDate = :deletedDate WHERE id = :id")
-    fun markAsDeleted(id: Long, deletedDate: Long): Completable
+    @Query("SELECT id FROM noteentity WHERE deletedDate = (SELECT MAX(deletedDate) FROM noteentity)")
+    suspend fun lastDeleted(): Long
 
-    @Query("SELECT id FROM note WHERE deletedDate = (SELECT MAX(deletedDate) FROM note)")
-    fun lastDeleted(): Maybe<Long>
+    @Query("UPDATE noteentity set deletedDate = NULL WHERE id = :id")
+    suspend fun restoreNote(id: Long)
 
-    @Query("UPDATE note set deletedDate = NULL WHERE id = :id")
-    fun restoreNote(id: Long): Completable
-
-    @Query("UPDATE note SET title = :title, text = :text, date = :date WHERE id = :id")
+    @Query("UPDATE noteentity SET title = :title, text = :text, date = :date WHERE id = :id")
     fun updateById(id: Long, title: String?, text: String?, date: Long?)
+
+    @Insert
+    suspend fun insertPhoto(photo: Photo): Long
+
+    @Update
+    suspend fun updatePhoto(photo: Photo): Int
+
+    @Transaction
+    suspend fun insertNote(note: Note): Long {
+        val id: Long
+        if (updateNoteEntity(note) == 0) {
+            id = insertNoteEntity(note)
+        } else {
+            id = note.id ?: 0L
+        }
+
+
+        val photos = note.photos
+        for (photo in photos) {
+            photo.noteId = id
+            if (updatePhoto(photo) == 0) {
+                insertPhoto(photo)
+            }
+        }
+        return id
+    }
 }
