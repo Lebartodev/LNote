@@ -1,14 +1,17 @@
-package com.lebartodev.lnote.feature_attach
+package com.lebartodev.lnote.feature_attach.ui
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.lebartodev.core.base.BaseViewModel
+import com.lebartodev.lnote.feature_attach.FilesRepository
+import com.lebartodev.lnote.feature_attach.Photo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import javax.inject.Inject
 
-class AttachViewModel(private val filesRepository: FilesRepository) : BaseViewModel() {
+class AttachViewModel @Inject constructor(private val filesRepository: FilesRepository) : BaseViewModel() {
     val photos = MutableLiveData(listOf<Photo>())
     val selectedPhoto = MutableLiveData<String>()
 

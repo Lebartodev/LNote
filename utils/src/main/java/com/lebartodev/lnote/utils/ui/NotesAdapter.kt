@@ -11,7 +11,6 @@ import com.lebartodev.core.db.entity.Note
 import com.lebartodev.lnote.utils.NotePhotosAdapter
 import com.lebartodev.lnote.utils.R
 
-
 class NotesAdapter(private val listener: (note: Note, sharedViews: List<View>) -> Unit) :
         RecyclerView.Adapter<NotesAdapter.ViewHolder>() {
     val data: MutableList<Note> = mutableListOf()

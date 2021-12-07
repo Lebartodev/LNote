@@ -2,11 +2,11 @@ package com.lebartodev.lnote.feature_attach
 
 import android.content.Context
 import android.provider.MediaStore
-import com.lebartodev.lnote.feature_attach.di.AttachScope
+import com.lebartodev.core.di.utils.FeatureScope
 import java.io.File
 import javax.inject.Inject
 
-@AttachScope
+@FeatureScope
 class FilesRepositoryImpl @Inject constructor(private val applicationContext: Context) :
     FilesRepository {
 
@@ -17,9 +17,7 @@ class FilesRepositoryImpl @Inject constructor(private val applicationContext: Co
     )
 
     override suspend fun loadPhotos(): List<Photo> {
-
         val result = mutableListOf<Photo>()
-
         applicationContext.contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             projection, null, null, MediaStore.Images.Media.DATE_ADDED + " DESC"
@@ -28,12 +26,8 @@ class FilesRepositoryImpl @Inject constructor(private val applicationContext: Co
             val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
             val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
             while (cursor.moveToNext()) {
-                // Get values of columns for a given video.
                 val path = cursor.getString(pathColumn)
                 val name = cursor.getString(nameColumn)
-
-                // Stores column values and the contentUri in a local object
-                // that represents the media file.
                 result += Photo(path, name)
             }
         }

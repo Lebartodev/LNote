@@ -22,13 +22,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
 import com.lebartodev.core.data.NoteData
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.CoreComponentProvider
 import com.lebartodev.lnote.edit.EditNoteViewModelFactory
 import com.lebartodev.lnote.edit.NoteEditViewModel
 import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.ViewNoteCreationBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
-import com.lebartodev.lnote.feature_attach.AttachPanelFragment
+import com.lebartodev.lnote.feature_attach.ui.AttachPanelFragment
 import com.lebartodev.lnote.utils.NotePhotosAdapter
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable
@@ -130,14 +130,14 @@ class NoteCreationView : ConstraintLayout {
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         DaggerEditNoteComponent.builder()
-            .appComponent(
-                (context.applicationContext as AppComponentProvider).provideAppComponent())
-            .context(context)
-            .build().also { it.inject(this) }
+            .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
+            .build()
+            .inject(this)
         viewModel.currentNote().observeForever(noteObserver)
 
         findFragment<Fragment>().childFragmentManager
-            .setFragmentResultListener(AttachPanelFragment.ATTACH_REQUEST_KEY,
+            .setFragmentResultListener(
+                AttachPanelFragment.ATTACH_REQUEST_KEY,
                 findFragment<Fragment>().viewLifecycleOwner,
                 { _, bundle ->
                     viewModel.addPhoto(bundle.getString(AttachPanelFragment.PHOTO_PATH) ?: "")

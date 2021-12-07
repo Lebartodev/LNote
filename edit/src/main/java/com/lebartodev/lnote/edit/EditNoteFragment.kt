@@ -16,12 +16,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.data.NoteData
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.CoreComponentProvider
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.databinding.FragmentEditNoteBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
 import com.lebartodev.lnote.edit.utils.EditUtils
-import com.lebartodev.lnote.feature_attach.AttachPanelFragment
+import com.lebartodev.lnote.feature_attach.ui.AttachPanelFragment
 import com.lebartodev.lnote.utils.NotePhotosAdapter
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import com.lebartodev.lnote.utils.extensions.animateSlideTopVisibility
@@ -121,9 +121,7 @@ class EditNoteFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerEditNoteComponent.builder()
-                .appComponent(
-                        (context.applicationContext as AppComponentProvider).provideAppComponent())
-                .context(context)
+                .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
                 .build()
                 .inject(this)
     }
@@ -199,7 +197,8 @@ class EditNoteFragment : BaseFragment() {
             }
         }
         childFragmentManager
-                .setFragmentResultListener(AttachPanelFragment.ATTACH_REQUEST_KEY,
+                .setFragmentResultListener(
+                    AttachPanelFragment.ATTACH_REQUEST_KEY,
                         viewLifecycleOwner,
                         { _, bundle ->
                             viewModel.addPhoto(

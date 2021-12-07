@@ -14,9 +14,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import com.lebartodev.lnote.R
 import com.lebartodev.lnote.common.notes.NotesActivity
-import com.lebartodev.lnote.di.notes.DaggerNotesComponent
 import com.lebartodev.lnote.utils.RecyclerViewMatcher
-import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.app.CoreComponentTest
 import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentTest
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
 import com.lebartodev.lnote.utils.rule.DisableAnimationRule
@@ -43,7 +42,7 @@ class EditNoteFragmentTest {
         rule.activity.supportFragmentManager.beginTransaction()
 
         DaggerNotesComponentTest.builder()
-                .appComponent(getApp().appComponent as AppComponentTest)
+                .appComponent(getApp().coreComponent as CoreComponentTest)
                 .context(rule.activity)
                 .build()
                 .inject(this)

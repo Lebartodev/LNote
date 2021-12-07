@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.feature_attach
+package com.lebartodev.lnote.feature_attach.ui
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.lebartodev.lnote.feature_attach.Photo
+import com.lebartodev.lnote.feature_attach.R
 
 
 class PhotosAdapter(private val listener: (Photo) -> Unit) :

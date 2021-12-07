@@ -10,7 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lebartodev.core.base.BaseFragment
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.CoreComponentProvider
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.databinding.FragmentArchiveBinding
 import com.lebartodev.lnote.archive.di.DaggerArchiveComponent
@@ -39,9 +39,7 @@ class ArchiveFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerArchiveComponent.builder()
-            .context(context)
-            .appComponent(
-                (context.applicationContext as AppComponentProvider).provideAppComponent())
+            .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
             .build()
             .inject(this)
     }

@@ -16,7 +16,7 @@ import androidx.transition.TransitionInflater
 import androidx.transition.TransitionSet
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.CoreComponentProvider
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
@@ -47,8 +47,7 @@ class ShowNoteFragment : BaseFragment() {
         super.onAttach(context)
         DaggerShowNoteComponent.builder()
                 .context(context)
-                .appComponent(
-                        (context.applicationContext as AppComponentProvider).provideAppComponent())
+                .appComponent((context.applicationContext as CoreComponentProvider).coreComponent)
                 .build()
                 .inject(this)
     }

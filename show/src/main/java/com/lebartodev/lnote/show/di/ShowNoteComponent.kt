@@ -1,14 +1,13 @@
 package com.lebartodev.lnote.show.di
 
 import android.content.Context
-import com.lebartodev.core.di.app.AppComponent
+import com.lebartodev.core.di.app.CoreComponent
 import com.lebartodev.lnote.show.ShowNoteFragment
-import com.lebartodev.lnote.show.ShowNoteViewModel
 import dagger.BindsInstance
 import dagger.Component
 
 @ShowNoteScope
-@Component(dependencies = [AppComponent::class], modules = [ShowNoteModule::class])
+@Component(dependencies = [CoreComponent::class], modules = [ShowNoteModule::class])
 interface ShowNoteComponent {
     fun inject(view: ShowNoteFragment)
 
@@ -19,6 +18,6 @@ interface ShowNoteComponent {
         @BindsInstance
         fun context(context: Context): Builder
 
-        fun appComponent(appComponent: AppComponent): Builder
+        fun appComponent(coreComponent: CoreComponent): Builder
     }
 }

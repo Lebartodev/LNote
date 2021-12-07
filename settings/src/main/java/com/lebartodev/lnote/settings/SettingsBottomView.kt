@@ -7,7 +7,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.CoreComponentProvider
 import com.lebartodev.lnote.settings.di.DaggerSettingsComponent
 import javax.inject.Inject
 
@@ -25,8 +25,7 @@ class SettingsBottomView : ConstraintLayout {
         inflate(context, R.layout.view_settings, this)
         bottomPanelSwitch = findViewById(R.id.bottom_panel_switch)
         DaggerSettingsComponent.builder()
-                .context(context)
-                .appComponent((context.applicationContext as AppComponentProvider).provideAppComponent())
+                .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
                 .build()
                 .inject(this)
     }

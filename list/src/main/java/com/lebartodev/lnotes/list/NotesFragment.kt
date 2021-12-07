@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.setFragmentResultListener
+import androidx.fragment.app.viewModels
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -23,13 +24,13 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.CoreComponentProvider
+import com.lebartodev.core.di.utils.ViewModelFactory
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.archive.ArchiveFragment
 import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.creation.NoteCreationContainerFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
-import com.lebartodev.lnote.feature_attach.AttachPanelFragment
 import com.lebartodev.lnote.show.ShowNoteFragment
 import com.lebartodev.lnote.utils.ui.*
 import com.lebartodev.lnotes.list.databinding.FragmentNotesBinding
@@ -79,18 +80,15 @@ class NotesFragment : BaseFragment() {
     }
 
     @Inject
-    lateinit var viewModelFactory: ListNotesViewModelFactory
-    private val notesViewModel: NotesViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory)[NotesViewModel::class.java]
-    }
+    lateinit var factory: ViewModelFactory
+    private val notesViewModel: NotesViewModel by viewModels { factory }
+
     private var isSnackBarVisible = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerListComponent.builder()
-            .appComponent(
-                (context.applicationContext as AppComponentProvider).provideAppComponent())
-            .context(context)
+            .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
             .build()
             .inject(this)
     }
@@ -123,8 +121,10 @@ class NotesFragment : BaseFragment() {
 
         val simpleItemTouchCallback = object :
             ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT)) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
-                                target: RecyclerView.ViewHolder): Boolean {
+            override fun onMove(
+                recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
                 return false
             }
 
@@ -145,7 +145,8 @@ class NotesFragment : BaseFragment() {
     private fun initBottomSheets() {
         val callback = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) = onSlideBottomSheet(
-                slideOffset)
+                slideOffset
+            )
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
@@ -174,8 +175,10 @@ class NotesFragment : BaseFragment() {
                 R.id.app_bar_archive -> {
                     parentFragmentManager.beginTransaction().run {
                         setReorderingAllowed(true)
-                        setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
-                            R.anim.fade_out)
+                        setCustomAnimations(
+                            R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
+                            R.anim.fade_out
+                        )
                         replace(R.id.container, ArchiveFragment())
                         addToBackStack(null)
                         commit()
@@ -210,7 +213,8 @@ class NotesFragment : BaseFragment() {
                     openFullScreen()
                 }
                 binding.fabAdd.transitionName = resources.getString(
-                    R.string.note_container_transition_name, "local")
+                    R.string.note_container_transition_name, "local"
+                )
             }
         })
         notesViewModel.getRestoredNoteEvent().observe(viewLifecycleOwner, {
@@ -254,8 +258,10 @@ class NotesFragment : BaseFragment() {
         binding.bottomAppBar.animate()
             .setInterpolator(LinearOutSlowInInterpolator())
             .translationY(translationY)
-            .setDuration(if (withAnimation) resources.getInteger(R.integer.animation_duration)
-                .toLong() / 2 else 0)
+            .setDuration(
+                if (withAnimation) resources.getInteger(R.integer.animation_duration)
+                    .toLong() / 2 else 0
+            )
             .start()
         if (visible) {
             binding.fabAdd.show()
@@ -305,7 +311,8 @@ class NotesFragment : BaseFragment() {
             .apply {
                 val layout = view as Snackbar.SnackbarLayout
                 val textView = layout.findViewById(
-                    com.google.android.material.R.id.snackbar_text) as TextView
+                    com.google.android.material.R.id.snackbar_text
+                ) as TextView
                 textView.setTextColor(ContextCompat.getColor(binding.root.context, R.color.white))
             }
             .show()
@@ -315,8 +322,10 @@ class NotesFragment : BaseFragment() {
         val nextFragment = EditNoteFragment.initMe()
         childFragmentManager.beginTransaction().run {
             setReorderingAllowed(true)
-            setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
-                R.anim.fade_out)
+            setCustomAnimations(
+                R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
+                R.anim.fade_out
+            )
             addSharedElement(binding.fabAdd, binding.fabAdd.transitionName)
             replace(R.id.add_container_view, nextFragment)
             addToBackStack(null)

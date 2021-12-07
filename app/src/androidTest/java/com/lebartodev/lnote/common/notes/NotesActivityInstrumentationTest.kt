@@ -17,7 +17,7 @@ import com.lebartodev.lnote.R
 import com.lebartodev.lnote.utils.RecyclerViewMatcher.Companion.withRecyclerView
 import com.lebartodev.lnote.utils.ViewActionUtil
 import com.lebartodev.lnote.utils.actions.ClickCloseIconAction
-import com.lebartodev.lnote.utils.di.app.AppComponentTest
+import com.lebartodev.lnote.utils.di.app.CoreComponentTest
 import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentTest
 import com.lebartodev.lnote.utils.matcher.MatcherUtil.isZeroSize
 import com.lebartodev.lnote.utils.mocks.LNoteApplicationMock
@@ -46,7 +46,7 @@ class NotesActivityInstrumentationTest {
         rule.launchActivity(null)
 
         DaggerNotesComponentTest.builder()
-                .appComponent(getApp().appComponent as AppComponentTest)
+                .appComponent(getApp().coreComponent as CoreComponentTest)
                 .context(rule.activity)
                 .build()
                 .inject(this)

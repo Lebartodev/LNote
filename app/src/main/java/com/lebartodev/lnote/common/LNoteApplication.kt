@@ -1,27 +1,18 @@
 package com.lebartodev.lnote.common
 
 import android.app.Application
-import com.lebartodev.core.di.app.AppComponent
-import com.lebartodev.core.di.app.DaggerAppComponent
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.app.CoreComponent
+import com.lebartodev.core.di.app.DaggerCoreComponent
+import com.lebartodev.core.di.utils.CoreComponentProvider
 
-open class LNoteApplication : Application(), AppComponentProvider {
+open class LNoteApplication : Application(), CoreComponentProvider {
 
-    var appComponent: AppComponent? = null
+    override lateinit var coreComponent: CoreComponent
 
     override fun onCreate() {
         super.onCreate()
-        appComponent = createAppComponent()
-    }
-
-    open fun createAppComponent() = DaggerAppComponent.builder()
+        coreComponent = DaggerCoreComponent.builder()
             .applicationContext(this)
             .build()
-
-    override fun onTerminate() {
-        super.onTerminate()
-        appComponent = null
     }
-
-    override fun provideAppComponent(): AppComponent = appComponent!!
 }

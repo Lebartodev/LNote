@@ -20,8 +20,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class NotesViewModel constructor(
+class NotesViewModel @Inject constructor(
         private val settingsRepository: Repository.Settings,
         private val notesRepository: Repository.Notes,
         private val schedulersFacade: SchedulersFacade

@@ -5,12 +5,12 @@ import com.lebartodev.lnote.common.details.NoteEditViewModelTest
 import com.lebartodev.lnote.common.notes.NotesViewModelTest
 import com.lebartodev.lnote.show.di.ShowNoteScope
 import com.lebartodev.core.data.repository.NotesRepositoryTest
-import com.lebartodev.lnote.utils.di.app.AppComponentMock
+import com.lebartodev.lnote.utils.di.app.CoreComponentMock
 import dagger.BindsInstance
 import dagger.Component
 
 @ShowNoteScope
-@Component(dependencies = [AppComponentMock::class], modules = [NotesModuleMock::class])
+@Component(dependencies = [CoreComponentMock::class], modules = [NotesModuleMock::class])
 interface NotesComponentMock {
     fun inject(noteEditViewModelTest: NoteEditViewModelTest)
     fun inject(noteEditViewModelTest: NotesViewModelTest)
@@ -22,6 +22,6 @@ interface NotesComponentMock {
         @BindsInstance
         fun context(context: Context): Builder
 
-        fun appComponent(appComponent: AppComponentMock): Builder
+        fun appComponent(appComponent: CoreComponentMock): Builder
     }
 }

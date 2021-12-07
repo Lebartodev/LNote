@@ -1,7 +1,7 @@
-package com.lebartodev.lnotes.list.di
+package com.lebartodev.core.di.utils
 
 import javax.inject.Scope
 
 @Scope
 @Retention(AnnotationRetention.RUNTIME)
-annotation class ListScope
+annotation class FeatureScope

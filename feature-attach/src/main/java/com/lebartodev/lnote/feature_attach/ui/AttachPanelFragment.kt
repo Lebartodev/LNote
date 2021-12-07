@@ -1,4 +1,4 @@
-package com.lebartodev.lnote.feature_attach
+package com.lebartodev.lnote.feature_attach.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -12,10 +12,11 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.lebartodev.core.di.utils.AppComponentProvider
+import com.lebartodev.core.di.utils.ViewModelFactory
+import com.lebartodev.core.di.utils.coreComponent
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.feature_attach.databinding.FragmentAttachPanelBinding
 import com.lebartodev.lnote.feature_attach.di.DaggerAttachComponent
@@ -27,29 +28,20 @@ class AttachPanelFragment : BottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentAttachPanelBinding::inflate)
 
     @Inject
-    lateinit var viewModelFactory: AttachViewModelFactory
-    private val viewModel: AttachViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory)[AttachViewModel::class.java]
-    }
-
+    lateinit var viewModelFactory: ViewModelFactory
+    private val viewModel: AttachViewModel by viewModels { viewModelFactory }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerAttachComponent.builder()
-                .context(context)
-                .appComponent(
-                        (context.applicationContext as AppComponentProvider).provideAppComponent())
-                .build()
-                .inject(this)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+            .coreComponent(context.coreComponent())
+            .build()
+            .inject(this)
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         return binding.root
     }
@@ -68,24 +60,30 @@ class AttachPanelFragment : BottomSheetDialogFragment() {
         }
 
         if (checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
+            != PackageManager.PERMISSION_GRANTED
+        ) {
             requestPermissions(listOf(Manifest.permission.READ_EXTERNAL_STORAGE).toTypedArray(), 1);
 
             return;
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>,
-                                            grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         when (requestCode) {
             1 -> {
                 if (grantResults.isNotEmpty()
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
                     viewModel.loadPhotos()
                 } else {
-                    Toast.makeText(requireContext(),
-                            "Permission denied", Toast.LENGTH_SHORT)
-                            .show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Permission denied", Toast.LENGTH_SHORT
+                    )
+                        .show()
                 }
                 return
             }
