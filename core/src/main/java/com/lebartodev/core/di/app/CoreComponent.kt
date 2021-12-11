@@ -2,6 +2,7 @@ package com.lebartodev.core.di.app
 
 import android.app.Application
 import android.content.Context
+import com.lebartodev.core.data.Manager
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.di.utils.AppScope
@@ -16,6 +17,7 @@ interface CoreComponent {
     fun schedulersFacade(): SchedulersFacade
     fun settingsManager(): Repository.Settings
     fun notesRepository(): Repository.Notes
+    fun currentNoteManager(): Manager.CurrentNote
     fun appContext(): Context
 
     @Component.Builder

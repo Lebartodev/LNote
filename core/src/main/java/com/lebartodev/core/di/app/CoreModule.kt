@@ -6,6 +6,8 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.lebartodev.core.R
+import com.lebartodev.core.data.CurrentNoteManager
+import com.lebartodev.core.data.Manager
 import com.lebartodev.core.data.repository.NotesRepository
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.data.repository.SettingsRepository
@@ -50,6 +52,10 @@ class CoreModule {
     @Provides
     @AppScope
     fun provideNotesRepository(notesRepository: NotesRepository): Repository.Notes = notesRepository
+
+    @Provides
+    @AppScope
+    fun provideCurrentNoteManager(currentNoteManager: CurrentNoteManager): Manager.CurrentNote = currentNoteManager
 }
 
 @Module

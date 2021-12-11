@@ -9,10 +9,18 @@ interface Repository {
     interface Notes {
         fun getNotes(): Flow<List<Note>>
         fun getNote(id: Long): Flow<Note>
-        suspend fun createNote(title: String?, text: String?, date: Long?,
-                               photos: List<Photo>): Long
+        suspend fun createNote(
+            title: String?, text: String?, date: Long?,
+            photos: List<Photo>
+        ): Long
 
-        suspend fun deleteDraftedNote(title: String?, text: String?, date: Long?)
+        suspend fun deleteDraftedNote(
+            title: String?,
+            text: String?,
+            date: Long?,
+            photos: List<Photo>
+        )
+
         suspend fun deleteNote(id: Long)
         suspend fun editNote(id: Long, title: String?, text: String?, date: Long?)
         suspend fun restoreLastNote(): Note

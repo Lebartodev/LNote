@@ -3,6 +3,7 @@ package com.lebartodev.core.data
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.db.entity.Note
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
 interface Manager {
     interface Settings {
@@ -11,10 +12,8 @@ interface Manager {
     }
 
     interface CurrentNote {
-        fun currentNote(): Observable<NoteData>
-        fun setCurrentNote(note: Note)
-        fun setTitle(value: String): Unit?
-        fun setText(value: String): Unit?
-        fun setDate(value: Long?): Unit?
+        fun currentNote(): Flow<NoteData>
+        fun setState(reducer: NoteData.() -> NoteData)
+        fun clear()
     }
 }

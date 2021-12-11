@@ -6,7 +6,6 @@ import com.lebartodev.core.di.utils.FeatureScope
 import java.io.File
 import javax.inject.Inject
 
-@FeatureScope
 class FilesRepositoryImpl @Inject constructor(private val applicationContext: Context) :
     FilesRepository {
 

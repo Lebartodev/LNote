@@ -78,10 +78,8 @@ class NoteCreationContainerFragment : BaseFragment() {
         const val TAG = "NoteCreationContainerFragment"
         private const val EXTRA_NOTE_DATA = "EXTRA_NOTE_DATA"
 
-        fun initMe(noteData: NoteData = NoteData()): NoteCreationContainerFragment {
+        fun initMe(): NoteCreationContainerFragment {
             val fragment = NoteCreationContainerFragment()
-            fragment.arguments = Bundle()
-                .apply { putParcelable(EXTRA_NOTE_DATA, noteData) }
             return fragment
         }
     }

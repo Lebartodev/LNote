@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.TransitionManager
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.CoreComponentProvider
-import com.lebartodev.lnote.edit.EditNoteViewModelFactory
+import com.lebartodev.core.di.utils.ViewModelFactory
 import com.lebartodev.lnote.edit.NoteEditViewModel
 import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.ViewNoteCreationBinding
@@ -50,7 +50,7 @@ class NoteCreationView : ConstraintLayout {
     private var isMoreOpen = false
 
     @Inject
-    lateinit var viewModelFactory: EditNoteViewModelFactory
+    lateinit var viewModelFactory: ViewModelFactory
     private val viewModel: NoteEditViewModel by lazy {
         ViewModelProvider(findFragment<Fragment>(), viewModelFactory)[NoteEditViewModel::class.java]
     }
@@ -133,6 +133,7 @@ class NoteCreationView : ConstraintLayout {
             .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
             .build()
             .inject(this)
+        viewModel.loadNote(null)
         viewModel.currentNote().observeForever(noteObserver)
 
         findFragment<Fragment>().childFragmentManager

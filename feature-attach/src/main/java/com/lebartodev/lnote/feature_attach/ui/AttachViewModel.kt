@@ -11,7 +11,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
-class AttachViewModel @Inject constructor(private val filesRepository: FilesRepository) : BaseViewModel() {
+class AttachViewModel @Inject constructor(val filesRepository: FilesRepository) :
+    BaseViewModel() {
     val photos = MutableLiveData(listOf<Photo>())
     val selectedPhoto = MutableLiveData<String>()
 

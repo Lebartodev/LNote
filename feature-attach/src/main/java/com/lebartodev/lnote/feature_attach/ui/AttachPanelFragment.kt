@@ -20,8 +20,9 @@ import com.lebartodev.core.di.utils.coreComponent
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.feature_attach.databinding.FragmentAttachPanelBinding
 import com.lebartodev.lnote.feature_attach.di.DaggerAttachComponent
+import com.lebartodev.lnote.utils.ui.PaddingDecoration
+import com.lebartodev.lnote.utils.ui.toPx
 import javax.inject.Inject
-
 
 class AttachPanelFragment : BottomSheetDialogFragment() {
     private val adapter = PhotosAdapter { viewModel.attachPhoto(it) }
@@ -51,6 +52,14 @@ class AttachPanelFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.list.layoutManager = GridLayoutManager(context, 3)
         binding.list.adapter = adapter
+        binding.list.addItemDecoration(
+            PaddingDecoration(
+                4f.toPx(resources),
+                4f.toPx(resources),
+                4f.toPx(resources),
+                4f.toPx(resources)
+            )
+        )
         viewModel.photos.observe(viewLifecycleOwner, {
             adapter.updateData(it)
         })

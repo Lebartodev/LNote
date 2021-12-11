@@ -23,9 +23,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class NotesViewModel @Inject constructor(
-        private val settingsRepository: Repository.Settings,
-        private val notesRepository: Repository.Notes,
-        private val schedulersFacade: SchedulersFacade
+    private val settingsRepository: Repository.Settings,
+    private val notesRepository: Repository.Notes,
+    private val schedulersFacade: SchedulersFacade
 ) : BaseViewModel() {
     private var notesDisposable = CompositeDisposable()
 
@@ -41,23 +41,23 @@ class NotesViewModel @Inject constructor(
 
     init {
         notesDisposable.add(
-                settingsRepository.bottomPanelEnabled()
-                        .subscribeOn(schedulersFacade.io())
-                        .observeOn(schedulersFacade.ui())
-                        .subscribe(
-                                { bottomPanelEnabledLiveData.value = it },
-                                Functions.emptyConsumer()
-                        )
+            settingsRepository.bottomPanelEnabled()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(
+                    { bottomPanelEnabledLiveData.value = it },
+                    Functions.emptyConsumer()
+                )
         )
         fetchNotes()
     }
 
     fun fetchNotes() {
         notesRepository.getNotes()
-                .flowOn(Dispatchers.IO)
-                .onEach { notesLiveData.value = it }
-                .catch { postError(it) }
-                .launchIn(viewModelScope)
+            .flowOn(Dispatchers.IO)
+            .onEach { notesLiveData.value = it }
+            .catch { postError(it) }
+            .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
@@ -84,9 +84,11 @@ class NotesViewModel @Inject constructor(
                 val note = notesRepository.restoreLastNote()
                 if (note.created == null) {
                     withContext(Dispatchers.Main) {
-                        restoredNoteEvent.value = NoteData(note.id, note.title, note.date,
-                                note.text,
-                                note.created)
+                        restoredNoteEvent.value = NoteData(
+                            note.id, note.title, note.date,
+                            note.text,
+                            note.created
+                        )
                     }
                 }
             } catch (e: Exception) {

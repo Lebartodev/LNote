@@ -8,6 +8,8 @@ import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.SharedElementCallback
 import androidx.fragment.app.Fragment
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 
 abstract class BaseFragment : Fragment() {
@@ -81,3 +83,27 @@ abstract class BaseFragment : Fragment() {
 
     }
 }
+
+class FragmentArgumentDelegate<T : Any> : ReadOnlyProperty<Fragment, T> {
+    @Suppress("UNCHECKED_CAST")
+    override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
+        val key = property.name
+        return thisRef.arguments?.get(key) as? T
+            ?: throw IllegalStateException("Property ${property.name} could not be read")
+    }
+}
+
+class FragmentNullableArgumentDelegate<T : Any?> : ReadOnlyProperty<Fragment, T?> {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun getValue(thisRef: Fragment, property: KProperty<*>): T? {
+        val key = property.name
+        return thisRef.arguments?.get(key) as? T
+    }
+}
+
+fun <T : Any> fragmentArgs(): ReadOnlyProperty<Fragment, T> =
+    FragmentArgumentDelegate()
+
+fun <T : Any> fragmentNullableArgs(): ReadOnlyProperty<Fragment, T?> =
+    FragmentNullableArgumentDelegate()
