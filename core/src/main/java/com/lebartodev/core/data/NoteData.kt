@@ -2,7 +2,7 @@ package com.lebartodev.core.data
 
 import android.os.Parcelable
 import com.lebartodev.core.db.entity.Photo
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class NoteData(

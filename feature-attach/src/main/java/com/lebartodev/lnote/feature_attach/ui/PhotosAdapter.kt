@@ -9,7 +9,6 @@ import com.bumptech.glide.Glide
 import com.lebartodev.lnote.feature_attach.Photo
 import com.lebartodev.lnote.feature_attach.R
 
-
 class PhotosAdapter(private val listener: (Photo) -> Unit) :
     RecyclerView.Adapter<PhotosAdapter.ViewHolder>() {
     val data: MutableList<Photo> = mutableListOf()
@@ -31,8 +30,10 @@ class PhotosAdapter(private val listener: (Photo) -> Unit) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.i_photo, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position],
-        listener)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(
+        data[position],
+        listener
+    )
 
     override fun getItemCount() = data.size
 

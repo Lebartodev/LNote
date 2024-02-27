@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class ShowNoteViewModelFactory @Inject constructor(private val repository: Repository.Notes) :
         ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when (modelClass) {
             ShowNoteViewModel::class.java -> ShowNoteViewModel(repository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class")

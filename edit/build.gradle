@@ -21,3 +21,7 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
 }
+
+android {
+    namespace 'com.lebartodev.lnote.edit'
+}

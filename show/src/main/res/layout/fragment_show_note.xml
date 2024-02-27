@@ -28,7 +28,7 @@
 		style="@style/NoteCreation.Content"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
-		app:layout_constraintBottom_toTopOf="@id/date_chip"
+		app:layout_constraintBottom_toBottomOf="parent"
 		app:layout_constraintEnd_toEndOf="parent"
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toBottomOf="@id/edit_button">
@@ -71,6 +71,33 @@
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toStartOf="parent"
 				app:layout_constraintTop_toBottomOf="@id/text_title" />
+
+			<com.lebartodev.lnote.utils.ui.DateChip
+				android:id="@+id/date_chip"
+				style="@style/NoteCreation.DateChip"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginStart="24dp"
+				android:layout_marginTop="16dp"
+				android:layout_marginBottom="16dp"
+				app:closeIconEnabled="false"
+				app:layout_constraintBottom_toTopOf="@id/photos_list"
+				app:layout_constraintStart_toStartOf="parent"
+				tools:text="cp, 10 окт. 2018"
+				tools:visibility="visible" />
+
+			<androidx.recyclerview.widget.RecyclerView
+				android:id="@+id/photos_list"
+				android:layout_width="match_parent"
+				android:layout_height="80dp"
+				android:layout_marginTop="16dp"
+				android:layout_marginBottom="16dp"
+				android:clipToPadding="false"
+				android:paddingStart="16dp"
+				android:paddingEnd="24dp"
+				android:visibility="visible"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent" />
 		</LinearLayout>
 
 	</androidx.core.widget.NestedScrollView>
@@ -91,34 +118,6 @@
 		app:layout_constraintBottom_toBottomOf="@id/note_content"
 		app:layout_constraintEnd_toEndOf="@id/note_content"
 		app:layout_constraintStart_toStartOf="@id/note_content" />
-
-	<com.lebartodev.lnote.utils.ui.DateChip
-		android:id="@+id/date_chip"
-		style="@style/NoteCreation.DateChip"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_marginStart="24dp"
-		android:layout_marginTop="16dp"
-		android:layout_marginBottom="16dp"
-		tools:visibility="visible"
-		app:closeIconEnabled="false"
-		app:layout_constraintBottom_toTopOf="@id/photos_list"
-		app:layout_constraintStart_toStartOf="parent"
-		tools:text="cp, 10 окт. 2018" />
-
-	<androidx.recyclerview.widget.RecyclerView
-		android:id="@+id/photos_list"
-		android:layout_width="0dp"
-		android:layout_height="100dp"
-		android:layout_marginTop="16dp"
-		android:layout_marginBottom="16dp"
-		android:clipToPadding="false"
-		android:paddingStart="24dp"
-		android:paddingEnd="24dp"
-		android:visibility="gone"
-		app:layout_constraintBottom_toBottomOf="parent"
-		app:layout_constraintEnd_toEndOf="parent"
-		app:layout_constraintStart_toStartOf="parent" />
 
 	<ImageButton
 		android:id="@+id/edit_button"

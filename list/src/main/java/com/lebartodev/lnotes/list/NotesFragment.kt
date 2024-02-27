@@ -231,7 +231,7 @@ class NotesFragment : BaseFragment() {
 
     private fun openNoteCreation() {
         val nextFragment = NoteCreationContainerFragment.initMe()
-        childFragmentManager.beginTransaction().run {
+        parentFragmentManager.beginTransaction().run {
             replace(R.id.add_container_view, nextFragment)
             addToBackStack(null)
             commit()
@@ -320,7 +320,7 @@ class NotesFragment : BaseFragment() {
 
     private fun openFullScreen() {
         val nextFragment = EditNoteFragment.initMe()
-        childFragmentManager.beginTransaction().run {
+        parentFragmentManager.beginTransaction().run {
             setReorderingAllowed(true)
             setCustomAnimations(
                 R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,

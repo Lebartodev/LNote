@@ -30,13 +30,13 @@ fun View.animateSlideBottomVisibility(visible: Boolean) {
     translationY = startTranslationY
     val anim = this.animate().translationY(endTranslation)
     anim.setListener(object : AnimatorListenerAdapter() {
-        override fun onAnimationStart(animation: Animator?) {
+        override fun onAnimationStart(animation: Animator) {
             super.onAnimationStart(animation)
             if (visible)
                 visibility = View.VISIBLE
         }
 
-        override fun onAnimationEnd(animation: Animator?) {
+        override fun onAnimationEnd(animation: Animator) {
             super.onAnimationEnd(animation)
             if (!visible)
                 visibility = View.GONE
@@ -58,13 +58,13 @@ fun View.animateSlideTopVisibility(visible: Boolean) {
     translationY = startTranslationY
     val anim = this.animate().translationY(endTranslation)
     anim.setListener(object : AnimatorListenerAdapter() {
-        override fun onAnimationStart(animation: Animator?) {
+        override fun onAnimationStart(animation: Animator) {
             super.onAnimationStart(animation)
             if (visible)
                 visibility = View.VISIBLE
         }
 
-        override fun onAnimationEnd(animation: Animator?) {
+        override fun onAnimationEnd(animation: Animator) {
             super.onAnimationEnd(animation)
             if (!visible)
                 visibility = View.GONE
