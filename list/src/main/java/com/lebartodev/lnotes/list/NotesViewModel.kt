@@ -40,15 +40,12 @@ class NotesViewModel @Inject constructor(
     fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     init {
-        notesDisposable.add(
-            settingsRepository.bottomPanelEnabled()
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .subscribe(
-                    { bottomPanelEnabledLiveData.value = it },
-                    Functions.emptyConsumer()
-                )
-        )
+
+        settingsRepository.bottomPanelEnabled()
+                .flowOn(Dispatchers.IO)
+                .onEach { bottomPanelEnabledLiveData.value = it }
+                .catch { postError(it) }
+                .launchIn(viewModelScope)
         fetchNotes()
     }
 

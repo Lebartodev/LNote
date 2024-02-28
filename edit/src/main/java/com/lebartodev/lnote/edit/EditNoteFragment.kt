@@ -4,7 +4,6 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,8 +30,9 @@ import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.extensions.onLayout
 import com.lebartodev.lnote.utils.ui.PaddingDecoration
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
+import com.lebartodev.lnote.utils.ui.TextWatcherAdapter
 import com.lebartodev.lnote.utils.ui.toPx
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 class EditNoteFragment : BaseFragment() {
@@ -90,27 +90,15 @@ class EditNoteFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
     private val viewModel: NoteEditViewModel by viewModels { viewModelFactory }
-    private val descriptionTextWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            viewModel.setDescription(s?.toString() ?: "")
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+    private val descriptionTextWatcher = object : TextWatcherAdapter() {
+        override fun afterTextChanged(e: Editable?) {
+            viewModel.setDescription(e?.toString() ?: "")
         }
     }
-    private val titleTextWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            viewModel.setTitle(s?.toString() ?: "")
-            binding.textTitleActionBar.text = s?.toString() ?: ""
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+    private val titleTextWatcher = object : TextWatcherAdapter() {
+        override fun afterTextChanged(e: Editable?) {
+            viewModel.setTitle(e?.toString() ?: "")
+            binding.textTitleActionBar.text = e?.toString() ?: ""
         }
     }
 
@@ -170,18 +158,11 @@ class EditNoteFragment : BaseFragment() {
         binding.dateChip.setOnClickListener { openCalendarDialog() }
         binding.dateChip.setOnCloseIconClickListener { viewModel.clearDate() }
         binding.photosList.layoutManager = GridLayoutManager(
-            context, 1,
-            RecyclerView.HORIZONTAL, false
+            context, 1, RecyclerView.HORIZONTAL,
+            false
         )
         binding.photosList.adapter = adapter
-        binding.photosList.addItemDecoration(
-            PaddingDecoration(
-                8f.toPx(resources),
-                8f.toPx(resources),
-                8f.toPx(resources),
-                8f.toPx(resources)
-            )
-        )
+        binding.photosList.addItemDecoration(PaddingDecoration(8f.toPx(resources)))
 
         binding.attachButton.setOnClickListener {
             AttachPanelFragment().show(childFragmentManager, AttachPanelFragment.TAG)
@@ -198,15 +179,11 @@ class EditNoteFragment : BaseFragment() {
                     viewModel.setDate(y, m, d)
                 }
         }
-        childFragmentManager
-            .setFragmentResultListener(
-                AttachPanelFragment.ATTACH_REQUEST_KEY,
-                viewLifecycleOwner,
-                { _, bundle ->
-                    viewModel.addPhoto(
-                        bundle.getString(AttachPanelFragment.PHOTO_PATH) ?: ""
-                    )
-                })
+        childFragmentManager.setFragmentResultListener(
+            AttachPanelFragment.ATTACH_REQUEST_KEY, viewLifecycleOwner
+        ) { _, bundle ->
+            viewModel.addPhoto(bundle.getString(AttachPanelFragment.PHOTO_PATH) ?: "")
+        }
     }
 
     override fun onStartSharedAnimation(sharedElementNames: MutableList<String>) {
@@ -220,6 +197,7 @@ class EditNoteFragment : BaseFragment() {
                             it.animateSlideBottomVisibility(true)
                         }
                     }
+
                     binding.calendarButton.transitionName -> {
                         it.onLayout {
                             it.visibility = View.GONE
@@ -231,7 +209,7 @@ class EditNoteFragment : BaseFragment() {
     }
 
     private fun setupEditViewModel() {
-        viewModel.saveResult().observe(viewLifecycleOwner, {
+        viewModel.saveResult().observe(viewLifecycleOwner) {
             if (it == true) {
                 setFragmentResult(EditUtils.SAVE_NOTE_REQUEST_KEY, Bundle())
                 binding.textTitle.clearFocus()
@@ -239,8 +217,8 @@ class EditNoteFragment : BaseFragment() {
                 sharedElementReturnTransition = null
                 parentFragmentManager.popBackStack()
             }
-        })
-        viewModel.deleteResult().observe(viewLifecycleOwner, {
+        }
+        viewModel.deleteResult().observe(viewLifecycleOwner) {
             if (it == true) {
                 setFragmentResult(EditUtils.DELETE_NOTE_REQUEST_KEY, Bundle())
                 binding.textTitle.clearFocus()
@@ -248,23 +226,19 @@ class EditNoteFragment : BaseFragment() {
                 sharedElementReturnTransition = null
                 parentFragmentManager.popBackStack()
             }
-        })
+        }
         viewModel.currentNote().observe(viewLifecycleOwner, noteObserver)
     }
 
     private fun openCalendarDialog() {
-        parentFragmentManager.run {
-            val calendar = Calendar.getInstance()
-                .apply {
-                    timeInMillis = viewModel.currentNote().value?.date
-                        ?: System.currentTimeMillis()
-                }
-            val dialog = SelectDateFragment.initMe(calendar)
-            dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
-                viewModel.setDate(y, m, d)
-            }
-            dialog.show(this, TAG_CALENDAR_DIAlOG)
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = viewModel.currentNote().value?.date
+            ?: System.currentTimeMillis()
+        val dialog = SelectDateFragment.initMe(calendar)
+        dialog.listener = DatePickerDialog.OnDateSetListener { _, y, m, d ->
+            viewModel.setDate(y, m, d)
         }
+        dialog.show(parentFragmentManager, TAG_CALENDAR_DIAlOG)
     }
 
     companion object {

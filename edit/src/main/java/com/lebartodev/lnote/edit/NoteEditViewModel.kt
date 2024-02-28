@@ -1,5 +1,6 @@
 package com.lebartodev.lnote.edit
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -13,12 +14,14 @@ import com.lebartodev.core.di.utils.FeatureScope
 import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.extensions.formattedHint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Calendar
+import java.util.UUID
 import javax.inject.Inject
 
 @FeatureScope
@@ -31,11 +34,13 @@ class NoteEditViewModel @Inject constructor(
     private val currentNoteLiveData = MutableLiveData(NoteData())
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            currentNoteRepository.currentNote()
-                .onEach { currentNoteLiveData.postValue(it) }
-                .collect()
-        }
+        currentNoteRepository.currentNote()
+            .flowOn(Dispatchers.IO)
+            .onEach {
+
+                Log.d("Lebartodev", "postValue: ${it.photos}")
+                currentNoteLiveData.postValue(it) }
+            .launchIn(viewModelScope)
     }
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
@@ -52,15 +57,19 @@ class NoteEditViewModel @Inject constructor(
             }
             if (id == null) return@launch
             val note = notesRepository.getNote(id).first()
-            withContext(Dispatchers.Main) {
-                currentNoteRepository.setState {
-                    copy(
-                        note.id, note.title, note.date,
-                        note.text, note.created, note.photos
-                    )
+            Log.d("Lebartodev", "loadNote: ${note.photos}")
+            currentNoteRepository.setState {
+                copy(
+                    id = note.id,
+                    title = note.title,
+                    date = note.date,
+                    text = note.text,
+                    dateCreated = note.created,
+                    photos = note.photos
+                ).also {
+                    Log.d("Lebartodev", "loadNote: ${it.photos}")
                 }
             }
-
         }
     }
 
@@ -86,9 +95,8 @@ class NoteEditViewModel @Inject constructor(
         currentNoteRepository.setState {
             copy(photos = photos.let {
                 val updatedPhotos = it.toMutableList()
-                updatedPhotos.add(
-                    Photo(UUID.randomUUID().toString(), path, System.currentTimeMillis())
-                )
+                val photo = Photo(UUID.randomUUID().toString(), path, System.currentTimeMillis())
+                updatedPhotos.add(photo)
                 updatedPhotos
             })
         }
@@ -106,7 +114,6 @@ class NoteEditViewModel @Inject constructor(
                     (note?.text ?: "").formattedHint()
                 else
                     note?.title
-
                 val id = note?.id
                 if (id == null) {
                     notesRepository.createNote(

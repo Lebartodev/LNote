@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.Editable
-import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -34,6 +33,7 @@ import com.lebartodev.lnote.utils.extensions.formattedHint
 import com.lebartodev.lnote.utils.ui.NoteTransitionDrawable
 import com.lebartodev.lnote.utils.ui.PaddingDecoration
 import com.lebartodev.lnote.utils.ui.SelectDateFragment
+import com.lebartodev.lnote.utils.ui.TextWatcherAdapter
 import com.lebartodev.lnote.utils.ui.toPx
 import java.util.*
 import javax.inject.Inject
@@ -55,33 +55,23 @@ class NoteCreationView : ConstraintLayout {
         ViewModelProvider(findFragment<Fragment>(), viewModelFactory)[NoteEditViewModel::class.java]
     }
 
-    private val descriptionTextWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            viewModel.setDescription(s?.toString() ?: "")
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+    private val descriptionTextWatcher = object : TextWatcherAdapter() {
+        override fun afterTextChanged(e: Editable?) {
+            viewModel.setDescription(e?.toString() ?: "")
         }
     }
-    private val titleTextWatcher = object : TextWatcher {
-        override fun afterTextChanged(s: Editable?) {
-            viewModel.setTitle(s?.toString() ?: "")
-        }
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+    private val titleTextWatcher = object : TextWatcherAdapter() {
+        override fun afterTextChanged(e: Editable?) {
+            viewModel.setTitle(e?.toString() ?: "")
         }
     }
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs,
-        defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context, attrs,
+        defStyleAttr
+    )
 
 
     init {
@@ -90,13 +80,19 @@ class NoteCreationView : ConstraintLayout {
         background = NoteTransitionDrawable(ContextCompat.getColor(context, R.color.white), 0f)
 
         binding.noteContent.transitionName = resources.getString(
-            R.string.note_content_transition_name, "local")
-        binding.textTitle.transitionName = resources.getString(R.string.note_title_transition_name,
-            "local")
+            R.string.note_content_transition_name, "local"
+        )
+        binding.textTitle.transitionName = resources.getString(
+            R.string.note_title_transition_name,
+            "local"
+        )
         binding.textDescription.transitionName = resources.getString(
-            R.string.note_description_transition_name, "local")
-        binding.dateChip.transitionName = resources.getString(R.string.note_date_transition_name,
-            "local")
+            R.string.note_description_transition_name, "local"
+        )
+        binding.dateChip.transitionName = resources.getString(
+            R.string.note_date_transition_name,
+            "local"
+        )
 
         binding.saveButton.setOnClickListener {
             viewModel.saveNote()
@@ -117,14 +113,11 @@ class NoteCreationView : ConstraintLayout {
         binding.textTitle.addTextChangedListener(titleTextWatcher)
         binding.fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
         binding.photosList.adapter = adapter
-        binding.photosList.addItemDecoration(PaddingDecoration(
-            8f.toPx(resources),
-            8f.toPx(resources),
-            8f.toPx(resources),
-            8f.toPx(resources)
-        ))
-        binding.photosList.layoutManager = GridLayoutManager(context, 1,
-            RecyclerView.HORIZONTAL, false)
+        binding.photosList.addItemDecoration(PaddingDecoration(8f.toPx(resources)))
+        binding.photosList.layoutManager = GridLayoutManager(
+            context, 1,
+            RecyclerView.HORIZONTAL, false
+        )
     }
 
     override fun onAttachedToWindow() {
@@ -139,10 +132,10 @@ class NoteCreationView : ConstraintLayout {
         findFragment<Fragment>().childFragmentManager
             .setFragmentResultListener(
                 AttachPanelFragment.ATTACH_REQUEST_KEY,
-                findFragment<Fragment>().viewLifecycleOwner,
-                { _, bundle ->
-                    viewModel.addPhoto(bundle.getString(AttachPanelFragment.PHOTO_PATH) ?: "")
-                })
+                findFragment<Fragment>().viewLifecycleOwner
+            ) { _, bundle ->
+                viewModel.addPhoto(bundle.getString(AttachPanelFragment.PHOTO_PATH) ?: "")
+            }
     }
 
     override fun onSaveInstanceState(): Parcelable {
@@ -221,21 +214,29 @@ class NoteCreationView : ConstraintLayout {
             TransitionManager.beginDelayedTransition(constraintLayout)
             val set = ConstraintSet()
             set.clone(constraintLayout)
-            set.setVisibility(binding.calendarButton.id,
-                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            set.setVisibility(binding.attachButton.id,
-                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
-            set.setVisibility(binding.deleteButton.id,
-                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE)
+            set.setVisibility(
+                binding.calendarButton.id,
+                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE
+            )
+            set.setVisibility(
+                binding.attachButton.id,
+                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE
+            )
+            set.setVisibility(
+                binding.deleteButton.id,
+                if (isMoreOpen) ConstraintSet.VISIBLE else ConstraintSet.GONE
+            )
             binding.fabMore.setImageResource(
-                if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+                if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24
+            )
             set.applyTo(constraintLayout)
         } else {
             binding.deleteButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
             binding.attachButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
             binding.calendarButton.visibility = if (isMoreOpen) View.VISIBLE else View.GONE
             binding.fabMore.setImageResource(
-                if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24)
+                if (isMoreOpen) R.drawable.ic_arrow_right_24 else R.drawable.ic_drop_down_24
+            )
         }
         this.isMoreOpen = isMoreOpen
     }

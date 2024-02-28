@@ -8,6 +8,7 @@ class PaddingDecoration(val topPadding: Float,
                         val bottomPadding: Float,
                         val leftPadding: Float,
                         val rightPadding: Float) : RecyclerView.ItemDecoration() {
+    constructor(padding: Float) : this(padding, padding, padding, padding)
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView,
                                 state: RecyclerView.State) {

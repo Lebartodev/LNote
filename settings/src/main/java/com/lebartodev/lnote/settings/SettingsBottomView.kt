@@ -2,12 +2,12 @@ package com.lebartodev.lnote.settings
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.Switch
+import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.lebartodev.core.di.utils.CoreComponentProvider
+import com.lebartodev.lnote.settings.databinding.ViewSettingsBinding
 import com.lebartodev.lnote.settings.di.DaggerSettingsComponent
 import javax.inject.Inject
 
@@ -15,15 +15,14 @@ class SettingsBottomView : ConstraintLayout {
     @Inject
     lateinit var viewModelFactory: SettingsViewModelFactory
     private lateinit var notesViewModel: SettingsViewModel
-    private val bottomPanelSwitch: Switch
+    private val viewBinding = ViewSettingsBinding.inflate(LayoutInflater.from(context), this)
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs,
+            defStyleAttr)
 
     init {
-        inflate(context, R.layout.view_settings, this)
-        bottomPanelSwitch = findViewById(R.id.bottom_panel_switch)
         DaggerSettingsComponent.builder()
                 .coreComponent((context.applicationContext as CoreComponentProvider).coreComponent)
                 .build()
@@ -32,11 +31,15 @@ class SettingsBottomView : ConstraintLayout {
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        notesViewModel = ViewModelProvider(context as FragmentActivity,
+                viewModelFactory)[SettingsViewModel::class.java]
 
-        notesViewModel = ViewModelProvider(context as FragmentActivity, viewModelFactory)[SettingsViewModel::class.java]
-
-        notesViewModel.bottomPanelEnabled().observe(context as FragmentActivity, Observer { bottomPanelSwitch.isChecked = it })
-
-        bottomPanelSwitch.setOnCheckedChangeListener { _, b -> notesViewModel.setBottomPanelEnabled(b) }
+        notesViewModel.bottomPanelEnabled()
+                .observe(context as FragmentActivity) {
+                    viewBinding.bottomPanelSwitch.isChecked = it
+                }
+        viewBinding.bottomPanelSwitch.setOnCheckedChangeListener { _, b ->
+            notesViewModel.setBottomPanelEnabled(b)
+        }
     }
 }

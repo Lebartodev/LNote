@@ -7,8 +7,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class NotePhotosAdapter :
-        RecyclerView.Adapter<NotePhotosAdapter.ViewHolder>() {
+class NotePhotosAdapter : RecyclerView.Adapter<NotePhotosAdapter.ViewHolder>() {
     private val data: MutableList<String> = mutableListOf()
 
     init {
@@ -26,8 +25,9 @@ class NotePhotosAdapter :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
-            ViewHolder(LayoutInflater.from(parent.context)
-                    .inflate(R.layout.i_note_photo, parent, false))
+        ViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.i_note_photo, parent, false)
+        )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
