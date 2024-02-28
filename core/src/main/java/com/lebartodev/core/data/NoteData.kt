@@ -15,5 +15,5 @@ data class NoteData(
 ) : Parcelable
 
 fun NoteData.isEmpty(): Boolean {
-    return title.isNullOrEmpty() || text.isNullOrEmpty() || photos.isNullOrEmpty()
+    return title.isNullOrEmpty() || text.isNullOrEmpty() || photos.isEmpty()
 }

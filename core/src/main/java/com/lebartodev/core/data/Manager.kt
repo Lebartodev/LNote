@@ -6,11 +6,6 @@ import io.reactivex.Observable
 import kotlinx.coroutines.flow.Flow
 
 interface Manager {
-    interface Settings {
-        fun setBottomPanelEnabled(value: Boolean)
-        fun bottomPanelEnabled(): Observable<Boolean>
-    }
-
     interface CurrentNote {
         fun currentNote(): Flow<NoteData>
         fun setState(reducer: NoteData.() -> NoteData)

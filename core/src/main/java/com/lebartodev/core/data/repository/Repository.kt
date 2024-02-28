@@ -31,6 +31,6 @@ interface Repository {
 
     interface Settings {
         fun setBottomPanelEnabled(value: Boolean)
-        fun bottomPanelEnabled(): Observable<Boolean>
+        fun bottomPanelEnabled(): Flow<Boolean>
     }
 }

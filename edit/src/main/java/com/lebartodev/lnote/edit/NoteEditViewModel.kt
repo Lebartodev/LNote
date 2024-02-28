@@ -36,7 +36,6 @@ class NoteEditViewModel @Inject constructor(
                 .onEach { currentNoteLiveData.postValue(it) }
                 .collect()
         }
-
     }
 
     fun currentNote(): LiveData<NoteData> = currentNoteLiveData
