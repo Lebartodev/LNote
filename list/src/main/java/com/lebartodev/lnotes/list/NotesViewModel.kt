@@ -7,12 +7,9 @@ import com.lebartodev.core.base.BaseViewModel
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.entity.Note
-import com.lebartodev.core.utils.SchedulersFacade
 import com.lebartodev.lnote.utils.SingleLiveEvent
 import com.lebartodev.lnote.utils.exception.DeleteNoteException
 import com.lebartodev.lnote.utils.exception.RestoreNoteException
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.internal.functions.Functions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
@@ -24,10 +21,8 @@ import javax.inject.Inject
 
 class NotesViewModel @Inject constructor(
     private val settingsRepository: Repository.Settings,
-    private val notesRepository: Repository.Notes,
-    private val schedulersFacade: SchedulersFacade
+    private val notesRepository: Repository.Notes
 ) : BaseViewModel() {
-    private var notesDisposable = CompositeDisposable()
 
     private val notesLiveData: MutableLiveData<List<Note>> = MutableLiveData()
     private val bottomPanelEnabledLiveData = MutableLiveData<Boolean?>()
@@ -40,12 +35,11 @@ class NotesViewModel @Inject constructor(
     fun bottomPanelEnabled(): LiveData<Boolean?> = bottomPanelEnabledLiveData
 
     init {
-
         settingsRepository.bottomPanelEnabled()
-                .flowOn(Dispatchers.IO)
-                .onEach { bottomPanelEnabledLiveData.value = it }
-                .catch { postError(it) }
-                .launchIn(viewModelScope)
+            .flowOn(Dispatchers.IO)
+            .onEach { bottomPanelEnabledLiveData.value = it }
+            .catch { postError(it) }
+            .launchIn(viewModelScope)
         fetchNotes()
     }
 
@@ -55,11 +49,6 @@ class NotesViewModel @Inject constructor(
             .onEach { notesLiveData.value = it }
             .catch { postError(it) }
             .launchIn(viewModelScope)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        notesDisposable.clear()
     }
 
     fun deleteNote(id: Long) {

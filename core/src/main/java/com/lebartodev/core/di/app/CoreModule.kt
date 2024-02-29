@@ -14,8 +14,6 @@ import com.lebartodev.core.data.repository.SettingsRepository
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.di.utils.AppScope
 import com.lebartodev.core.di.utils.ViewModelFactory
-import com.lebartodev.core.utils.SchedulersFacade
-import com.lebartodev.core.utils.SchedulersFacadeImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -37,11 +35,6 @@ class CoreModule {
 
     @Provides
     @AppScope
-    fun provideSchedulersFacade(schedulersFacade: SchedulersFacadeImpl): SchedulersFacade =
-        schedulersFacade
-
-    @Provides
-    @AppScope
     fun provideAppContext(application: Application): Context = application.applicationContext
 
     @Provides
@@ -55,7 +48,8 @@ class CoreModule {
 
     @Provides
     @AppScope
-    fun provideCurrentNoteManager(currentNoteManager: CurrentNoteManager): Manager.CurrentNote = currentNoteManager
+    fun provideCurrentNoteManager(currentNoteManager: CurrentNoteManager): Manager.CurrentNote =
+        currentNoteManager
 }
 
 @Module

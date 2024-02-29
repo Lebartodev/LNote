@@ -43,26 +43,31 @@ class EditNoteFragment : BaseFragment() {
     private val scrollArg: Int? by fragmentNullableArgs()
     private var scroll: Int? = scrollArg
     private val noteObserver: Observer<NoteData> = Observer { noteData ->
-        binding.textTitle.removeTextChangedListener(titleTextWatcher)
-        binding.textDescription.removeTextChangedListener(descriptionTextWatcher)
-
         val description = noteData.text ?: ""
         val title = noteData.title
         val time = noteData.date
 
-        if (description != binding.textTitle.hint) {
-            if (description.isNotEmpty()) {
-                binding.textTitle.hint = description.formattedHint()
-            } else {
-                binding.textTitle.hint = context?.getString(R.string.title_hint)
+        with(binding.textTitle) {
+            removeTextChangedListener(titleTextWatcher)
+            if (description != hint) {
+                hint = if (description.isNotEmpty()) {
+                    description.formattedHint()
+                } else {
+                    context?.getString(R.string.title_hint)
+                }
             }
+            if (text.toString() != title) {
+                setText(title)
+            }
+            addTextChangedListener(titleTextWatcher)
         }
 
-        if (binding.textTitle.text.toString() != title) {
-            binding.textTitle.setText(title)
-        }
-        if (binding.textDescription.text.toString() != description) {
-            binding.textDescription.setText(description)
+        with(binding.textDescription) {
+            removeTextChangedListener(descriptionTextWatcher)
+            if (text.toString() != description) {
+                setText(description)
+            }
+            addTextChangedListener(descriptionTextWatcher)
         }
         if (isSharedAnimationEnd)
             binding.dateChip.setDateAnimated(time)
@@ -79,10 +84,10 @@ class EditNoteFragment : BaseFragment() {
         } else if (noteId == null) {
             startPostponedEnterTransition()
         }
-        binding.textTitleActionBar.hint = binding.textTitle.hint
-        binding.textTitleActionBar.text = binding.textTitle.text
-        binding.textTitle.addTextChangedListener(titleTextWatcher)
-        binding.textDescription.addTextChangedListener(descriptionTextWatcher)
+        with(binding.textTitleActionBar) {
+            hint = binding.textTitle.hint
+            text = binding.textTitle.text
+        }
         adapter.updateData(noteData.photos.map { it.path })
         binding.photosList.visibility = if (noteData.photos.isEmpty()) View.GONE else View.VISIBLE
     }
@@ -132,12 +137,14 @@ class EditNoteFragment : BaseFragment() {
 
         val visibleTitleLimit = 56f.toPx(resources)
         binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
-            if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
-                binding.textTitleActionBar.animate().cancel()
-                binding.textTitleActionBar.animate().alpha(1f).start()
-            } else if (scrollY < visibleTitleLimit && oldScrollY > visibleTitleLimit) {
-                binding.textTitleActionBar.animate().cancel()
-                binding.textTitleActionBar.animate().alpha(0f).start()
+            with(binding.textTitleActionBar) {
+                if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
+                    animate().cancel()
+                    animate().alpha(1f).start()
+                } else if (scrollY < visibleTitleLimit && oldScrollY > visibleTitleLimit) {
+                    animate().cancel()
+                    animate().alpha(0f).start()
+                }
             }
         }
 

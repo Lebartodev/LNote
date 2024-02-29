@@ -6,7 +6,6 @@ import com.lebartodev.core.data.Manager
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.di.utils.AppScope
-import com.lebartodev.core.utils.SchedulersFacade
 import dagger.BindsInstance
 import dagger.Component
 
@@ -14,7 +13,6 @@ import dagger.Component
 @Component(modules = [CoreModule::class])
 interface CoreComponent {
     fun appDatabase(): AppDatabase
-    fun schedulersFacade(): SchedulersFacade
     fun settingsManager(): Repository.Settings
     fun notesRepository(): Repository.Notes
     fun currentNoteManager(): Manager.CurrentNote

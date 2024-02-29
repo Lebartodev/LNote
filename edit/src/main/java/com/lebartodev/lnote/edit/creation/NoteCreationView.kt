@@ -112,12 +112,11 @@ class NoteCreationView : ConstraintLayout {
         binding.textDescription.addTextChangedListener(descriptionTextWatcher)
         binding.textTitle.addTextChangedListener(titleTextWatcher)
         binding.fabMore.setOnClickListener { setMoreOpen(!isMoreOpen) }
-        binding.photosList.adapter = adapter
-        binding.photosList.addItemDecoration(PaddingDecoration(8f.toPx(resources)))
-        binding.photosList.layoutManager = GridLayoutManager(
-            context, 1,
-            RecyclerView.HORIZONTAL, false
-        )
+        with(binding.photosList) {
+            adapter = adapter
+            addItemDecoration(PaddingDecoration(8f.toPx(resources)))
+            layoutManager = GridLayoutManager(context, 1, RecyclerView.HORIZONTAL, false)
+        }
     }
 
     override fun onAttachedToWindow() {
@@ -182,30 +181,33 @@ class NoteCreationView : ConstraintLayout {
         val title = noteData.title
         val time = noteData.date
         val photos = noteData.photos
+        with(binding.textTitle) {
+            if (description != this.hint) {
+                if (description.isNotEmpty()) {
+                    this.hint = description.formattedHint()
+                } else {
+                    this.hint = context?.getString(R.string.title_hint)
+                }
+            }
+            if (this.text.toString() != title) {
+                this.setText(title)
+            }
 
-        if (description != binding.textTitle.hint) {
-            if (description.isNotEmpty()) {
-                binding.textTitle.hint = description.formattedHint()
-            } else {
-                binding.textTitle.hint = context?.getString(R.string.title_hint)
+        }
+        with(binding.textDescription) {
+            if (text.toString() != description) {
+                setText(description)
             }
         }
-        if (binding.textTitle.text.toString() != title) {
-            binding.textTitle.setText(title)
+        with(binding.dateChip) {
+            setDate(time)
+            setOnClickListener { openCalendarDialog(time) }
         }
-        if (binding.textDescription.text.toString() != description) {
-            binding.textDescription.setText(description)
-        }
-        binding.dateChip.setDate(time)
         binding.calendarButton.setOnClickListener {
-            openCalendarDialog(time)
-        }
-        binding.dateChip.setOnClickListener {
             openCalendarDialog(time)
         }
         binding.photosList.visibility = if (photos.isEmpty()) View.GONE else View.VISIBLE
         adapter.updateData(photos.map { it.path })
-
     }
 
     private fun setMoreOpen(isMoreOpen: Boolean, animate: Boolean = true) {
