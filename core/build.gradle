@@ -14,10 +14,6 @@ dependencies {
     implementation "com.google.android.material:material:$materialVersion"
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"
-
-    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
-    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
-
     implementation "androidx.room:room-runtime:$roomRuntimeVersion"
     implementation "androidx.room:room-rxjava2:$roomRuntimeVersion"
     implementation "androidx.room:room-ktx:$roomRuntimeVersion"

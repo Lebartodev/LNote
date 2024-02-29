@@ -75,12 +75,11 @@ class NoteCreationContainerFragment : BaseFragment() {
     }
 
     companion object {
-        const val TAG = "NoteCreationContainerFragment"
+        private const val TAG = "NoteCreationContainerFragment"
         private const val EXTRA_NOTE_DATA = "EXTRA_NOTE_DATA"
 
         fun initMe(): NoteCreationContainerFragment {
-            val fragment = NoteCreationContainerFragment()
-            return fragment
+            return NoteCreationContainerFragment()
         }
     }
 }

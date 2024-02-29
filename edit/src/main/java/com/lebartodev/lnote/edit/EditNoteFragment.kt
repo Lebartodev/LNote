@@ -129,12 +129,10 @@ class EditNoteFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.dateChip.transitionName = resources.getString(
             R.string.note_date_transition_name,
             noteId?.toString() ?: "local"
         )
-
         val visibleTitleLimit = 56f.toPx(resources)
         binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
             with(binding.textTitleActionBar) {
@@ -204,7 +202,6 @@ class EditNoteFragment : BaseFragment() {
                             it.animateSlideBottomVisibility(true)
                         }
                     }
-
                     binding.calendarButton.transitionName -> {
                         it.onLayout {
                             it.visibility = View.GONE
