@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -14,11 +15,16 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.*
+import androidx.transition.ChangeBounds
+import androidx.transition.ChangeClipBounds
+import androidx.transition.ChangeImageTransform
+import androidx.transition.ChangeTransform
+import androidx.transition.Transition
+import androidx.transition.TransitionListenerAdapter
+import androidx.transition.TransitionSet
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -32,11 +38,16 @@ import com.lebartodev.lnote.edit.EditNoteFragment
 import com.lebartodev.lnote.edit.creation.NoteCreationContainerFragment
 import com.lebartodev.lnote.edit.utils.EditUtils
 import com.lebartodev.lnote.show.ShowNoteFragment
-import com.lebartodev.lnote.utils.ui.*
+import com.lebartodev.lnote.utils.exception.DeleteNoteException
+import com.lebartodev.lnote.utils.ui.CardExpandTransition
+import com.lebartodev.lnote.utils.ui.NotesAdapter
+import com.lebartodev.lnote.utils.ui.PaddingDecoration
+import com.lebartodev.lnote.utils.ui.toPx
 import com.lebartodev.lnotes.list.databinding.FragmentNotesBinding
 import com.lebartodev.lnotes.list.di.DaggerListComponent
 import javax.inject.Inject
 
+@Suppress("Detekt.TooManyFunctions")
 class NotesFragment : BaseFragment() {
     private val binding by viewBinding(FragmentNotesBinding::inflate)
     private lateinit var settingsSheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -85,6 +96,7 @@ class NotesFragment : BaseFragment() {
 
     private var isSnackBarVisible = false
 
+    override val fragmentView: View = binding.root
     override fun onAttach(context: Context) {
         super.onAttach(context)
         DaggerListComponent.builder()
@@ -97,9 +109,9 @@ class NotesFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         postponeEnterTransition()
-        return binding.root
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -172,6 +184,7 @@ class NotesFragment : BaseFragment() {
                     openSettings()
                     true
                 }
+
                 R.id.app_bar_archive -> {
                     parentFragmentManager.beginTransaction().run {
                         setReorderingAllowed(true)
@@ -186,23 +199,22 @@ class NotesFragment : BaseFragment() {
 
                     true
                 }
+
                 else -> false
             }
         }
     }
 
     private fun setupNotesViewModel() {
-        notesViewModel.error().observe(viewLifecycleOwner, {
+        notesViewModel.error().observe(viewLifecycleOwner) {
             val text = when (it) {
-                is com.lebartodev.lnote.utils.exception.DeleteNoteException -> R.string.error_note_create
+                is DeleteNoteException -> R.string.error_note_create
                 else -> R.string.error_common
             }
             context?.run { Toast.makeText(this, getString(text), Toast.LENGTH_SHORT).show() }
-        })
-        notesViewModel.getNotes().observe(viewLifecycleOwner, {
-            onNotesLoaded(it)
-        })
-        notesViewModel.bottomPanelEnabled().observe(viewLifecycleOwner, {
+        }
+        notesViewModel.getNotes().observe(viewLifecycleOwner) { onNotesLoaded(it) }
+        notesViewModel.bottomPanelEnabled().observe(viewLifecycleOwner) {
             if (it == true) {
                 binding.fabAdd.setOnClickListener {
                     openNoteCreation()
@@ -216,14 +228,14 @@ class NotesFragment : BaseFragment() {
                     R.string.note_container_transition_name, "local"
                 )
             }
-        })
-        notesViewModel.getRestoredNoteEvent().observe(viewLifecycleOwner, {
+        }
+        notesViewModel.getRestoredNoteEvent().observe(viewLifecycleOwner) {
             //binding.bottomSheetAdd.updateNoteData(it)
             binding.fabAdd.callOnClick()
-        })
-        notesViewModel.getDeletedNoteEvent().observe(viewLifecycleOwner, {
-            if (it == true) onNoteDeleted()
-        })
+        }
+        notesViewModel.getDeletedNoteEvent().observe(viewLifecycleOwner) {
+            if (it) onNoteDeleted()
+        }
         setFragmentResultListener(EditUtils.DELETE_NOTE_REQUEST_KEY) { _, _ ->
             onNoteDeleted()
         }
@@ -309,7 +321,7 @@ class NotesFragment : BaseFragment() {
             }
             .setActionTextColor(ContextCompat.getColor(binding.root.context, R.color.colorAction))
             .apply {
-                val layout = view as Snackbar.SnackbarLayout
+                val layout = view as FrameLayout
                 val textView = layout.findViewById(
                     com.google.android.material.R.id.snackbar_text
                 ) as TextView
@@ -322,17 +334,13 @@ class NotesFragment : BaseFragment() {
         val nextFragment = EditNoteFragment.initMe()
         parentFragmentManager.beginTransaction().run {
             setReorderingAllowed(true)
-            setCustomAnimations(
-                R.anim.fade_in, R.anim.fade_out, R.anim.fade_in,
-                R.anim.fade_out
-            )
+            setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
             addSharedElement(binding.fabAdd, binding.fabAdd.transitionName)
             replace(R.id.add_container_view, nextFragment)
             addToBackStack(null)
             commit()
         }
     }
-
 
     companion object {
         const val TAG = "NotesFragment"

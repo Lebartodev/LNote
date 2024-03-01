@@ -19,8 +19,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 private const val PROPERTY_COLOR = "lnote:fabTransform:color"
 private const val PROPERTY_BOUNDS = "lnote:fabTransform:bounds"
 
-class FabTransition : Transition {
-    constructor() : super()
+class FabTransition : Transition() {
 
     override fun getTransitionProperties(): Array<String> {
         return arrayOf(PROPERTY_COLOR, PROPERTY_BOUNDS)
@@ -41,8 +40,10 @@ class FabTransition : Transition {
 
     private fun captureBounds(transitionValues: TransitionValues) {
         if (transitionValues.view.width > 0 && transitionValues.view.height > 0) {
-            transitionValues.values[PROPERTY_BOUNDS] = Rect(transitionValues.view.left, transitionValues.view.top,
-                    transitionValues.view.right, transitionValues.view.bottom)
+            transitionValues.values[PROPERTY_BOUNDS] = Rect(
+                transitionValues.view.left, transitionValues.view.top,
+                transitionValues.view.right, transitionValues.view.bottom
+            )
         }
     }
 
@@ -52,11 +53,17 @@ class FabTransition : Transition {
             if (background is ColorDrawable)
                 transitionValues.values[PROPERTY_COLOR] = background.color
         } else if (transitionValues.view is FloatingActionButton) {
-            transitionValues.values[PROPERTY_COLOR] = (transitionValues.view as FloatingActionButton).backgroundTintList?.defaultColor
+            transitionValues.values[PROPERTY_COLOR] =
+                (transitionValues.view as FloatingActionButton).backgroundTintList?.defaultColor
         }
     }
 
-    override fun createAnimator(sceneRoot: ViewGroup, startValues: TransitionValues?, endValues: TransitionValues?): Animator? {
+    @Suppress("Detekt.ReturnCount")
+    override fun createAnimator(
+        sceneRoot: ViewGroup,
+        startValues: TransitionValues?,
+        endValues: TransitionValues?
+    ): Animator? {
         if (startValues == null || endValues == null) return null
 
         val startColor = (startValues.values[PROPERTY_COLOR] as Int?) ?: Color.WHITE
@@ -74,17 +81,33 @@ class FabTransition : Transition {
         if (!fromFab) {
             val layout = processView.parent as ViewGroup
             val placeholderView = View(sceneRoot.context)
-            placeholderView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            placeholderView.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
             layout.addView(placeholderView)
             processView = placeholderView
 
-            processView.measure(makeMeasureSpec(startBounds.width(), View.MeasureSpec.EXACTLY),
-                    makeMeasureSpec(startBounds.height(), View.MeasureSpec.EXACTLY))
-            processView.layout(startBounds.left, startBounds.top, startBounds.right, startBounds.bottom)
+            processView.measure(
+                makeMeasureSpec(startBounds.width(), View.MeasureSpec.EXACTLY),
+                makeMeasureSpec(startBounds.height(), View.MeasureSpec.EXACTLY)
+            )
+            processView.layout(
+                startBounds.left,
+                startBounds.top,
+                startBounds.right,
+                startBounds.bottom
+            )
         }
 
         val overlayAnimation = createOverlayAnimation(processView, startColor, endColor)
-        val circularReveal = createCircularRevealAnimation(processView, fromFab, startBounds, endBounds, processViewTranslationY)
+        val circularReveal = createCircularRevealAnimation(
+            processView,
+            fromFab,
+            startBounds,
+            endBounds,
+            processViewTranslationY
+        )
 
 
         val transition = AnimatorSet()
@@ -99,27 +122,41 @@ class FabTransition : Transition {
         return transition
     }
 
-    private fun createOverlayAnimation(processView: View, startColor: Int, endColor: Int): Animator {
+    private fun createOverlayAnimation(
+        processView: View,
+        startColor: Int,
+        endColor: Int
+    ): Animator {
         val fabColor = ColorDrawable(startColor)
         fabColor.setBounds(0, 0, processView.width, processView.height)
         processView.background = fabColor
         return ObjectAnimator.ofArgb(fabColor, "color", endColor).setDuration(duration / 2)
     }
 
-    private fun createCircularRevealAnimation(processView: View, fromFab: Boolean, startBounds: Rect, endBounds: Rect, processViewTranslationY: Float): Animator {
+    private fun createCircularRevealAnimation(
+        processView: View,
+        fromFab: Boolean,
+        startBounds: Rect,
+        endBounds: Rect,
+        processViewTranslationY: Float
+    ): Animator {
         val circularReveal: Animator
         if (fromFab) {
-            circularReveal = ViewAnimationUtils.createCircularReveal(processView,
-                    startBounds.centerX(),
-                    startBounds.centerY(),
-                    startBounds.height() / 2f,
-                    endBounds.height().toFloat().coerceAtLeast(endBounds.width().toFloat()))
+            circularReveal = ViewAnimationUtils.createCircularReveal(
+                processView,
+                startBounds.centerX(),
+                startBounds.centerY(),
+                startBounds.height() / 2f,
+                endBounds.height().toFloat().coerceAtLeast(endBounds.width().toFloat())
+            )
         } else {
-            circularReveal = ViewAnimationUtils.createCircularReveal(processView,
-                    endBounds.centerX(),
-                    endBounds.centerY() + processViewTranslationY.toInt(),
-                    startBounds.height().toFloat(),
-                    0f)
+            circularReveal = ViewAnimationUtils.createCircularReveal(
+                processView,
+                endBounds.centerX(),
+                endBounds.centerY() + processViewTranslationY.toInt(),
+                startBounds.height().toFloat(),
+                0f
+            )
 
             circularReveal.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {

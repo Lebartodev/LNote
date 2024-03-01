@@ -2,9 +2,9 @@ package com.lebartodev.lnote.common.notes
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.core.data.repository.Repository
 import com.lebartodev.core.utils.SchedulersFacade
+import com.lebartodev.lnote.data.entity.Note
 import com.lebartodev.lnote.utils.di.app.DaggerAppComponentMock
 import com.lebartodev.lnote.utils.di.notes.DaggerNotesComponentMock
 import com.nhaarman.mockitokotlin2.anyOrNull
@@ -29,6 +29,7 @@ class NotesViewModelTest {
 
     @Inject
     lateinit var schedulersFacade: SchedulersFacade
+
     @Inject
     lateinit var notesRepository: Repository.Notes
     lateinit var notesViewModel: com.lebartodev.lnotes.list.NotesViewModel
@@ -36,14 +37,17 @@ class NotesViewModelTest {
     @Before
     fun setUp() {
         val comp = DaggerAppComponentMock.builder()
-                .applicationContext(mock())
-                .build()
+            .applicationContext(mock())
+            .build()
         DaggerNotesComponentMock.builder().appComponent(comp).context(mock()).build().inject(this)
 
 
         whenever(notesRepository.getNotes()).thenReturn(Flowable.just(arrayListOf()))
-        whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
-        notesViewModel = com.lebartodev.lnotes.list.NotesViewModel(notesRepository, schedulersFacade)
+        whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(
+            Single.just(1L)
+        )
+        notesViewModel =
+            com.lebartodev.lnotes.list.NotesViewModel(notesRepository, schedulersFacade)
     }
 
     @Test
@@ -55,6 +59,7 @@ class NotesViewModelTest {
 
     }
 
+    @Suppress("Detekt.ForbiddenComment")
     @Test
     fun loadNotesWithError() {
         val exception = NullPointerException()

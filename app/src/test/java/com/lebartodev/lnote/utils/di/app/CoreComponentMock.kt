@@ -10,7 +10,10 @@ import javax.inject.Singleton
 
 
 @Singleton
-@Component(modules = [DatabaseModuleMock::class, SchedulersModuleMock::class, ManagersModule::class, PreferencesModuleMock::class])
+@Component(
+    modules = [DatabaseModuleMock::class, SchedulersModuleMock::class,
+        ManagersModule::class, PreferencesModuleMock::class]
+)
 interface CoreComponentMock : CoreComponent {
     fun sharedPreferences(): SharedPreferences
     @Component.Builder

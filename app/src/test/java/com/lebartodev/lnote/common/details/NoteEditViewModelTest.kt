@@ -50,7 +50,8 @@ class NoteEditViewModelTest {
                 .applicationContext(mock())
                 .build()
         DaggerNotesComponentMock.builder().appComponent(comp).context(mock()).build().inject(this)
-        editViewModel = com.lebartodev.lnote.edit.NoteEditViewModel(notesRepository, settingsManager, schedulersFacade, currentNoteManager)
+        editViewModel = NoteEditViewModel(notesRepository, settingsManager,
+            schedulersFacade, currentNoteManager)
 
         whenever(notesRepository.createNote(anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(Single.just(1L))
     }

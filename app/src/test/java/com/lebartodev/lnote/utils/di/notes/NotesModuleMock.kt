@@ -23,5 +23,8 @@ class NotesModuleMock {
 
     @Named("Real")
     @Provides
-    fun provideRealNotesRepository(database: AppDatabase, schedulersFacade: SchedulersFacade): Repository.Notes = NotesRepository(database, schedulersFacade)
+    fun provideRealNotesRepository(
+        database: AppDatabase,
+        schedulersFacade: SchedulersFacade
+    ): Repository.Notes = NotesRepository(database, schedulersFacade)
 }

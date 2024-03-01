@@ -2,16 +2,13 @@ package com.lebartodev.lnote.edit.creation
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.lebartodev.core.base.BaseFragment
-import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.R
 import com.lebartodev.lnote.edit.databinding.FragmentNoteCreationContainerBinding
@@ -23,12 +20,7 @@ class NoteCreationContainerFragment : BaseFragment() {
     private val binding by viewBinding(FragmentNoteCreationContainerBinding::inflate)
     private lateinit var bottomAddSheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return binding.root
-    }
+    override val fragmentView: View = binding.root
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,7 +36,9 @@ class NoteCreationContainerFragment : BaseFragment() {
         }
         bottomAddSheetBehavior.setBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                //Do nothing
+            }
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED || newState == BottomSheetBehavior.STATE_HIDDEN) {
@@ -73,11 +67,7 @@ class NoteCreationContainerFragment : BaseFragment() {
             bottomAddSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
     }
-
     companion object {
-        private const val TAG = "NoteCreationContainerFragment"
-        private const val EXTRA_NOTE_DATA = "EXTRA_NOTE_DATA"
-
         fun initMe(): NoteCreationContainerFragment {
             return NoteCreationContainerFragment()
         }

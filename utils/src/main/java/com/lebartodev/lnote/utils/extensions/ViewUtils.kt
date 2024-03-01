@@ -20,7 +20,9 @@ fun View.onLayout(listener: (() -> Unit)) {
 }
 
 fun View.animateSlideBottomVisibility(visible: Boolean) {
-    if (visible && visibility == View.VISIBLE || !visible && (visibility == View.GONE || visibility == View.INVISIBLE)) return
+    val alreadyVisible = visible && visibility == View.VISIBLE
+    val alreadyInvisible = !visible && (visibility == View.GONE || visibility == View.INVISIBLE)
+    if (alreadyVisible || alreadyInvisible) return
     val sceneRoot: ViewGroup = parent as ViewGroup
 
     this.animate().cancel()
@@ -48,7 +50,9 @@ fun View.animateSlideBottomVisibility(visible: Boolean) {
 }
 
 fun View.animateSlideTopVisibility(visible: Boolean) {
-    if (visible && visibility == View.VISIBLE || !visible && (visibility == View.GONE || visibility == View.INVISIBLE)) return
+    val alreadyVisible = visible && visibility == View.VISIBLE
+    val alreadyInvisible = !visible && (visibility == View.GONE || visibility == View.INVISIBLE)
+    if (alreadyVisible || alreadyInvisible) return
     val sceneRoot: ViewGroup = parent as ViewGroup
 
     this.animate().cancel()

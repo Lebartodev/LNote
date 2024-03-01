@@ -1,6 +1,5 @@
 package com.lebartodev.core.data.repository
 
-import com.lebartodev.core.data.Manager
 import com.lebartodev.core.db.AppDatabase
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.db.entity.Photo
@@ -29,7 +28,7 @@ class NotesRepository @Inject constructor(
         photos: List<Photo>
     ): Long {
         if (text.isNullOrBlank()) {
-            throw NullPointerException()
+            throw NullPointerException("Empty note text not allowed")
         } else {
             return database.notesDao()
                 .insertNote(Note(null, title, date, System.currentTimeMillis(), text)
@@ -52,10 +51,9 @@ class NotesRepository @Inject constructor(
 
     override suspend fun editNote(id: Long, title: String?, text: String?, date: Long?) {
         if (text.isNullOrBlank()) {
-            throw NullPointerException()
+            throw NullPointerException("Empty text not allowed on note edit")
         } else {
-            val note = database.notesDao().getById(id)
-                .first()
+            val note = database.notesDao().getById(id).first()
             note.text = text
             note.date = date
             note.title = title

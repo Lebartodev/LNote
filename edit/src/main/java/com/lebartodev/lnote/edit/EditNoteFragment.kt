@@ -17,7 +17,6 @@ import com.lebartodev.core.base.BaseFragment
 import com.lebartodev.core.base.fragmentNullableArgs
 import com.lebartodev.core.data.NoteData
 import com.lebartodev.core.di.utils.CoreComponentProvider
-import com.lebartodev.core.di.utils.ViewModelFactory
 import com.lebartodev.core.utils.viewBinding
 import com.lebartodev.lnote.edit.databinding.FragmentEditNoteBinding
 import com.lebartodev.lnote.edit.di.DaggerEditNoteComponent
@@ -33,7 +32,6 @@ import com.lebartodev.lnote.utils.ui.SelectDateFragment
 import com.lebartodev.lnote.utils.ui.TextWatcherAdapter
 import com.lebartodev.lnote.utils.ui.toPx
 import java.util.Calendar
-import javax.inject.Inject
 
 class EditNoteFragment : BaseFragment() {
     private val binding by viewBinding(FragmentEditNoteBinding::inflate)
@@ -91,9 +89,6 @@ class EditNoteFragment : BaseFragment() {
         adapter.updateData(noteData.photos.map { it.path })
         binding.photosList.visibility = if (noteData.photos.isEmpty()) View.GONE else View.VISIBLE
     }
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelFactory
     private val viewModel: NoteEditViewModel by viewModels { viewModelFactory }
     private val descriptionTextWatcher = object : TextWatcherAdapter() {
         override fun afterTextChanged(e: Editable?) {
@@ -106,6 +101,7 @@ class EditNoteFragment : BaseFragment() {
             binding.textTitleActionBar.text = e?.toString() ?: ""
         }
     }
+    override val fragmentView: View = binding.root
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -134,7 +130,8 @@ class EditNoteFragment : BaseFragment() {
             noteId?.toString() ?: "local"
         )
         val visibleTitleLimit = 56f.toPx(resources)
-        binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int, scrollY: Int, _: Int, oldScrollY: Int ->
+        binding.noteContent.setOnScrollChangeListener { _: NestedScrollView?, _: Int,
+                                                        scrollY: Int, _: Int, oldScrollY: Int ->
             with(binding.textTitleActionBar) {
                 if (scrollY >= visibleTitleLimit && oldScrollY < visibleTitleLimit) {
                     animate().cancel()
@@ -202,6 +199,7 @@ class EditNoteFragment : BaseFragment() {
                             it.animateSlideBottomVisibility(true)
                         }
                     }
+
                     binding.calendarButton.transitionName -> {
                         it.onLayout {
                             it.visibility = View.GONE

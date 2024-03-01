@@ -10,7 +10,8 @@ import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.view.ViewGroup
 import androidx.cardview.widget.CardView
-import androidx.transition.*
+import androidx.transition.ChangeBounds
+import androidx.transition.TransitionValues
 
 
 private const val PROPERTY_CORNER_RADIUS = "lnote:cardExpand:radius"
@@ -50,7 +51,8 @@ class CardExpandTransition : ChangeBounds {
 
     private fun captureCornerRadius(transitionValues: TransitionValues) {
         if (transitionValues.view is CardView) {
-            transitionValues.values[PROPERTY_CORNER_RADIUS] = (transitionValues.view as CardView).radius
+            transitionValues.values[PROPERTY_CORNER_RADIUS] =
+                (transitionValues.view as CardView).radius
         } else {
             transitionValues.values[PROPERTY_CORNER_RADIUS] = 0f
         }
@@ -66,7 +68,11 @@ class CardExpandTransition : ChangeBounds {
         }
     }
 
-    override fun createAnimator(sceneRoot: ViewGroup, startValues: TransitionValues?, endValues: TransitionValues?): Animator? {
+    override fun createAnimator(
+        sceneRoot: ViewGroup,
+        startValues: TransitionValues?,
+        endValues: TransitionValues?
+    ): Animator? {
         val anim = super.createAnimator(sceneRoot, startValues, endValues)
         if (startValues == null || endValues == null)
             return anim
@@ -91,7 +97,11 @@ class CardExpandTransition : ChangeBounds {
         endValues.view.background = background
 
         val color = ObjectAnimator.ofArgb(background, NoteTransitionDrawable.COLOR, endColor)
-        val radius = ObjectAnimator.ofFloat(background, NoteTransitionDrawable.CORNER_RADIUS, endCornerRadius)
+        val radius = ObjectAnimator.ofFloat(
+            background,
+            NoteTransitionDrawable.CORNER_RADIUS,
+            endCornerRadius
+        )
         val elevation = ObjectAnimator.ofFloat(endValues.view, "elevation", endElevation)
 
         val transition = AnimatorSet()

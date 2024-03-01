@@ -28,7 +28,15 @@ class NoteTransitionDrawable(color: Int, cornerRadius: Float) : Drawable() {
     }
 
     override fun draw(canvas: Canvas) {
-        canvas.drawRoundRect(bounds.left.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bounds.bottom.toFloat(), cornerRadius, cornerRadius, paint)
+        canvas.drawRoundRect(
+            bounds.left.toFloat(),
+            bounds.top.toFloat(),
+            bounds.right.toFloat(),
+            bounds.bottom.toFloat(),
+            cornerRadius,
+            cornerRadius,
+            paint
+        )
     }
 
     override fun getOutline(outline: Outline) {
@@ -50,23 +58,25 @@ class NoteTransitionDrawable(color: Int, cornerRadius: Float) : Drawable() {
     }
 
     companion object {
-        val CORNER_RADIUS: Property<NoteTransitionDrawable, Float> = object : Property<NoteTransitionDrawable, Float>(Float::class.java, "cornerRadius") {
-            override operator fun set(drawable: NoteTransitionDrawable, value: Float) {
-                drawable.cornerRadius = value
-            }
+        val CORNER_RADIUS: Property<NoteTransitionDrawable, Float> =
+            object : Property<NoteTransitionDrawable, Float>(Float::class.java, "cornerRadius") {
+                override operator fun set(drawable: NoteTransitionDrawable, value: Float) {
+                    drawable.cornerRadius = value
+                }
 
-            override operator fun get(drawable: NoteTransitionDrawable): Float {
-                return drawable.cornerRadius
+                override operator fun get(drawable: NoteTransitionDrawable): Float {
+                    return drawable.cornerRadius
+                }
             }
-        }
-        val COLOR: Property<NoteTransitionDrawable, Int> = object : Property<NoteTransitionDrawable, Int>(Int::class.java, "color") {
-            override operator fun set(drawable: NoteTransitionDrawable, value: Int) {
-                drawable.setColor(value)
-            }
+        val COLOR: Property<NoteTransitionDrawable, Int> =
+            object : Property<NoteTransitionDrawable, Int>(Int::class.java, "color") {
+                override operator fun set(drawable: NoteTransitionDrawable, value: Int) {
+                    drawable.setColor(value)
+                }
 
-            override operator fun get(drawable: NoteTransitionDrawable): Int {
-                return drawable.getColor()
+                override operator fun get(drawable: NoteTransitionDrawable): Int {
+                    return drawable.getColor()
+                }
             }
-        }
     }
 }

@@ -1,12 +1,16 @@
 package com.lebartodev.core.db.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import com.lebartodev.core.db.entity.Note
 import com.lebartodev.core.db.entity.NoteEntity
 import com.lebartodev.core.db.entity.Photo
 import kotlinx.coroutines.flow.Flow
 
-
+@Suppress("Detekt.TooManyFunctions")
 @Dao
 interface NotesDAO {
     @Transaction
@@ -56,7 +60,6 @@ interface NotesDAO {
         } else {
             id = note.id ?: 0L
         }
-
 
         val photos = note.photos
         for (photo in photos) {

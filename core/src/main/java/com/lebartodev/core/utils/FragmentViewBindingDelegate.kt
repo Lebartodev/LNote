@@ -12,10 +12,11 @@ import androidx.viewbinding.ViewBinding
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-inline fun <reified T : ViewBinding> Fragment.viewBinding(noinline initializer: (LayoutInflater) -> T) = FragmentViewBindingDelegate(initializer, this)
+inline fun <reified T : ViewBinding> Fragment.viewBinding(noinline initializer: (LayoutInflater) -> T) =
+    FragmentViewBindingDelegate(initializer)
+
 class FragmentViewBindingDelegate<T : ViewBinding>(
-        private val initializer: (LayoutInflater) -> T,
-        private val fragment: Fragment
+    private val initializer: (LayoutInflater) -> T
 ) : ReadOnlyProperty<Fragment, T> {
     private var binding: T? = null
     private val lifecycleObserver = BindingLifecycleObserver()

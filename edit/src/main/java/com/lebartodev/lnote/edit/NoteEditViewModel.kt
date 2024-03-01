@@ -20,10 +20,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.Exception
+import java.lang.NullPointerException
 import java.util.Calendar
 import java.util.UUID
 import javax.inject.Inject
 
+@Suppress("Detekt.TooManyFunctions")
 @FeatureScope
 class NoteEditViewModel @Inject constructor(
     private val notesRepository: Repository.Notes,
@@ -36,10 +39,7 @@ class NoteEditViewModel @Inject constructor(
     init {
         currentNoteRepository.currentNote()
             .flowOn(Dispatchers.IO)
-            .onEach {
-
-                Log.d("Lebartodev", "postValue: ${it.photos}")
-                currentNoteLiveData.postValue(it) }
+            .onEach { currentNoteLiveData.postValue(it) }
             .launchIn(viewModelScope)
     }
 
@@ -127,8 +127,8 @@ class NoteEditViewModel @Inject constructor(
                     saveResultLiveData.value = true
                     currentNoteRepository.clear()
                 }
-            } catch (e: Exception) {
-                postError(e)
+            } catch (exception: Exception) {
+                postError(exception)
             }
         }
     }

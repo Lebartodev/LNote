@@ -7,9 +7,13 @@ import com.google.android.material.chip.Chip
 import com.lebartodev.lnote.utils.R
 import com.lebartodev.lnote.utils.extensions.animateSlideBottomVisibility
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
-class DateChip @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : Chip(context, attrs, defStyleAttr) {
+class DateChip @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : Chip(context, attrs, defStyleAttr) {
     private var formatter = SimpleDateFormat(resources.getString(R.string.date_pattern), Locale.US)
 
     fun setDate(date: Long?) {

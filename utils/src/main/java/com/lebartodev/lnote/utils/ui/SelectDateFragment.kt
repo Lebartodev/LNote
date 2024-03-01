@@ -19,7 +19,7 @@ class SelectDateFragment : DialogFragment() {
         val yy: Int = calendar.get(Calendar.YEAR)
         val mm: Int = calendar.get(Calendar.MONTH)
         val dd: Int = calendar.get(Calendar.DAY_OF_MONTH)
-        return DatePickerDialog(context ?: throw NullPointerException(), listener, yy, mm, dd)
+        return DatePickerDialog(requireContext(), listener, yy, mm, dd)
     }
 
     companion object {
